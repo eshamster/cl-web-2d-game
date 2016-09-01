@@ -32,4 +32,6 @@
    :incf-vector
    :decf-vector
    :incf-rotate-diff
-   :decf-rotate-diff))
+   :decf-rotate-diff
+
+   :calc-dist-to-line))

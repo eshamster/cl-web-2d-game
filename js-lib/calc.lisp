@@ -5,10 +5,14 @@
         :ps-experiment
         :cl-ps-ecs
         :cl-web-2d-game.basic-components)
+  (:import-from :ps-experiment.common-macros
+                :with-slots-pair)
   (:export :incf-vector
            :decf-vector
            :incf-rotate-diff
-           :decf-rotate-diff))
+           :decf-rotate-diff
+
+           :calc-dist-to-line))
 (in-package :cl-web-2d-game.calc)
 
 (enable-ps-experiment-syntax)
@@ -67,3 +71,17 @@
     (unless (get-ecs-component 'point-2d entity)
       (error "The entity ~A doesn't have point-2d" entity))
     (rec (make-vector-2d :x 0 :y 0) entity)))
+
+
+;; --- distance calculation functions --- ;;
+
+(defun.ps+ calc-dist-to-line (target-pnt line-pnt1 line-pnt2)
+  (with-slots-pair (((x1 x) (y1 y)) line-pnt1
+                    ((x2 x) (y2 y)) line-pnt2
+                    ((xt x) (yt y)) target-pnt)
+    (if (= x1 x2)
+        (- xt x1)
+        (let* ((slope (/ (- y2 y1) (- x2 x1)))
+               (offset (- y1 (* slope x1))))
+          (/ (- yt (* slope xt) offset)
+             (sqrt (+ 1 (expt slope 2))))))))
