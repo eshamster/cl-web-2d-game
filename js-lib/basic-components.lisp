@@ -27,7 +27,9 @@
            :model-2d
            :model-2d-p
            :model-2d-model
-           :model-2d-depth))
+           :model-2d-depth
+
+           :clone-vector))
 (in-package :cl-web-2d-game.basic-components)
 
 (enable-ps-experiment-syntax)
@@ -42,3 +44,9 @@
 (defstruct.ps+ (rotate-2d (:include ecs-component)) (speed 0) (angle 0) (rot-offset (make-vector-2d)))
 
 (defstruct.ps+ (model-2d (:include ecs-component)) model (depth 0))
+
+;; --- some functions --- ;;
+
+(defun.ps+ clone-vector (vector)
+  (with-slots (x y) vector
+    (make-vector-2d :x x :y y)))

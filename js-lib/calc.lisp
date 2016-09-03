@@ -12,7 +12,9 @@
            :incf-rotate-diff
            :decf-rotate-diff
 
-           :calc-dist-to-line))
+           :calc-dist
+           :calc-dist-to-line
+           :calc-dist-to-line-seg))
 (in-package :cl-web-2d-game.calc)
 
 (enable-ps-experiment-syntax)
@@ -75,6 +77,12 @@
 
 ;; --- distance calculation functions --- ;;
 
+(defun.ps+ calc-dist (pnt1 pnt2)
+  (with-slots-pair (((x1 x) (y1 y)) pnt1
+                    ((x2 x) (y2 y)) pnt2)
+    (sqrt (+ (expt (- x2 x1) 2)
+             (expt (- y2 y1) 2)))))
+
 (defun.ps+ calc-dist-to-line (target-pnt line-pnt1 line-pnt2)
   (with-slots-pair (((x1 x) (y1 y)) line-pnt1
                     ((x2 x) (y2 y)) line-pnt2
@@ -85,3 +93,33 @@
                (offset (- y1 (* slope x1))))
           (/ (- yt (* slope xt) offset)
              (sqrt (+ 1 (expt slope 2))))))))
+
+(defvar.ps+ *origin-pnt* (make-vector-2d :x 0 :y 0))
+
+(defun.ps calc-dist-to-line-seg (target-pnt line-pnt1 line-pnt2)
+  ;; Preparation for calculation
+  ;;   1. Transform coordinate to move line-pnt1 to origin
+  ;;   2. Rotate coordinate around origin to move lint-pnt2 on x-axis
+  ;; TODO: Reduce memory allocations
+  (let ((moved-line-pnt2 (clone-vector line-pnt2))
+        (moved-target-pnt (clone-vector target-pnt)))
+    ;; 1
+    (decf-vector moved-line-pnt2 line-pnt1)
+    (decf-vector moved-target-pnt line-pnt1)
+    ;; 2
+    (let ((angle-pnt2 (vector-angle moved-line-pnt2)))
+      (decf-rotate-diff moved-line-pnt2 moved-line-pnt2
+                        0 angle-pnt2)
+      (decf-rotate-diff moved-target-pnt moved-target-pnt
+                        0 angle-pnt2))
+    ;; rest calculations
+    (with-slots-pair ((x y) moved-target-pnt
+                      ((pnt2-x x)) moved-line-pnt2)
+      (let ((left-x (min 0 pnt2-x))
+            (right-x (max 0 pnt2-x)))
+        (if (and (<= left-x x)
+                 (<= x right-x))
+            y
+            (* (min (calc-dist moved-target-pnt moved-line-pnt2)
+                    (calc-dist moved-target-pnt *origin-pnt*))
+               (if (> y 0) 1 -1)))))))
