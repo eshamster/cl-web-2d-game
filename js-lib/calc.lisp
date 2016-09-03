@@ -96,7 +96,7 @@
 
 (defvar.ps+ *origin-pnt* (make-vector-2d :x 0 :y 0))
 
-(defun.ps calc-dist-to-line-seg (target-pnt line-pnt1 line-pnt2)
+(defun.ps+ calc-dist-to-line-seg (target-pnt line-pnt1 line-pnt2)
   ;; Preparation for calculation
   ;;   1. Transform coordinate to move line-pnt1 to origin
   ;;   2. Rotate coordinate around origin to move lint-pnt2 on x-axis

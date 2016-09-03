@@ -34,4 +34,5 @@
    :incf-rotate-diff
    :decf-rotate-diff
 
-   :calc-dist-to-line))
+   :calc-dist-to-line
+   :calc-dist-to-line-seg))
