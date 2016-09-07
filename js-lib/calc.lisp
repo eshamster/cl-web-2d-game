@@ -75,6 +75,16 @@
       (error "The entity ~A doesn't have point-2d" entity))
     (rec (make-vector-2d :x 0 :y 0) entity)))
 
+;; --- angle calculation functions --- ;;
+
+(defun.ps+ diff-angle (angle1 angle2)
+  "-PI < result <= PI"
+  (let ((raw-diff (- angle1 angle2)))
+    (loop while (<= raw-diff (* -1 PI))
+       do (incf raw-diff (* 2 PI)))
+    (loop while (> raw-diff PI)
+       do (decf raw-diff (* 2 PI)))
+    raw-diff))
 
 ;; --- distance calculation functions --- ;;
 
