@@ -26,7 +26,8 @@
 (defun.ps+ vector-angle (vector)
   (with-slots (x y) vector
     (if (= x 0)
-        0
+        (* (/ PI 2)
+           (if (< y 0) -1 1))
         (+ (atan (/ y x))
            (if (< x 0) PI 0)))))
 
