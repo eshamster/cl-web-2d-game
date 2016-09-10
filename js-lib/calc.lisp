@@ -12,6 +12,8 @@
            :incf-rotate-diff
            :decf-rotate-diff
 
+           :calc-global-point
+
            :calc-dist
            :calc-dist-to-line
            :calc-dist-to-line-seg))
@@ -59,7 +61,7 @@
 (defun.ps+ decf-rotate-diff (vector offset-vector now-angle diff-angle)
   (incf-rotate-diff vector offset-vector now-angle (* -1 diff-angle)))
 
-(defun.ps+ calc-model-position (entity)
+(defun.ps+ calc-global-point (entity)
   (labels ((rec (result parent)
              (if parent
                  (let ((pos (get-ecs-component 'point-2d parent)))
