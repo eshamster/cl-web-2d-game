@@ -11,6 +11,7 @@
    :vector-2d-x
    :vector-2d-y
 
+   :make-point-2d
    :point-2d
    :point-2d-p
    :point-2d-x
@@ -28,6 +29,7 @@
    :model-2d-p
    :model-2d-model
    :model-2d-depth
+   :model-2d-offset
 
    ;; calc
    :incf-vector

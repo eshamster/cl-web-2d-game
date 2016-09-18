@@ -61,21 +61,35 @@
 (defun.ps+ decf-rotate-diff (vector offset-vector now-angle diff-angle)
   (incf-rotate-diff vector offset-vector now-angle (* -1 diff-angle)))
 
-(defun.ps+ calc-global-point (entity)
+(defun.ps+ transformf-point (target base)
+  "Transform the 'target' point to the coordinate represented by the 'base'"
+  (incf (point-2d-angle target) (point-2d-angle base))
+  (with-slots-pair (((place-x x) (place-y y)) target
+                    (x y angle) base)
+    (let ((cos-value (cos angle))
+          (sin-value (sin angle))
+          (before-x place-x)
+          (before-y place-y))
+      (setf place-x (+ x
+                       (- (* before-x cos-value) (* before-y sin-value))))
+      (setf place-y (+ y
+                       (+ (* before-x sin-value) (* before-y cos-value))))))
+  target)
+
+(defun.ps+ calc-global-point (entity &optional offset)
   (labels ((rec (result parent)
              (if parent
                  (let ((pos (get-ecs-component 'point-2d parent)))
                    (when pos
-                     (incf-vector result pos)
-                     (with-slots (center angle) pos
-                       (if (eq entity parent)
-                           (decf-vector result center)
-                           (incf-rotate-diff result center 0 angle))))
+                     (transformf-point result pos))
                    (rec result (ecs-entity-parent parent)))
                  result)))
     (unless (get-ecs-component 'point-2d entity)
       (error "The entity ~A doesn't have point-2d" entity))
-    (rec (make-vector-2d :x 0 :y 0) entity)))
+    (rec (if offset
+             (clone-point-2d offset)
+             (make-point-2d :x 0 :y 0 :angle 0))
+         entity)))
 
 ;; --- angle calculation functions --- ;;
 
