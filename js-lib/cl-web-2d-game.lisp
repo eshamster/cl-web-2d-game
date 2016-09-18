@@ -39,6 +39,7 @@
 
    :calc-global-point
 
+   :calc-dist
    :calc-dist-to-line
    :calc-dist-to-line-seg
 
