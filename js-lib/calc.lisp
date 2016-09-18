@@ -11,6 +11,9 @@
            :decf-vector
            :incf-rotate-diff
            :decf-rotate-diff
+           :adjustf-point-by-rotate
+
+           :calc-global-point
 
            :calc-dist
            :calc-dist-to-line
@@ -26,7 +29,8 @@
 (defun.ps+ vector-angle (vector)
   (with-slots (x y) vector
     (if (= x 0)
-        0
+        (* (/ PI 2)
+           (if (< y 0) -1 1))
         (+ (atan (/ y x))
            (if (< x 0) PI 0)))))
 
@@ -40,11 +44,10 @@
   (decf (vector-2d-y target-vec) (vector-2d-y diff-vec))
   target-vec)
 
-(defun.ps+ incf-rotate-diff (target-vector offset-vector now-angle diff-angle)
-  (let* ((r (vector-abs offset-vector))
-         (now-angle-with-offset (+ now-angle (vector-angle offset-vector)))
-         (cos-now (cos now-angle-with-offset))
-         (sin-now (sin now-angle-with-offset))
+(defun.ps+ incf-rotate-diff (target-vector radious now-angle diff-angle)
+  (let* ((r radious)
+         (cos-now (cos now-angle))
+         (sin-now (sin now-angle))
          (cos-diff (cos diff-angle))
          (sin-diff (sin diff-angle)))
     (with-slots (x y) target-vector
@@ -55,25 +58,57 @@
                     (* r cos-now sin-diff))
                  (* r sin-now))))))
 
-(defun.ps+ decf-rotate-diff (vector offset-vector now-angle diff-angle)
-  (incf-rotate-diff vector offset-vector now-angle (* -1 diff-angle)))
+(defun.ps+ decf-rotate-diff (vector radious now-angle diff-angle)
+  (incf-rotate-diff vector radious now-angle (* -1 diff-angle)))
 
-(defun.ps+ calc-model-position (entity)
+(defun.ps+ adjustf-point-by-rotate (vector radious angle)
+  "Adjust the vector according to the rotate parameter (radious and angle)
+assuming that it is at the center of the rotation."
+  (incf (point-2d-x vector) radious)
+  (incf-rotate-diff vector radious 0 angle)
+  (when (typep vector 'point-2d)
+    (incf (point-2d-angle vector) angle)))
+
+(defun.ps+ transformf-point (target base)
+  "Transform the 'target' point to the coordinate represented by the 'base'"
+  (incf (point-2d-angle target) (point-2d-angle base))
+  (with-slots-pair (((place-x x) (place-y y)) target
+                    (x y angle) base)
+    (let ((cos-value (cos angle))
+          (sin-value (sin angle))
+          (before-x place-x)
+          (before-y place-y))
+      (setf place-x (+ x
+                       (- (* before-x cos-value) (* before-y sin-value))))
+      (setf place-y (+ y
+                       (+ (* before-x sin-value) (* before-y cos-value))))))
+  target)
+
+(defun.ps+ calc-global-point (entity &optional offset)
   (labels ((rec (result parent)
              (if parent
                  (let ((pos (get-ecs-component 'point-2d parent)))
                    (when pos
-                     (incf-vector result pos)
-                     (with-slots (center angle) pos
-                       (if (eq entity parent)
-                           (decf-vector result center)
-                           (incf-rotate-diff result center 0 angle))))
+                     (transformf-point result pos))
                    (rec result (ecs-entity-parent parent)))
                  result)))
     (unless (get-ecs-component 'point-2d entity)
       (error "The entity ~A doesn't have point-2d" entity))
-    (rec (make-vector-2d :x 0 :y 0) entity)))
+    (rec (if offset
+             (clone-point-2d offset)
+             (make-point-2d :x 0 :y 0 :angle 0))
+         entity)))
 
+;; --- angle calculation functions --- ;;
+
+(defun.ps+ diff-angle (angle1 angle2)
+  "-PI < result <= PI"
+  (let ((raw-diff (- angle1 angle2)))
+    (loop while (<= raw-diff (* -1 PI))
+       do (incf raw-diff (* 2 PI)))
+    (loop while (> raw-diff PI)
+       do (decf raw-diff (* 2 PI)))
+    raw-diff))
 
 ;; --- distance calculation functions --- ;;
 
@@ -108,10 +143,11 @@
     (decf-vector moved-target-pnt line-pnt1)
     ;; 2
     (let ((angle-pnt2 (vector-angle moved-line-pnt2)))
-      (decf-rotate-diff moved-line-pnt2 moved-line-pnt2
-                        0 angle-pnt2)
-      (decf-rotate-diff moved-target-pnt moved-target-pnt
-                        0 angle-pnt2))
+      (labels ((rotate-pnt (now-pnt)
+                 (decf-rotate-diff now-pnt (vector-abs now-pnt)
+                                   (vector-angle now-pnt) angle-pnt2)))
+        (rotate-pnt moved-line-pnt2)
+        (rotate-pnt moved-target-pnt)))
     ;; rest calculations
     (with-slots-pair ((x y) moved-target-pnt
                       ((pnt2-x x)) moved-line-pnt2)
