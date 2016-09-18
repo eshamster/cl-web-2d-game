@@ -11,6 +11,7 @@
            :decf-vector
            :incf-rotate-diff
            :decf-rotate-diff
+           :adjustf-point-by-rotate
 
            :calc-global-point
 
@@ -43,11 +44,10 @@
   (decf (vector-2d-y target-vec) (vector-2d-y diff-vec))
   target-vec)
 
-(defun.ps+ incf-rotate-diff (target-vector offset-vector now-angle diff-angle)
-  (let* ((r (vector-abs offset-vector))
-         (now-angle-with-offset (+ now-angle (vector-angle offset-vector)))
-         (cos-now (cos now-angle-with-offset))
-         (sin-now (sin now-angle-with-offset))
+(defun.ps+ incf-rotate-diff (target-vector radious now-angle diff-angle)
+  (let* ((r radious)
+         (cos-now (cos now-angle))
+         (sin-now (sin now-angle))
          (cos-diff (cos diff-angle))
          (sin-diff (sin diff-angle)))
     (with-slots (x y) target-vector
@@ -58,8 +58,16 @@
                     (* r cos-now sin-diff))
                  (* r sin-now))))))
 
-(defun.ps+ decf-rotate-diff (vector offset-vector now-angle diff-angle)
-  (incf-rotate-diff vector offset-vector now-angle (* -1 diff-angle)))
+(defun.ps+ decf-rotate-diff (vector radious now-angle diff-angle)
+  (incf-rotate-diff vector radious now-angle (* -1 diff-angle)))
+
+(defun.ps+ adjustf-point-by-rotate (vector radious angle)
+  "Adjust the vector according to the rotate parameter (radious and angle)
+assuming that it is at the center of the rotation."
+  (incf (point-2d-x vector) radious)
+  (incf-rotate-diff vector radious 0 angle)
+  (when (typep vector 'point-2d)
+    (incf (point-2d-angle vector) angle)))
 
 (defun.ps+ transformf-point (target base)
   "Transform the 'target' point to the coordinate represented by the 'base'"
@@ -135,10 +143,11 @@
     (decf-vector moved-target-pnt line-pnt1)
     ;; 2
     (let ((angle-pnt2 (vector-angle moved-line-pnt2)))
-      (decf-rotate-diff moved-line-pnt2 moved-line-pnt2
-                        0 angle-pnt2)
-      (decf-rotate-diff moved-target-pnt moved-target-pnt
-                        0 angle-pnt2))
+      (labels ((rotate-pnt (now-pnt)
+                 (decf-rotate-diff now-pnt (vector-abs now-pnt)
+                                   (vector-angle now-pnt) angle-pnt2)))
+        (rotate-pnt moved-line-pnt2)
+        (rotate-pnt moved-target-pnt)))
     ;; rest calculations
     (with-slots-pair ((x y) moved-target-pnt
                       ((pnt2-x x)) moved-line-pnt2)

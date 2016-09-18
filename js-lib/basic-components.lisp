@@ -23,7 +23,6 @@
            :rotate-2d-p
            :rotate-2d-speed
            :rotate-2d-angle
-           :rotate-2d-rot-offset
 
            :model-2d
            :model-2d-p
@@ -44,8 +43,7 @@
 (defstruct.ps+ (point-2d (:include vector-2d)) (angle 0))
 (defstruct.ps+ (speed-2d (:include vector-2d)))
 
-;; rot-offset (rotate offset) is defined as relative value from point-2d-center
-(defstruct.ps+ (rotate-2d (:include ecs-component)) (speed 0) (angle 0) (rot-offset (make-vector-2d)))
+(defstruct.ps+ (rotate-2d (:include ecs-component)) (speed 0) (angle 0) (radious 0))
 
 (defstruct.ps+ (model-2d (:include ecs-component)) model (depth 0) (offset (make-point-2d)))
 

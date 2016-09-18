@@ -23,7 +23,6 @@
    :rotate-2d-p
    :rotate-2d-speed
    :rotate-2d-angle
-   :rotate-2d-rot-offset
 
    :model-2d
    :model-2d-p
@@ -36,6 +35,7 @@
    :decf-vector
    :incf-rotate-diff
    :decf-rotate-diff
+   :adjustf-point-by-rotate
 
    :calc-global-point
 
