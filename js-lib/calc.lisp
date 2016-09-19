@@ -16,6 +16,7 @@
            :calc-global-point
 
            :calc-dist
+           :calc-dist-p2
            :calc-dist-to-line
            :calc-dist-to-line-seg))
 (in-package :cl-web-2d-game.calc)
@@ -117,6 +118,12 @@ assuming that it is at the center of the rotation."
                     ((x2 x) (y2 y)) pnt2)
     (sqrt (+ (expt (- x2 x1) 2)
              (expt (- y2 y1) 2)))))
+
+(defun.ps+ calc-dist-p2 (pnt1 pnt2)
+  (with-slots-pair (((x1 x) (y1 y)) pnt1
+                    ((x2 x) (y2 y)) pnt2)
+    (+ (expt (- x2 x1) 2)
+       (expt (- y2 y1) 2))))
 
 (defun.ps+ calc-dist-to-line (target-pnt line-pnt1 line-pnt2)
   (with-slots-pair (((x1 x) (y1 y)) line-pnt1
