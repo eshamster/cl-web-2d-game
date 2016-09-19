@@ -30,6 +30,12 @@
    :model-2d-depth
    :model-2d-offset
 
+   :params
+   :params-table
+   :get-entity-param
+   :set-entity-param
+   :init-entity-params
+
    ;; calc
    :incf-vector
    :decf-vector
