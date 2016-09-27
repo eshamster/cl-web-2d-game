@@ -24,12 +24,6 @@
            :rotate-2d-speed
            :rotate-2d-angle
 
-           :model-2d
-           :model-2d-p
-           :model-2d-model
-           :model-2d-depth
-           :model-2d-offset
-
            :params
            :params-table
            :get-entity-param
@@ -50,8 +44,6 @@
 (defstruct.ps+ (speed-2d (:include vector-2d)))
 
 (defstruct.ps+ (rotate-2d (:include ecs-component)) (speed 0) (angle 0) (radious 0))
-
-(defstruct.ps+ (model-2d (:include ecs-component)) model (depth 0) (offset (make-point-2d)))
 
 (defstruct.ps+ (params (:include ecs-component)) (table (make-hash-table)))
 

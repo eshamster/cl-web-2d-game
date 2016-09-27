@@ -2,7 +2,8 @@
 (defpackage :cl-web-2d-game
   (:use :cl-web-2d-game.basic-components
         :cl-web-2d-game.calc
-        :cl-web-2d-game.collision)
+        :cl-web-2d-game.collision
+        :cl-web-2d-game.draw-model-system)
   (:export
    ;; basic-components
    :make-vector-2d
@@ -23,12 +24,6 @@
    :rotate-2d-p
    :rotate-2d-speed
    :rotate-2d-angle
-
-   :model-2d
-   :model-2d-p
-   :model-2d-model
-   :model-2d-depth
-   :model-2d-offset
 
    :params
    :params-table
@@ -62,4 +57,14 @@
    :make-physic-circle
 
    :physic-triangle
-   :make-physic-triangle))
+   :make-physic-triangle
+
+   ;; draw-model-system
+   :model-2d
+   :model-2d-p
+   :model-2d-model
+   :model-2d-depth
+   :model-2d-offset
+   :enable-model-2d
+   :disable-model-2d
+   :init-draw-model-system))
