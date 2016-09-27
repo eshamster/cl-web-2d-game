@@ -24,11 +24,11 @@
            :rotate-2d-speed
            :rotate-2d-angle
 
-           :model-2d
-           :model-2d-p
-           :model-2d-model
-           :model-2d-depth
-           :model-2d-offset
+           :params
+           :params-table
+           :get-entity-param
+           :set-entity-param
+           :init-entity-params
 
            :clone-vector
            :clone-point-2d))
@@ -45,9 +45,11 @@
 
 (defstruct.ps+ (rotate-2d (:include ecs-component)) (speed 0) (angle 0) (radious 0))
 
-(defstruct.ps+ (model-2d (:include ecs-component)) model (depth 0) (offset (make-point-2d)))
+(defstruct.ps+ (params (:include ecs-component)) (table (make-hash-table)))
 
 ;; --- some functions --- ;;
+
+;; - clone
 
 ;; TODO: rename to clone-vector-2d
 (defun.ps+ clone-vector (vector)
@@ -57,3 +59,26 @@
 (defun.ps+ clone-point-2d (point)
   (with-slots (x y angle) point
     (make-point-2d :x x :y y :angle angle)))
+
+;; - params
+
+(defun.ps+ get-entity-param (entity key)
+  (with-ecs-components (params) entity
+    (gethash key (params-table params))))
+
+(defun.ps+ set-entity-param (entity key new-value)
+  (with-ecs-components (params) entity
+    (setf (gethash key (params-table params))
+          new-value)))
+
+(defun.ps+ init-entity-params (&rest key-value-pairs)
+  (unless (evenp (length key-value-pairs))
+    (error "odd number of args to INIT-ENTITY-PARAMS"))
+  (let* ((table (make-hash-table)))
+    (labels ((rec (rest-pairs)
+               (when (> (length rest-pairs) 0)
+                 (setf (gethash (car rest-pairs) table)
+                       (cadr rest-pairs))
+                 (rec (cddr rest-pairs)))))
+      (rec key-value-pairs))
+    (make-params :table table)))
