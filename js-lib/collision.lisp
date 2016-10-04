@@ -27,7 +27,7 @@
 
 (defstruct.ps+ (physic-2d (:include ecs-component))
   kind
-  (offset (make-vector-2d))
+  (offset (make-point-2d))
   (on-collision (lambda (mine target) (declare (ignore mine target)) nil)))
 
 (defstruct.ps+ (physic-circle (:include physic-2d (kind :circle))) (r 0))
@@ -79,22 +79,29 @@
       (intersects-line-and-circle cx cy cr tx2 ty2 tx3 ty3)
       (intersects-line-and-circle cx cy cr tx3 ty3 tx1 ty1)))
 
-;; Note: the offset parameters is not well-tested
+;; TODO: the offset parameters are not well-tested.
 (defun.ps+ col-ct-vec (point-c offset-c rc
-                       point-t offset-t vertex-t1 vertex-t2 vertex-t3)
+                               point-t offset-t vertex-t1 vertex-t2 vertex-t3)
+  ;; TODO: Reduce memory allocations
   (macrolet ((add-x (&rest point-list)
                `(+ ,@(mapcar (lambda (point) `(vector-2d-x ,point)) point-list)))
              (add-y (&rest point-list)
                `(+ ,@(mapcar (lambda (point) `(vector-2d-y ,point)) point-list))))
-    (col-ct (add-x point-c offset-c)
-            (add-y point-c offset-c)
-            rc
-            (add-x vertex-t1 offset-t point-t)
-            (add-y vertex-t1 offset-t point-t)
-            (add-x vertex-t2 offset-t point-t)
-            (add-y vertex-t2 offset-t point-t)
-            (add-x vertex-t3 offset-t point-t)
-            (add-y vertex-t3 offset-t point-t))))
+    (let ((buffer-pnts '()))
+      (dolist (vertex (list vertex-t1 vertex-t2 vertex-t3))
+        (let ((pnt (make-point-2d :x (vector-2d-x vertex) :y (vector-2d-y vertex))))
+          (transformf-point pnt offset-t)
+          (transformf-point pnt point-t)
+          (push pnt buffer-pnts)))
+      (col-ct (add-x point-c offset-c)
+              (add-y point-c offset-c)
+              rc
+              (point-2d-x (nth 0 buffer-pnts))
+              (point-2d-y (nth 0 buffer-pnts))
+              (point-2d-x (nth 1 buffer-pnts))
+              (point-2d-y (nth 1 buffer-pnts))
+              (point-2d-x (nth 2 buffer-pnts))
+              (point-2d-y (nth 2 buffer-pnts))))))
 
 (defun.ps+ col-ct-physic (circle point-c triangle point-t)
   (check-type circle physic-circle)

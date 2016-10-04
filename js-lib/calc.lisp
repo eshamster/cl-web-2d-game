@@ -13,6 +13,7 @@
            :decf-rotate-diff
            :adjustf-point-by-rotate
 
+           :transformf-point
            :calc-global-point
 
            :calc-dist
