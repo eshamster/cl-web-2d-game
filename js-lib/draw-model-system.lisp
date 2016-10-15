@@ -23,8 +23,6 @@
 
 (enable-ps-experiment-syntax)
 
-;; This package is depend on three.js.
-
 ;; --- component --- ;;
 
 (defstruct.ps+ (model-2d (:include ecs-component))
