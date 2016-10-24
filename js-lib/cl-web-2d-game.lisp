@@ -1,9 +1,15 @@
 (in-package :cl-user)
+
+;; This package is depend on the following js libraries.
+;; - three.js
+;; - dat.gui.js
+
 (defpackage :cl-web-2d-game
   (:use :cl-web-2d-game.basic-components
         :cl-web-2d-game.calc
         :cl-web-2d-game.collision
-        :cl-web-2d-game.draw-model-system)
+        :cl-web-2d-game.draw-model-system
+        :cl-web-2d-game.gui)
   (:export
    ;; basic-components
    :make-vector-2d
