@@ -7,7 +7,9 @@
         :cl-web-2d-game.basic-components)
   (:import-from :ps-experiment.common-macros
                 :with-slots-pair)
-  (:export :incf-vector
+  (:export :vector-abs
+           :vector-angle
+           :incf-vector
            :decf-vector
            :incf-rotate-diff
            :decf-rotate-diff
