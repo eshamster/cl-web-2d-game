@@ -14,6 +14,7 @@
    ;; basic-components
    :vector-abs
    :vector-angle
+   :setf-vector-angle
    :make-vector-2d
    :vector-2d
    :vector-2d-p
@@ -56,6 +57,8 @@
    :calc-dist-p2
    :calc-dist-to-line
    :calc-dist-to-line-seg
+
+   :adjust-to-target
 
    ;; collision
    :process-collision

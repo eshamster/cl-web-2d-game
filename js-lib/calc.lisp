@@ -9,6 +9,7 @@
                 :with-slots-pair)
   (:export :vector-abs
            :vector-angle
+           :setf-vector-angle
            :incf-vector
            :decf-vector
            :incf-rotate-diff
@@ -21,7 +22,9 @@
            :calc-dist
            :calc-dist-p2
            :calc-dist-to-line
-           :calc-dist-to-line-seg))
+           :calc-dist-to-line-seg
+
+           :adjust-to-target))
 (in-package :cl-web-2d-game.calc)
 
 (enable-ps-experiment-syntax)
@@ -37,6 +40,12 @@
            (if (< y 0) -1 1))
         (+ (atan (/ y x))
            (if (< x 0) PI 0)))))
+
+(defun.ps+ setf-vector-angle (vector angle)
+  (let ((abs (vector-abs vector)))
+    (setf (vector-2d-x vector) (* abs (cos angle))
+          (vector-2d-y vector) (* abs (sin angle)))
+    vector))
 
 (defun.ps+ incf-vector (target-vec diff-vec)
   (incf (vector-2d-x target-vec) (vector-2d-x diff-vec))
@@ -169,3 +178,14 @@ assuming that it is at the center of the rotation."
             (* (min (calc-dist moved-target-pnt moved-line-pnt2)
                     (calc-dist moved-target-pnt *origin-pnt*))
                (if (> y 0) 1 -1)))))))
+
+;; --- others --- ;;
+
+(defun.ps+ adjust-to-target (now-value target-value max-diff)
+  "Move now-value closer to taret-value. But the max difference from now-value is limited by max-diff."
+  (let ((diff (- target-value now-value)))
+    (if (< (abs diff) max-diff)
+        target-value
+        (if (> diff 0)
+            (+ now-value max-diff)
+            (- now-value max-diff)))))
