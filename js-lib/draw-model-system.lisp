@@ -38,15 +38,18 @@
      (:include ecs-system
                (target-component-types '(point-2d model-2d))
                (process (lambda (entity)
-                          (with-ecs-components (model-2d point-2d) entity
-                            (let ((new-pos (calc-global-point entity
-                                                              (model-2d-offset model-2d))))
-                              (with-slots (model) model-2d
-                                (model.position.set
-                                 (point-2d-x new-pos)
-                                 (point-2d-y new-pos)
-                                 (model-2d-depth model-2d)) 
-                                (setf model.rotation.z (point-2d-angle new-pos))))))))))
+                          (with-ecs-components (point-2d) entity
+                            (do-ecs-components-of-entity (modelc entity
+                                                                 :component-type model-2d)
+
+                              (let ((new-pos (calc-global-point entity
+                                                                (model-2d-offset modelc))))
+                                (with-slots (model) modelc
+                                  (model.position.set
+                                   (point-2d-x new-pos)
+                                   (point-2d-y new-pos)
+                                   (model-2d-depth modelc))
+                                  (setf model.rotation.z (point-2d-angle new-pos)))))))))))
 
 (defvar.ps *scene-for-draw-system* nil)
 
@@ -54,8 +57,9 @@
 (defun.ps enable-model-2d (entity)
   (unless *scene-for-draw-system*
     (error "The scene for the draw system is not initialized"))
-  (with-ecs-components (model-2d) entity
-    (with-slots (model enable) model-2d
+  (do-ecs-components-of-entity (modelc entity
+                                       :component-type model-2d)
+    (with-slots (model enable) modelc
       (unless enable
         (*scene-for-draw-system*.add model)
         (setf enable t)))))
@@ -63,8 +67,9 @@
 (defun.ps disable-model-2d (entity)
   (unless *scene-for-draw-system*
     (error "The scene for the draw system is not initialized"))
-  (with-ecs-components (model-2d) entity
-    (with-slots (model enable) model-2d
+  (do-ecs-components-of-entity (modelc entity
+                                       :component-type model-2d)
+    (with-slots (model enable) modelc
       (*scene-for-draw-system*.remove model)
       (setf enable nil))))
 
