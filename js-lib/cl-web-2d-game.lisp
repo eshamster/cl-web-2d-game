@@ -59,6 +59,7 @@
    :calc-dist-to-line-seg
 
    :adjust-to-target
+   :lerp-scalar
 
    ;; collision
    :process-collision

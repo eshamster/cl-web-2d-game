@@ -24,7 +24,8 @@
            :calc-dist-to-line
            :calc-dist-to-line-seg
 
-           :adjust-to-target))
+           :adjust-to-target
+           :lerp-scalar))
 (in-package :cl-web-2d-game.calc)
 
 (enable-ps-experiment-syntax)
@@ -189,3 +190,8 @@ assuming that it is at the center of the rotation."
         (if (> diff 0)
             (+ now-value max-diff)
             (- now-value max-diff)))))
+
+(defun.ps+ lerp-scalar (min-value max-value alpha)
+  "Linear interpolation function for scalars. alpha = 0 -> min-value, alpha = 1 -> max-value"
+  (+ min-value
+     (* alpha (- max-value min-value))))
