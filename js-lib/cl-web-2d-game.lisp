@@ -12,6 +12,9 @@
         :cl-web-2d-game.gui)
   (:export
    ;; basic-components
+   :vector-abs
+   :vector-angle
+   :setf-vector-angle
    :make-vector-2d
    :vector-2d
    :vector-2d-p
@@ -37,6 +40,10 @@
    :set-entity-param
    :init-entity-params
 
+   :clone-vector
+   :copy-point-2d
+   :clone-point-2d
+
    ;; calc
    :incf-vector
    :decf-vector
@@ -50,6 +57,9 @@
    :calc-dist-p2
    :calc-dist-to-line
    :calc-dist-to-line-seg
+
+   :adjust-to-target
+   :lerp-scalar
 
    ;; collision
    :process-collision
