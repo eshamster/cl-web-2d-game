@@ -83,4 +83,10 @@
    :model-2d-offset
    :enable-model-2d
    :disable-model-2d
-   :init-draw-model-system))
+   :init-draw-model-system
+
+   ;; gui
+   :init-gui
+   :add-panel-bool
+   :add-panel-number
+   :add-panel-button))
