@@ -9,6 +9,7 @@
   (:import-from :ps-experiment.common-macros
                 :with-slots-pair)
   (:export :process-collision
+           :collide-entities-p
 
            :physic-2d
            :make-physic-2d
@@ -186,7 +187,7 @@ Note: The second condition can't check only the case where
      (calc-vector-product (- x3 x2) (- y3 y2) (- target-x x2) (- target-y y2))
      (calc-vector-product (- x1 x3) (- y1 y3) (- target-x x3) (- target-y y3)))))
 
-(defun.ps+ process-collision (entity1 entity2)
+(defun.ps+ collide-entities-p (entity1 entity2)
   (with-ecs-components ((ph1 physic-2d)) entity1
     (with-ecs-components ((ph2 physic-2d)) entity2
       (labels ((is-kind-pair (physic1 physic2 kind1 kind2)
@@ -194,30 +195,35 @@ Note: The second condition can't check only the case where
                       (eq (physic-2d-kind physic2) kind2))))
         (let ((pnt1 (calc-global-point entity1))
               (pnt2 (calc-global-point entity2)))
-          (when (cond ((is-kind-pair ph1 ph2 :circle :circle)
-                       (col-cc-physic ph1 pnt1 ph2 pnt2))
-                      ((is-kind-pair ph1 ph2 :circle :triangle)
-                       (col-ct-physic ph1 pnt1 ph2 pnt2))
-                      ((is-kind-pair ph1 ph2 :triangle :circle)
-                       (col-ct-physic ph2 pnt2 ph1 pnt1))
-                      ((is-kind-pair ph1 ph2 :circle :polygon)
-                       (col-cp-physic ph1 pnt1 ph2 pnt2))
-                      ((is-kind-pair ph1 ph2 :polygon :circle)
-                       (col-cp-physic ph2 pnt2 ph1 pnt1))
-                      ;;--- TODO: Implement the followings
-                      ((is-kind-pair ph1 ph2 :triangle :polygon)
-                       nil)
-                      ((is-kind-pair ph1 ph2 :polygon :triangle)
-                       nil)
-                      ((is-kind-pair ph1 ph2 :polygon :polygon)
-                       nil)
-                      ((is-kind-pair ph1 ph2 :triangle :triangle)
-                       nil)
-                      (t (error "not recognized physical type")))
-            (with-slots-pair (((event1 on-collision)) ph1
-                              ((event2 on-collision)) ph2)
-              (funcall event1 entity1 entity2)
-              (funcall event2 entity2 entity1))))))))
+          (cond ((is-kind-pair ph1 ph2 :circle :circle)
+                 (col-cc-physic ph1 pnt1 ph2 pnt2))
+                ((is-kind-pair ph1 ph2 :circle :triangle)
+                 (col-ct-physic ph1 pnt1 ph2 pnt2))
+                ((is-kind-pair ph1 ph2 :triangle :circle)
+                 (col-ct-physic ph2 pnt2 ph1 pnt1))
+                ((is-kind-pair ph1 ph2 :circle :polygon)
+                 (col-cp-physic ph1 pnt1 ph2 pnt2))
+                ((is-kind-pair ph1 ph2 :polygon :circle)
+                 (col-cp-physic ph2 pnt2 ph1 pnt1))
+                ;;--- TODO: Implement the followings
+                ((is-kind-pair ph1 ph2 :triangle :polygon)
+                 nil)
+                ((is-kind-pair ph1 ph2 :polygon :triangle)
+                 nil)
+                ((is-kind-pair ph1 ph2 :polygon :polygon)
+                 nil)
+                ((is-kind-pair ph1 ph2 :triangle :triangle)
+                 nil)
+                (t (error "not recognized physical type"))))))))
+
+(defun.ps+ process-collision (entity1 entity2)
+  (when (collide-entities-p entity1 entity2)
+    (with-ecs-components ((ph1 physic-2d)) entity1
+      (with-ecs-components ((ph2 physic-2d)) entity2
+        (with-slots-pair (((event1 on-collision)) ph1
+                          ((event2 on-collision)) ph2)
+          (funcall event1 entity1 entity2)
+          (funcall event2 entity2 entity1))))))
 
 ;; --- system --- ;;
 
