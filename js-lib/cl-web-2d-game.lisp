@@ -63,7 +63,6 @@
    :lerp-scalar
 
    ;; collision
-   :process-collision
    :collide-entities-p
    :collision-system
    :make-collision-system
