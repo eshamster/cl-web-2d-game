@@ -8,7 +8,7 @@
         :cl-web-2d-game.calc)
   (:import-from :ps-experiment.common-macros
                 :with-slots-pair)
-  (:export :process-collision
+  (:export :collide-entities-p
 
            :physic-2d
            :make-physic-2d
@@ -35,6 +35,7 @@ Note: col-xx-vec takes 'point' and 'offset' for each physic. The 'point' means a
 (defstruct.ps+ (physic-2d (:include ecs-component))
   kind
   (offset (make-point-2d))
+  (target-tags '())
   (on-collision (lambda (mine target) (declare (ignore mine target)) nil)))
 
 (defstruct.ps+ (physic-circle (:include physic-2d (kind :circle))) (r 0))
@@ -186,38 +187,61 @@ Note: The second condition can't check only the case where
      (calc-vector-product (- x3 x2) (- y3 y2) (- target-x x2) (- target-y y2))
      (calc-vector-product (- x1 x3) (- y1 y3) (- target-x x3) (- target-y y3)))))
 
-(defun.ps+ process-collision (entity1 entity2)
+(defun.ps+ collide-entities-with-physics-p (entity1 ph1 entity2 ph2)
+  (labels ((is-kind-pair (physic1 physic2 kind1 kind2)
+             (and (eq (physic-2d-kind physic1) kind1)
+                  (eq (physic-2d-kind physic2) kind2))))
+    (let ((pnt1 (calc-global-point entity1))
+          (pnt2 (calc-global-point entity2)))
+      (cond ((is-kind-pair ph1 ph2 :circle :circle)
+             (col-cc-physic ph1 pnt1 ph2 pnt2))
+            ((is-kind-pair ph1 ph2 :circle :triangle)
+             (col-ct-physic ph1 pnt1 ph2 pnt2))
+            ((is-kind-pair ph1 ph2 :triangle :circle)
+             (col-ct-physic ph2 pnt2 ph1 pnt1))
+            ((is-kind-pair ph1 ph2 :circle :polygon)
+             (col-cp-physic ph1 pnt1 ph2 pnt2))
+            ((is-kind-pair ph1 ph2 :polygon :circle)
+             (col-cp-physic ph2 pnt2 ph1 pnt1))
+            ;;--- TODO: Implement the followings
+            ((is-kind-pair ph1 ph2 :triangle :polygon)
+             nil)
+            ((is-kind-pair ph1 ph2 :polygon :triangle)
+             nil)
+            ((is-kind-pair ph1 ph2 :polygon :polygon)
+             nil)
+            ((is-kind-pair ph1 ph2 :triangle :triangle)
+             nil)
+            (t (error "not recognized physical type"))))))
+
+(defun.ps+ collide-entities-p (entity1 entity2)
   (with-ecs-components ((ph1 physic-2d)) entity1
     (with-ecs-components ((ph2 physic-2d)) entity2
-      (labels ((is-kind-pair (physic1 physic2 kind1 kind2)
-                 (and (eq (physic-2d-kind physic1) kind1)
-                      (eq (physic-2d-kind physic2) kind2))))
-        (let ((pnt1 (calc-global-point entity1))
-              (pnt2 (calc-global-point entity2)))
-          (when (cond ((is-kind-pair ph1 ph2 :circle :circle)
-                       (col-cc-physic ph1 pnt1 ph2 pnt2))
-                      ((is-kind-pair ph1 ph2 :circle :triangle)
-                       (col-ct-physic ph1 pnt1 ph2 pnt2))
-                      ((is-kind-pair ph1 ph2 :triangle :circle)
-                       (col-ct-physic ph2 pnt2 ph1 pnt1))
-                      ((is-kind-pair ph1 ph2 :circle :polygon)
-                       (col-cp-physic ph1 pnt1 ph2 pnt2))
-                      ((is-kind-pair ph1 ph2 :polygon :circle)
-                       (col-cp-physic ph2 pnt2 ph1 pnt1))
-                      ;;--- TODO: Implement the followings
-                      ((is-kind-pair ph1 ph2 :triangle :polygon)
-                       nil)
-                      ((is-kind-pair ph1 ph2 :polygon :triangle)
-                       nil)
-                      ((is-kind-pair ph1 ph2 :polygon :polygon)
-                       nil)
-                      ((is-kind-pair ph1 ph2 :triangle :triangle)
-                       nil)
-                      (t (error "not recognized physical type")))
-            (with-slots-pair (((event1 on-collision)) ph1
-                              ((event2 on-collision)) ph2)
-              (funcall event1 entity1 entity2)
-              (funcall event2 entity2 entity1))))))))
+      (collide-entities-with-physics-p entity1 ph1 entity2 ph2))))
+
+(defun.ps+ judge-collision-target-tags (entity1 ph1 entity2 ph2)
+  "The collision should be done in the following cases: 1. Both physics has no target. 2. One of each physics has a targeted tag, it should be "
+  (check-type ph1 physic-2d)
+  (check-type ph2 physic-2d)
+  (when (and (= (length (physic-2d-target-tags ph1)) 0)
+             (= (length (physic-2d-target-tags ph2)) 0))
+    (return-from judge-collision-target-tags t))
+  (dolist (tag (physic-2d-target-tags ph1))
+    (when (has-entity-tag entity2 tag)
+      (return-from judge-collision-target-tags t)))
+  (dolist (tag (physic-2d-target-tags ph2))
+    (when (has-entity-tag entity1 tag)
+      (return-from judge-collision-target-tags t)))
+  nil)
+
+(defun.ps+ process-collision (entity1 ph1 entity2 ph2)
+  (when (not (judge-collision-target-tags entity1 ph1 entity2 ph2))
+    (return-from process-collision))
+  (when (collide-entities-with-physics-p entity1 ph1 entity2 ph2)
+    (with-slots-pair (((event1 on-collision)) ph1
+                      ((event2 on-collision)) ph2)
+      (funcall event1 entity1 entity2)
+      (funcall event2 entity2 entity1))))
 
 ;; --- system --- ;;
 
@@ -230,6 +254,9 @@ Note: The second condition can't check only the case where
                   (with-slots ((entities target-entities)) system
                     (let ((length (length entities)))
                       (loop for outer-idx from 0 below (1- length) do
-                           (loop for inner-idx from (1+ outer-idx) below length do
-                                (process-collision (aref entities outer-idx)
-                                                   (aref entities inner-idx)))))))))))
+                           (let ((entity1 (aref entities outer-idx)))
+                             (with-ecs-components ((ph1 physic-2d)) entity1
+                               (loop for inner-idx from (1+ outer-idx) below length do
+                                    (let ((entity2 (aref entities inner-idx)))
+                                      (with-ecs-components ((ph2 physic-2d)) entity2
+                                        (process-collision entity1 ph1 entity2 ph2))))))))))))))

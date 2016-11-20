@@ -30,6 +30,7 @@
            :set-entity-param
            :init-entity-params
 
+           :copy-vector-2d-to
            :clone-vector
            :copy-point-2d
            :clone-point-2d))
@@ -52,11 +53,17 @@
 
 ;; - copy & clone
 
+(defun.ps+ copy-vector-2d-to (dst-vector src-vector)
+  (setf (vector-2d-x dst-vector) (vector-2d-x src-vector))
+  (setf (vector-2d-y dst-vector) (vector-2d-y src-vector))
+  dst-vector)
+
 ;; TODO: rename to clone-vector-2d
 (defun.ps+ clone-vector (vector)
   (with-slots (x y) vector
     (make-vector-2d :x x :y y)))
 
+;; TODO: rename to clone-point-2d-to
 (defun.ps+ copy-point-2d (dst-point src-point)
   (setf (point-2d-x dst-point) (point-2d-x src-point))
   (setf (point-2d-y dst-point) (point-2d-y src-point))

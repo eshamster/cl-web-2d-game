@@ -40,6 +40,7 @@
    :set-entity-param
    :init-entity-params
 
+   :copy-vector-2d-to
    :clone-vector
    :copy-point-2d
    :clone-point-2d
@@ -62,7 +63,7 @@
    :lerp-scalar
 
    ;; collision
-   :process-collision
+   :collide-entities-p
    :collision-system
    :make-collision-system
 
@@ -83,4 +84,10 @@
    :model-2d-offset
    :enable-model-2d
    :disable-model-2d
-   :init-draw-model-system))
+   :init-draw-model-system
+
+   ;; gui
+   :init-gui
+   :add-panel-bool
+   :add-panel-number
+   :add-panel-button))
