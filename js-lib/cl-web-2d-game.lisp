@@ -8,6 +8,7 @@
   (:use :cl-web-2d-game.basic-components
         :cl-web-2d-game.calc
         :cl-web-2d-game.collision
+        :cl-web-2d-game.2d-geometry
         :cl-web-2d-game.draw-model-system
         :cl-web-2d-game.gui)
   (:export
@@ -75,6 +76,17 @@
 
    :physic-triangle
    :make-physic-triangle
+
+   ;; 2d-geometry
+   :make-line
+   :make-lines
+   :make-solid-rect
+   :make-wired-rect
+   :make-solid-regular-polygon
+   :make-wired-regular-polygon
+   :make-wired-polygon
+   :make-solid-polygon
+   :change-model-color
 
    ;; draw-model-system
    :model-2d
