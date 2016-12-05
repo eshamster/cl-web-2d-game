@@ -7,6 +7,7 @@
 (defpackage :cl-web-2d-game
   (:use :cl-web-2d-game.basic-components
         :cl-web-2d-game.calc
+        :cl-web-2d-game.camera
         :cl-web-2d-game.collision
         :cl-web-2d-game.2d-geometry
         :cl-web-2d-game.draw-model-system
@@ -62,6 +63,11 @@
 
    :adjust-to-target
    :lerp-scalar
+
+   ;; camera
+   :get-camera-offset-x
+   :get-camera-offset-y
+   :init-camera
 
    ;; collision
    :collide-entities-p
