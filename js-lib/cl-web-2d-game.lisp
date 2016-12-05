@@ -3,12 +3,14 @@
 ;; This package is depend on the following js libraries.
 ;; - three.js
 ;; - dat.gui.js
+;; - threex.keyboardstate.js
 
 (defpackage :cl-web-2d-game
   (:use :cl-web-2d-game.basic-components
         :cl-web-2d-game.calc
         :cl-web-2d-game.camera
         :cl-web-2d-game.collision
+        :cl-web-2d-game.input
         :cl-web-2d-game.2d-geometry
         :cl-web-2d-game.draw-model-system
         :cl-web-2d-game.gui)
@@ -82,6 +84,23 @@
 
    :physic-triangle
    :make-physic-triangle
+
+   ;; input
+   :add-mouse-down-callback
+   :add-mouse-up-callback
+   :add-mouse-move-callback
+   :add-touch-start-callback
+   :add-touch-end-callback
+   :add-touch-move-callback
+
+   :mouse-event-x
+   :mouse-event-y
+
+   :touch-event-touches
+   :touch-event-element-x
+   :touch-event-element-y
+
+   :initialize-input
 
    ;; 2d-geometry
    :make-line
