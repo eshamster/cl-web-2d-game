@@ -7,6 +7,7 @@
 
 (defpackage :cl-web-2d-game
   (:use :cl-web-2d-game.basic-components
+        :cl-web-2d-game.utils
         :cl-web-2d-game.calc
         :cl-web-2d-game.camera
         :cl-web-2d-game.collision
@@ -48,6 +49,10 @@
    :clone-vector
    :copy-point-2d
    :clone-point-2d
+
+   ;; utils
+   :convert-to-layered-hash
+   :get-layered-hash
 
    ;; calc
    :incf-vector
