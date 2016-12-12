@@ -7,7 +7,8 @@
   (:export :start-2d-game
            :with-trace
            :convert-to-layered-hash
-           :get-layered-hash))
+           :get-layered-hash
+           :get-rendered-dom))
 (in-package :cl-web-2d-game.utils)
 
 (enable-ps-experiment-syntax)
@@ -28,6 +29,11 @@
 
 ;; --- game starter --- ;;
 
+(defvar.ps+ *rendered-dom* nil)
+
+(defun.ps+ get-rendered-dom ()
+  *rendered-dom*)
+
 (defun.ps start-2d-game (&key screen-width screen-height
                               camera
                               rendered-dom
@@ -37,6 +43,7 @@
 We assume that the camera is initalized using cl-web-2d-game[.camera]:init-camera."
   (let* ((scene (new (#j.THREE.Scene#)))
          (renderer (new #j.THREE.WebGLRenderer#)))
+    (setf *rendered-dom* rendered-dom)
     (register-default-systems scene)
     (renderer.set-size screen-width screen-height)
     (chain rendered-dom

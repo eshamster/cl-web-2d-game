@@ -103,7 +103,7 @@ device-state = boolean-value"
 
 ;; (private)
 (defun.ps set-mouse-point (x y)
-  (let* ((renderer (document.query-selector "#renderer"))
+  (let* ((renderer (get-rendered-dom))
          (canvas (renderer.query-selector "canvas")))
     (setf *mouse-x-buffer* (- x renderer.offset-left
                               (get-camera-offset-x)))
