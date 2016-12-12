@@ -4,11 +4,55 @@
         :parenscript
         :ps-experiment
         :cl-ps-ecs)
-  (:export :convert-to-layered-hash
+  (:export :start-2d-game
+           :with-trace
+           :convert-to-layered-hash
            :get-layered-hash))
 (in-package :cl-web-2d-game.utils)
 
 (enable-ps-experiment-syntax)
+
+;; --- performance tracer --- ;;
+
+;; Note: this is depend on Web Tracing Framework (wtf-trace.js)
+
+(defmacro.ps with-trace (title &body body)
+  `(let ((scope (#j.WTF.trace.enterScope# ,title)))
+     ,@body
+     (#j.WTF.trace.leaveScope# scope ,title)))
+
+(defmacro with-trace (title &body body)
+  "(dummy)"
+  (declare (ignore title))
+  `(progn ,@body))
+
+;; --- game starter --- ;;
+
+(defun.ps start-2d-game (&key screen-width screen-height
+                              camera
+                              rendered-dom
+                              (init-function (lambda (scene) nil))
+                              (update-function (lambda () nil)))
+  "Entry point for starting game.
+We assume that the camera is initalized using cl-web-2d-game[.camera]:init-camera."
+  (let* ((scene (new (#j.THREE.Scene#)))
+         (renderer (new #j.THREE.WebGLRenderer#)))
+    (register-default-systems scene)
+    (renderer.set-size screen-width screen-height)
+    (chain rendered-dom
+           (append-child renderer.dom-element))
+    (let ((light (new (#j.THREE.DirectionalLight# 0xffffff))))
+      (light.position.set 0 0.7 0.7)
+      (scene.add light))
+    (funcall init-function scene)
+    (labels ((render-loop ()
+               (request-animation-frame render-loop)
+               (with-trace "render"
+                 (renderer.render scene camera))
+               (update-stats)
+               (with-trace "update"
+                 (funcall update-function))))
+      (render-loop))))
 
 ;; --- constant value manager --- ;;
 

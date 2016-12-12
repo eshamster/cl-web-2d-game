@@ -51,6 +51,8 @@
    :clone-point-2d
 
    ;; utils
+   :start-2d-game
+   :with-trace
    :convert-to-layered-hash
    :get-layered-hash
 
