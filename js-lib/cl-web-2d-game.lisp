@@ -3,11 +3,16 @@
 ;; This package is depend on the following js libraries.
 ;; - three.js
 ;; - dat.gui.js
+;; - threex.keyboardstate.js
 
 (defpackage :cl-web-2d-game
   (:use :cl-web-2d-game.basic-components
+        :cl-web-2d-game.utils
         :cl-web-2d-game.calc
+        :cl-web-2d-game.camera
         :cl-web-2d-game.collision
+        :cl-web-2d-game.input
+        :cl-web-2d-game.2d-geometry
         :cl-web-2d-game.draw-model-system
         :cl-web-2d-game.gui)
   (:export
@@ -45,6 +50,12 @@
    :copy-point-2d
    :clone-point-2d
 
+   ;; utils
+   :start-2d-game
+   :with-trace
+   :convert-to-layered-hash
+   :get-layered-hash
+
    ;; calc
    :incf-vector
    :decf-vector
@@ -62,6 +73,11 @@
    :adjust-to-target
    :lerp-scalar
 
+   ;; camera
+   :get-camera-offset-x
+   :get-camera-offset-y
+   :init-camera
+
    ;; collision
    :collide-entities-p
    :collision-system
@@ -75,6 +91,34 @@
 
    :physic-triangle
    :make-physic-triangle
+
+   ;; input
+   :add-mouse-down-callback
+   :add-mouse-up-callback
+   :add-mouse-move-callback
+   :add-touch-start-callback
+   :add-touch-end-callback
+   :add-touch-move-callback
+
+   :mouse-event-x
+   :mouse-event-y
+
+   :touch-event-touches
+   :touch-event-element-x
+   :touch-event-element-y
+
+   :initialize-input
+
+   ;; 2d-geometry
+   :make-line
+   :make-lines
+   :make-solid-rect
+   :make-wired-rect
+   :make-solid-regular-polygon
+   :make-wired-regular-polygon
+   :make-wired-polygon
+   :make-solid-polygon
+   :change-model-color
 
    ;; draw-model-system
    :model-2d
