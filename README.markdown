@@ -14,3 +14,6 @@
 
 Copyright (c) 2016 eshamster (hamgoostar@gmail.com)
 
+## License
+
+Licensed under the LLGPL License.
