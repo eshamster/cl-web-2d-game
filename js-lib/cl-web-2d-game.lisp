@@ -39,6 +39,10 @@
    :rotate-2d-speed
    :rotate-2d-angle
 
+   :script-2d
+   :script-2d-func
+   :make-script-system
+
    :params
    :params-table
    :get-entity-param
