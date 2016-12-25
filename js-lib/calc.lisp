@@ -14,6 +14,7 @@
            :decf-vector
            :incf-rotate-diff
            :decf-rotate-diff
+           :rotatef-point-by
            :adjustf-point-by-rotate
 
            :transformf-point
@@ -74,6 +75,15 @@
 
 (defun.ps+ decf-rotate-diff (vector radious now-angle diff-angle)
   (incf-rotate-diff vector radious now-angle (* -1 diff-angle)))
+
+(defun.ps+ rotatef-point-by (point-2d rotate-2d)
+  "Rotate point-2d using rotate-2d structure."
+  (with-slots (speed (rot-angle angle) radious) rotate-2d
+    (incf-rotate-diff point-2d radious
+                      rot-angle speed)
+    (with-slots (angle) point-2d
+      (incf angle speed))
+    (incf rot-angle speed)))
 
 (defun.ps+ adjustf-point-by-rotate (vector radious angle)
   "Adjust the vector according to the rotate parameter (radious and angle)

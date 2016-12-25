@@ -24,6 +24,10 @@
            :rotate-2d-speed
            :rotate-2d-angle
 
+           :script-2d
+           :script-2d-func
+           :make-script-system
+
            :params
            :params-table
            :get-entity-param
@@ -48,6 +52,8 @@
 (defstruct.ps+ (rotate-2d (:include ecs-component)) (speed 0) (angle 0) (radious 0))
 
 (defstruct.ps+ (params (:include ecs-component)) (table (make-hash-table)))
+
+(defstruct.ps+ (script-2d (:include ecs-component)) (func (lambda (entity) entity)))
 
 ;; --- some functions --- ;;
 
@@ -96,3 +102,13 @@
                  (rec (cddr rest-pairs)))))
       (rec key-value-pairs))
     (make-params :table table)))
+
+;; - simple systems
+
+(defstruct.ps+
+    (script-system
+     (:include ecs-system
+               (target-component-types '(script-2d))
+               (process (lambda (entity)
+                          (with-ecs-components (script-2d) entity
+                            (funcall (script-2d-func script-2d) entity)))))))

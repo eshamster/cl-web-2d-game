@@ -14,7 +14,8 @@
         :cl-web-2d-game.input
         :cl-web-2d-game.2d-geometry
         :cl-web-2d-game.draw-model-system
-        :cl-web-2d-game.gui)
+        :cl-web-2d-game.gui
+        :cl-web-2d-game.initializer)
   (:export
    ;; basic-components
    :vector-abs
@@ -39,6 +40,10 @@
    :rotate-2d-speed
    :rotate-2d-angle
 
+   :script-2d
+   :script-2d-func
+   :make-script-system
+
    :params
    :params-table
    :get-entity-param
@@ -51,7 +56,6 @@
    :clone-point-2d
 
    ;; utils
-   :start-2d-game
    :with-trace
    :convert-to-layered-hash
    :get-layered-hash
@@ -61,6 +65,7 @@
    :decf-vector
    :incf-rotate-diff
    :decf-rotate-diff
+   :rotatef-point-by
    :adjustf-point-by-rotate
 
    :calc-global-point
@@ -134,4 +139,9 @@
    :init-gui
    :add-panel-bool
    :add-panel-number
-   :add-panel-button))
+   :add-panel-button
+
+   ;; initializer
+   :start-2d-game
+   :init-default-system
+   :get-rendered-dom))
