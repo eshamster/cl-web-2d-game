@@ -1,6 +1,4 @@
-# cl-shigi-simulator
-
-
+# Cl-Web-2d-Game - A library to create 2d game using Parenscript and three.js
 
 ## Usage
 
