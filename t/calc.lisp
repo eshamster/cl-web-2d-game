@@ -13,7 +13,9 @@
                 :is-list.ps+)
   (:import-from :ps-experiment
                 :defun.ps+
-                :defvar.ps+))
+                :defvar.ps+)
+  (:import-from :alexandria
+                :with-gensyms))
 (in-package :cl-web-2d-game-test.calc)
 
 ;; --- prepare --- ;;
@@ -31,6 +33,13 @@
 
 (defvar.ps+ *angle-error* (/ PI 10000))
 (defvar.ps+ *length-error* (/ 1 10000))
+
+(defmacro.ps+ is-point (target x y angle)
+  (with-gensyms (g-target)
+    `(let ((,g-target ,target))
+       (within (point-2d-x ,g-target) ,x *length-error*)
+       (within (point-2d-y ,g-target) ,y *length-error*)
+       (within (point-2d-angle ,g-target) ,angle *angle-error*))))
 
 ;; --- test --- ;;
 
@@ -143,13 +152,9 @@
             (target (make-point-2d :x (sqrt 3) :y 1 :angle (* PI 1/4))))
         (transformf-point target base)
         ;; check the target is transformed
-        (within (point-2d-x target) 2 *length-error*)
-        (within (point-2d-y target) 0 *length-error*)
-        (within (point-2d-angle target) (* PI -1/4) *angle-error*)
+        (is-point target 2 0 (* PI -1/4))
         ;; check the base is not changed
-        (is (point-2d-x base) 1)
-        (is (point-2d-y base) (sqrt 3))
-        (is (point-2d-angle base) (* PI -1/2)))))
+        (is-point base 1 (sqrt 3) (* PI -1/2)))))
   (subtest "calc-global-point"
     (with-prove-in-both ()
       (let ((grand-parent (make-ecs-entity))
@@ -165,18 +170,11 @@
         (setf (ecs-entity-parent child) stranger)
         (setf (ecs-entity-parent stranger) parent)
         (setf (ecs-entity-parent parent) grand-parent)
-        (let* ((result (calc-global-point child)))
-          (within (point-2d-x result) 1 *length-error*)
-          (within (point-2d-y result) 0 *length-error*)
-          (within (point-2d-angle result) (* PI -3/2) *angle-error*))
+        (is-point (calc-global-point child) 1 0 (* PI -3/2))
         (let* ((offset (make-point-2d :x 0 :y 1 :angle (* PI -1/2)))
                (result (calc-global-point child offset)))
-          (within (point-2d-x result) 0 *length-error*)
-          (within (point-2d-y result) 0 *length-error*)
-          (within (point-2d-angle result) (* PI -2) *angle-error*)
-          (is (point-2d-x offset) 0)
-          (is (point-2d-y offset) 1)
-          (is (point-2d-angle offset) (* PI -1/2)))))))
+          (is-point result 0 0 (* PI -2))
+          (is-point offset 0 1 (* PI -1/2)))))))
 
 (subtest "Test point to point distance"
   (subtest "calc-dist"

@@ -14,7 +14,8 @@
   :depends-on (:cl-web-2d-game
                :ps-experiment-test
                :cl-ppcre
-               :prove)
+               :prove
+               :alexandria)
   :components ((:module "t"
                 :serial t
                 :components
