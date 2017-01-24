@@ -35,10 +35,12 @@
    :point-2d-center
    :point-2d-angle
 
+   :make-rotate-2d
    :rotate-2d
    :rotate-2d-p
    :rotate-2d-speed
    :rotate-2d-angle
+   :rotate-2d-radious
 
    :script-2d
    :script-2d-func

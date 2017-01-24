@@ -32,18 +32,24 @@
 (enable-ps-experiment-syntax)
 
 (defun.ps+ vector-abs (vector)
-  (sqrt (+ (expt (vector-2d-x vector) 2)
-           (expt (vector-2d-y vector) 2))))
+  (with-slots (x y) vector
+    (sqrt (+ (expt x 2)
+             (expt y 2)))))
 
 (defun.ps+ vector-angle (vector)
+  "Return the angle of the vector. The range is (-PI, PI].
+The angle of the vector (1, 0) is 0 and the rotation is counterclockwize."
   (with-slots (x y) vector
     (if (= x 0)
         (* (/ PI 2)
            (if (< y 0) -1 1))
         (+ (atan (/ y x))
-           (if (< x 0) PI 0)))))
+           (if (< x 0)
+               (* PI (if (< y 0) -1 1))
+               0)))))
 
 (defun.ps+ setf-vector-angle (vector angle)
+  "Set the angle of the vector keeping its length."
   (let ((abs (vector-abs vector)))
     (setf (vector-2d-x vector) (* abs (cos angle))
           (vector-2d-y vector) (* abs (sin angle)))
@@ -60,6 +66,9 @@
   target-vec)
 
 (defun.ps+ incf-rotate-diff (target-vector radious now-angle diff-angle)
+  "Rotate the target-vector.
+The vector is rotated from 'now-angle' to '(+ now-angle diff-angle)'
+on the circle whose radious is represented by the 'radious'."
   (let* ((r radious)
          (cos-now (cos now-angle))
          (sin-now (sin now-angle))
@@ -78,13 +87,15 @@
 
 (defun.ps+ rotatef-point-by (point-2d rotate-2d)
   "Rotate point-2d using rotate-2d structure."
-  (with-slots (speed (rot-angle angle) radious) rotate-2d
-    (incf-rotate-diff point-2d radious
-                      rot-angle speed)
-    (with-slots (angle) point-2d
-      (incf angle speed))
-    (incf rot-angle speed)))
+  (let ((speed (rotate-2d-speed rotate-2d)))
+    (incf-rotate-diff point-2d
+                      (rotate-2d-radious rotate-2d)
+                      (rotate-2d-angle rotate-2d)
+                      speed)
+    (incf (point-2d-angle point-2d) speed)
+    (incf (rotate-2d-angle rotate-2d) speed)))
 
+;; TODO: Rename to 'movef-vector-on-circle'.
 (defun.ps+ adjustf-point-by-rotate (vector radious angle)
   "Adjust the vector according to the rotate parameter (radious and angle)
 assuming that it is at the center of the rotation."
@@ -109,6 +120,10 @@ assuming that it is at the center of the rotation."
   target)
 
 (defun.ps+ calc-global-point (entity &optional offset)
+  "Return global position and roration of the entity (type: point-2d).
+Note that an entity has only local position and rotation on coordinate of its parent.
+The 'offset' is useful if you want to calculate global position and rotation on
+coordinate of the 'entity'"
   (labels ((rec (result parent)
              (if parent
                  (let ((pos (get-ecs-component 'point-2d parent)))
@@ -137,31 +152,33 @@ assuming that it is at the center of the rotation."
 ;; --- distance calculation functions --- ;;
 
 (defun.ps+ calc-dist (pnt1 pnt2)
-  (with-slots-pair (((x1 x) (y1 y)) pnt1
-                    ((x2 x) (y2 y)) pnt2)
-    (sqrt (+ (expt (- x2 x1) 2)
-             (expt (- y2 y1) 2)))))
+  "Calculate distance from pnt1 to pnt2."
+  (sqrt (calc-dist-p2 pnt1 pnt2)))
 
 (defun.ps+ calc-dist-p2 (pnt1 pnt2)
-  (with-slots-pair (((x1 x) (y1 y)) pnt1
-                    ((x2 x) (y2 y)) pnt2)
-    (+ (expt (- x2 x1) 2)
-       (expt (- y2 y1) 2))))
+  "Calculate square of distance from pnt1 to pnt2.
+Because this doesn't use 'sqrt' that is heavy calculation, you should use this
+instead of 'calc-dist' if possible."
+  (+ (expt (- (vector-2d-x pnt2) (vector-2d-x pnt1)) 2)
+     (expt (- (vector-2d-y pnt2) (vector-2d-y pnt1)) 2)))
 
 (defun.ps+ calc-dist-to-line (target-pnt line-pnt1 line-pnt2)
+  "Calculate distance from a target-point to a line passin through line-pnt1 and line-pnt2."
   (with-slots-pair (((x1 x) (y1 y)) line-pnt1
                     ((x2 x) (y2 y)) line-pnt2
                     ((xt x) (yt y)) target-pnt)
-    (if (= x1 x2)
-        (- xt x1)
-        (let* ((slope (/ (- y2 y1) (- x2 x1)))
-               (offset (- y1 (* slope x1))))
-          (/ (- yt (* slope xt) offset)
-             (sqrt (+ 1 (expt slope 2))))))))
+    (abs (if (= x1 x2)
+             (- xt x1)
+             (let* ((slope (/ (- y2 y1) (- x2 x1)))
+                    (offset (- y1 (* slope x1))))
+               (/ (- yt (* slope xt) offset)
+                  (sqrt (+ 1 (expt slope 2)))))))))
 
 (defvar.ps+ *origin-pnt* (make-vector-2d :x 0 :y 0))
 
 (defun.ps+ calc-dist-to-line-seg (target-pnt line-pnt1 line-pnt2)
+  "Calculate distance from a target-point to a line segment whose endponits are
+line-pnt1 and line-pnt2."
   ;; Preparation for calculation
   ;;   1. Transform coordinate to move line-pnt1 to origin
   ;;   2. Rotate coordinate around origin to move lint-pnt2 on x-axis
@@ -194,6 +211,8 @@ assuming that it is at the center of the rotation."
 
 (defun.ps+ adjust-to-target (now-value target-value max-diff)
   "Move now-value closer to taret-value. But the max difference from now-value is limited by max-diff."
+  (unless (> max-diff 0)
+    (error "The 'max-diff' parameter should be a positive number."))
   (let ((diff (- target-value now-value)))
     (if (< (abs diff) max-diff)
         target-value

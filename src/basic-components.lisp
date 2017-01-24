@@ -10,6 +10,8 @@
            :vector-2d-p
            :vector-2d-x
            :vector-2d-y
+           :x
+           :y
 
            :make-point-2d
            :point-2d
@@ -18,11 +20,14 @@
            :point-2d-y
            :point-2d-center
            :point-2d-angle
+           :angle
 
+           :make-rotate-2d
            :rotate-2d
            :rotate-2d-p
            :rotate-2d-speed
            :rotate-2d-angle
+           :rotate-2d-radious
 
            :script-2d
            :script-2d-func
