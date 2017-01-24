@@ -6,14 +6,13 @@
   (:import-from :cl-web-2d-game-test.test-utils
                 :use-packages-for-test)
   (:import-from :ps-experiment
-                :defmacro.ps+)
+                :defmacro.ps+
+                :defun.ps+
+                :defvar.ps+)
   (:import-from :ps-experiment-test.test-utils
                 :with-prove-in-both
                 :prove-in-both
                 :is-list.ps+)
-  (:import-from :ps-experiment
-                :defun.ps+
-                :defvar.ps+)
   (:import-from :alexandria
                 :with-gensyms))
 (in-package :cl-web-2d-game-test.calc)
