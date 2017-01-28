@@ -6,7 +6,7 @@
 
 ## Author
 
-* eshamster (hamgoostar@gmail.com)
+- eshamster (hamgoostar@gmail.com)
 
 ## Copyright
 
