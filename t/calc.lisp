@@ -116,10 +116,11 @@
     (subtest "adjustf-point-by-rotate"
       ;; Now, test only case where the center of rotation is (0, 0)
       (with-prove-in-both ()
-        (let ((vector (make-vector-2d :x 0 :y 0)))
-          (adjustf-point-by-rotate vector 5 (* PI 2/3))
-          (within (vector-abs vector) 5 *length-error*)
-          (within (vector-angle vector) (* PI 2/3) *angle-error*))))))
+        (let ((point (make-point-2d :x 0 :y 0 :angle 0)))
+          (adjustf-point-by-rotate point 5 (* PI 2/3))
+          (within (vector-abs point) 5 *length-error*)
+          (within (vector-angle point) (* PI 2/3) *angle-error*)
+          (is (point-2d-angle point) (* PI 2/3)))))))
 
 (subtest "Test functions about coordinate"
   (subtest "transformf-point"
