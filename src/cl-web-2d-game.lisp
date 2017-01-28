@@ -32,7 +32,6 @@
    :point-2d-p
    :point-2d-x
    :point-2d-y
-   :point-2d-center
    :point-2d-angle
 
    :make-rotate-2d

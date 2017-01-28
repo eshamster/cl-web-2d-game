@@ -1,9 +1,50 @@
 (in-package :cl-user)
 (defpackage cl-web-2d-game-test.test-utils
   (:use :cl
-        :prove)
-  (:export :use-packages-for-test))
+        :prove
+        :cl-web-2d-game.basic-components)
+  (:export :use-packages-for-test
+           :within
+           :is-point
+           :is-vector
+           :*angle-error*
+           :*length-error*)
+  (:import-from :ps-experiment
+                :defmacro.ps+
+                :defun.ps+
+                :defvar.ps+)
+  (:import-from :alexandria
+                :with-gensyms))
 (in-package :cl-web-2d-game-test.test-utils)
+
+;; --- not clasified --- ;;
+
+(defun.ps+ within-p (got expected tolerance)
+  (< (- expected tolerance)
+     got
+     (+ expected tolerance)))
+
+(defmacro.ps+ within (got expected tolerance)
+  `(progn
+     (is ,got ,expected :test (lambda (got expected) (within-p got expected ,tolerance)))))
+
+(defvar.ps+ *angle-error* (/ PI 10000))
+(defvar.ps+ *length-error* (/ 1 10000))
+
+(defmacro.ps+ is-vector (target x y)
+  (with-gensyms (g-target)
+    `(let ((,g-target ,target))
+       (within (vector-2d-x ,g-target) ,x *length-error*)
+       (within (vector-2d-y ,g-target) ,y *length-error*))))
+
+(defmacro.ps+ is-point (target x y angle)
+  (with-gensyms (g-target)
+    `(let ((,g-target ,target))
+       (within (point-2d-x ,g-target) ,x *length-error*)
+       (within (point-2d-y ,g-target) ,y *length-error*)
+       (within (point-2d-angle ,g-target) ,angle *angle-error*))))
+
+;; --- use-packages-for-test --- ;;
 
 (defvar *package-prefix* (string-upcase "cl-web-2d-game."))
 

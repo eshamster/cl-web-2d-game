@@ -2,9 +2,8 @@
 (defpackage cl-web-2d-game-test.calc
   (:use :cl
         :prove
-        :cl-ps-ecs)
-  (:import-from :cl-web-2d-game-test.test-utils
-                :use-packages-for-test)
+        :cl-ps-ecs
+        :cl-web-2d-game-test.test-utils)
   (:import-from :ps-experiment
                 :defmacro.ps+
                 :defun.ps+
@@ -12,33 +11,12 @@
   (:import-from :ps-experiment-test.test-utils
                 :with-prove-in-both
                 :prove-in-both
-                :is-list.ps+)
-  (:import-from :alexandria
-                :with-gensyms))
+                :is-list.ps+))
 (in-package :cl-web-2d-game-test.calc)
 
 ;; --- prepare --- ;;
 
 (use-packages-for-test :calc)
-
-(defun.ps+ within-p (got expected tolerance)
-  (< (- expected tolerance)
-     got
-     (+ expected tolerance)))
-
-(defmacro.ps+ within (got expected tolerance)
-  `(progn
-     (is ,got ,expected :test (lambda (got expected) (within-p got expected ,tolerance)))))
-
-(defvar.ps+ *angle-error* (/ PI 10000))
-(defvar.ps+ *length-error* (/ 1 10000))
-
-(defmacro.ps+ is-point (target x y angle)
-  (with-gensyms (g-target)
-    `(let ((,g-target ,target))
-       (within (point-2d-x ,g-target) ,x *length-error*)
-       (within (point-2d-y ,g-target) ,y *length-error*)
-       (within (point-2d-angle ,g-target) ,angle *angle-error*))))
 
 ;; --- test --- ;;
 
