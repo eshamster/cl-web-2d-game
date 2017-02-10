@@ -26,6 +26,7 @@
                 :components
                 ((:file "basic-components")
                  (:file "utils")
+                 (:file "performance")
                  (:file "calc")
                  (:file "camera")
                  (:file "collision")

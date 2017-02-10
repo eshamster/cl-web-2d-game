@@ -12,10 +12,17 @@
   :author "eshamster"
   :license "LLGPL"
   :depends-on (:cl-web-2d-game
-               :prove)
+               :ps-experiment-test
+               :cl-ppcre
+               :prove
+               :alexandria)
   :components ((:module "t"
+                :serial t
                 :components
-                ((:test-file "cl-web-2d-game"))))
+                ((:file "test-utils")
+                 (:test-file "utils")
+                 (:test-file "basic-components")
+                 (:test-file "calc"))))
   :description "Test system for cl-web-2d-game"
 
   :defsystem-depends-on (:prove-asdf)

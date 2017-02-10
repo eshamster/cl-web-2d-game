@@ -4,26 +4,11 @@
         :parenscript
         :ps-experiment
         :cl-ps-ecs)
-  (:export :with-trace
-           :convert-to-layered-hash
+  (:export :convert-to-layered-hash
            :get-layered-hash))
 (in-package :cl-web-2d-game.utils)
 
 (enable-ps-experiment-syntax)
-
-;; --- performance tracer --- ;;
-
-;; Note: this is depend on Web Tracing Framework (wtf-trace.js)
-
-(defmacro.ps with-trace (title &body body)
-  `(let ((scope (#j.WTF.trace.enterScope# ,title)))
-     ,@body
-     (#j.WTF.trace.leaveScope# scope ,title)))
-
-(defmacro with-trace (title &body body)
-  "(dummy)"
-  (declare (ignore title))
-  `(progn ,@body))
 
 ;; --- constant value manager --- ;;
 

@@ -14,6 +14,7 @@
         :cl-web-2d-game.input
         :cl-web-2d-game.2d-geometry
         :cl-web-2d-game.draw-model-system
+        :cl-web-2d-game.performance
         :cl-web-2d-game.gui
         :cl-web-2d-game.initializer)
   (:export
@@ -32,13 +33,14 @@
    :point-2d-p
    :point-2d-x
    :point-2d-y
-   :point-2d-center
    :point-2d-angle
 
+   :make-rotate-2d
    :rotate-2d
    :rotate-2d-p
    :rotate-2d-speed
    :rotate-2d-angle
+   :rotate-2d-radious
 
    :script-2d
    :script-2d-func
@@ -134,6 +136,9 @@
    :enable-model-2d
    :disable-model-2d
    :init-draw-model-system
+
+   ;; performance
+   :with-trace
 
    ;; gui
    :init-gui
