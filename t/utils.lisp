@@ -30,6 +30,10 @@
       (is (get-layered-hash a-hash :position :x) 12)
       (is (get-layered-hash a-hash :position :y) 30)
       (is (get-layered-hash a-hash :size :width) 6)
-      (is (get-layered-hash a-hash :size :height) 100))))
+      (is (get-layered-hash a-hash :size :height) 100)
+      ;; check a value using variable
+      (is (get-layered-hash a-hash :with-variable) 1)
+      (setf x 100)
+      (is (get-layered-hash a-hash :with-variable) 101))))
 
 (finalize)
