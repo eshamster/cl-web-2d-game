@@ -113,11 +113,11 @@
             (prove-angle speed)
             (rotatef-point-by target rotator)
             (prove-angle (* speed 2))))))
-    (subtest "adjustf-point-by-rotate"
+    (subtest "movef-vector-to-circle"
       ;; Now, test only case where the center of rotation is (0, 0)
       (with-prove-in-both ()
         (let ((point (make-point-2d :x 0 :y 0 :angle 0)))
-          (adjustf-point-by-rotate point 5 (* PI 2/3))
+          (movef-vector-to-circle point 5 (* PI 2/3))
           (within (vector-abs point) 5 *length-error*)
           (within (vector-angle point) (* PI 2/3) *angle-error*)
           (is (point-2d-angle point) (* PI 2/3)))))))

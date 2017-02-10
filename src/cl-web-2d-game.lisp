@@ -68,7 +68,7 @@
    :incf-rotate-diff
    :decf-rotate-diff
    :rotatef-point-by
-   :adjustf-point-by-rotate
+   :movef-vector-to-circle
 
    :calc-global-point
 

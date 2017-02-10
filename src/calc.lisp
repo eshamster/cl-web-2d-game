@@ -15,7 +15,7 @@
            :incf-rotate-diff
            :decf-rotate-diff
            :rotatef-point-by
-           :adjustf-point-by-rotate
+           :movef-vector-to-circle
 
            :transformf-point
            :calc-global-point
@@ -95,10 +95,10 @@ on the circle whose radious is represented by the 'radious'."
     (incf (point-2d-angle point-2d) speed)
     (incf (rotate-2d-angle rotate-2d) speed)))
 
-;; TODO: Rename to 'movef-point-on-circle'.
-(defun.ps+ adjustf-point-by-rotate (vector radious angle)
-  "Adjust the vector according to the rotate parameter (radious and angle)
-assuming that it is at the center of the rotation."
+(defun.ps+ movef-vector-to-circle (vector radious angle)
+  "Move the vector to a point of cirle parameterized by
+radious and angle assuming that it is at the center of the
+rotation."
   (incf (point-2d-x vector) radious)
   (incf-rotate-diff vector radious 0 angle)
   (when (typep vector 'point-2d)
