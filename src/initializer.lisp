@@ -5,6 +5,7 @@
         :ps-experiment
         :cl-ps-ecs
         :cl-web-2d-game.basic-components
+        :cl-web-2d-game.performance
         :cl-web-2d-game.collision
         :cl-web-2d-game.draw-model-system
         :cl-web-2d-game.utils)
