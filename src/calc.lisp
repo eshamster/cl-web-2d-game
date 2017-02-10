@@ -183,8 +183,8 @@ line-pnt1 and line-pnt2."
   ;;   1. Transform coordinate to move line-pnt1 to origin
   ;;   2. Rotate coordinate around origin to move lint-pnt2 on x-axis
   ;; TODO: Reduce memory allocations
-  (let ((moved-line-pnt2 (clone-vector line-pnt2))
-        (moved-target-pnt (clone-vector target-pnt)))
+  (let ((moved-line-pnt2 (clone-vector-2d line-pnt2))
+        (moved-target-pnt (clone-vector-2d target-pnt)))
     ;; 1
     (decf-vector moved-line-pnt2 line-pnt1)
     (decf-vector moved-target-pnt line-pnt1)

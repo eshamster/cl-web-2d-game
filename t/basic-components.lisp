@@ -26,7 +26,7 @@
     (subtest "clone"
       (with-prove-in-both ()
         (let* ((base (make-vector-2d :x 10 :y 20))
-               (cloned (clone-vector base)))
+               (cloned (clone-vector-2d base)))
           (is-vector cloned 10 20)
           (setf (vector-2d-x cloned) 99)
           (is-vector cloned 99 20)

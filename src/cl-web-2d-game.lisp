@@ -53,7 +53,7 @@
    :init-entity-params
 
    :copy-vector-2d-to
-   :clone-vector
+   :clone-vector-2d
    :copy-point-2d
    :clone-point-2d
 
