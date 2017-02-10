@@ -53,8 +53,8 @@
    :init-entity-params
 
    :copy-vector-2d-to
-   :clone-vector
-   :copy-point-2d
+   :clone-vector-2d
+   :copy-point-2d-to
    :clone-point-2d
 
    ;; utils
@@ -68,7 +68,7 @@
    :incf-rotate-diff
    :decf-rotate-diff
    :rotatef-point-by
-   :adjustf-point-by-rotate
+   :movef-vector-to-circle
 
    :calc-global-point
 

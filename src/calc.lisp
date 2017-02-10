@@ -15,7 +15,7 @@
            :incf-rotate-diff
            :decf-rotate-diff
            :rotatef-point-by
-           :adjustf-point-by-rotate
+           :movef-vector-to-circle
 
            :transformf-point
            :calc-global-point
@@ -95,10 +95,10 @@ on the circle whose radious is represented by the 'radious'."
     (incf (point-2d-angle point-2d) speed)
     (incf (rotate-2d-angle rotate-2d) speed)))
 
-;; TODO: Rename to 'movef-point-on-circle'.
-(defun.ps+ adjustf-point-by-rotate (vector radious angle)
-  "Adjust the vector according to the rotate parameter (radious and angle)
-assuming that it is at the center of the rotation."
+(defun.ps+ movef-vector-to-circle (vector radious angle)
+  "Move the vector to a point of cirle parameterized by
+radious and angle assuming that it is at the center of the
+rotation."
   (incf (point-2d-x vector) radious)
   (incf-rotate-diff vector radious 0 angle)
   (when (typep vector 'point-2d)
@@ -183,8 +183,8 @@ line-pnt1 and line-pnt2."
   ;;   1. Transform coordinate to move line-pnt1 to origin
   ;;   2. Rotate coordinate around origin to move lint-pnt2 on x-axis
   ;; TODO: Reduce memory allocations
-  (let ((moved-line-pnt2 (clone-vector line-pnt2))
-        (moved-target-pnt (clone-vector target-pnt)))
+  (let ((moved-line-pnt2 (clone-vector-2d line-pnt2))
+        (moved-target-pnt (clone-vector-2d target-pnt)))
     ;; 1
     (decf-vector moved-line-pnt2 line-pnt1)
     (decf-vector moved-target-pnt line-pnt1)
