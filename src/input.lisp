@@ -44,7 +44,7 @@ device-state = boolean-value"
 
 ;; ---- keyboard ---- ;;
 
-(defvar.ps keyboard (new (#j.THREEx.KeyboardState#)))
+(defvar.ps keyboard nil)
 (defvar.ps key-status (make-hash-table))
 
 (defun.ps is-key-down (keyname)
@@ -189,6 +189,7 @@ device-state = boolean-value"
 ;; register
 
 (defun.ps initialize-input ()
+  (setf keyboard (new (#j.THREEx.KeyboardState#)))
   (window.add-event-listener "mousemove" on-mouse-move-event)
   (window.add-event-listener "mousedown" on-mouse-down-event)
   (window.add-event-listener "mouseup" on-mouse-up-event)
