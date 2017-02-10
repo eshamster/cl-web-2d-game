@@ -20,6 +20,7 @@
                 :serial t
                 :components
                 ((:file "test-utils")
+                 (:test-file "utils")
                  (:test-file "basic-components")
                  (:test-file "calc"))))
   :description "Test system for cl-web-2d-game"
