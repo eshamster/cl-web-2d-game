@@ -40,7 +40,7 @@
 
            :copy-vector-2d-to
            :clone-vector-2d
-           :copy-point-2d
+           :copy-point-2d-to
            :clone-point-2d))
 (in-package :cl-web-2d-game.basic-components)
 
@@ -72,8 +72,7 @@
   (with-slots (x y) vector
     (make-vector-2d :x x :y y)))
 
-;; TODO: rename to clone-point-2d-to
-(defun.ps+ copy-point-2d (dst-point src-point)
+(defun.ps+ copy-point-2d-to (dst-point src-point)
   (setf (point-2d-x dst-point) (point-2d-x src-point))
   (setf (point-2d-y dst-point) (point-2d-y src-point))
   (setf (point-2d-angle dst-point) (point-2d-angle src-point))

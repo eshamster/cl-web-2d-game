@@ -53,7 +53,7 @@
       (with-prove-in-both ()
         (let* ((base (make-point-2d :x 10 :y 20 :angle -1))
                (copied (make-point-2d)))
-          (copy-point-2d copied base)
+          (copy-point-2d-to copied base)
           (is-point copied 10 20 -1)
           (setf (point-2d-x copied) 99)
           (is-point copied 99 20 -1)
