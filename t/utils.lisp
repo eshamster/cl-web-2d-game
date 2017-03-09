@@ -4,10 +4,6 @@
         :prove
         :cl-ps-ecs
         :cl-web-2d-game-test.test-utils)
-  (:import-from :ps-experiment
-                :defmacro.ps+
-                :defun.ps+
-                :defvar.ps+)
   (:import-from :ps-experiment-test.test-utils
                 :with-prove-in-both))
 (in-package :cl-web-2d-game-test.utils)
