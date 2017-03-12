@@ -7,7 +7,7 @@ env:
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
     - COVERAGE_EXCLUDE=t
   matrix:
-    - LISP=sbcl-bin COVERALLS=true
+    - LISP=sbcl-bin COVERALLS=true SKIP_JS=true
     - LISP=ccl-bin
 
 install:
@@ -15,8 +15,8 @@ install:
   - (cd ${ROSWELL_INSTALL_DIR}/local-projects ; git clone https://github.com/eshamster/ps-experiment.git)
   - (cd ${ROSWELL_INSTALL_DIR}/local-projects ; git clone https://github.com/eshamster/cl-ps-ecs.git)
   - ros -e '(ql:register-local-projects)' -q
-  - ros install prove
+  - ros install ps-experiment
 
 script:
-  - run-prove *-test.asd
+  - run-prove-for-ps *-test.asd
 
