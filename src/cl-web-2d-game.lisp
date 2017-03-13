@@ -87,6 +87,7 @@
 
    ;; collision
    :collide-entities-p
+   :collide-physics-p
    :collision-system
    :make-collision-system
 

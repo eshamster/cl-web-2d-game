@@ -22,7 +22,8 @@
                 ((:file "test-utils")
                  (:test-file "utils")
                  (:test-file "basic-components")
-                 (:test-file "calc"))))
+                 (:test-file "calc")
+                 (:test-file "collision"))))
   :description "Test system for cl-web-2d-game"
 
   :defsystem-depends-on (:prove-asdf)
