@@ -42,7 +42,6 @@ We assume that the camera is initalized using cl-web-2d-game[.camera]:init-camer
   (let* ((scene (new (#j.THREE.Scene#)))
          (renderer (new #j.THREE.WebGLRenderer#)))
     (setf *rendered-dom* rendered-dom)
-    (register-default-systems scene)
     (renderer.set-size screen-width screen-height)
     (chain rendered-dom
            (append-child renderer.dom-element))
