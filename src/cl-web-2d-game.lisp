@@ -16,7 +16,8 @@
         :cl-web-2d-game.draw-model-system
         :cl-web-2d-game.performance
         :cl-web-2d-game.gui
-        :cl-web-2d-game.initializer)
+        :cl-web-2d-game.initializer
+        :cl-ps-ecs)
   (:export
    ;; basic-components
    :vector-abs

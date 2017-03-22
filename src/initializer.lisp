@@ -21,6 +21,24 @@
 (defun.ps+ get-rendered-dom ()
   *rendered-dom*)
 
+(defvar.ps *stats* nil)
+
+(defun.ps init-stats (stats-dom)
+  (setf *stats* (new (-stats)))
+  (let ((stats *stats*))
+    (stats.set-mode 0)
+    (with-slots (position left top) stats.dom-element.style
+      (setf position "absolute")
+      (setf left "0px")
+      (setf top "0px"))
+    (chain (document.get-element-by-id "stats-output")
+           (append-child stats.dom-element))
+    stats))
+
+(defun.ps update-stats ()
+  (when *stats*
+    (*stats*.update)))
+
 (defun.ps init-default-systems (&key scene
                                      (script-system t)
                                      (draw-system t)
@@ -35,6 +53,7 @@
 (defun.ps start-2d-game (&key screen-width screen-height
                               camera
                               rendered-dom
+                              stats-dom
                               (init-function (lambda (scene) nil))
                               (update-function (lambda () nil)))
   "Entry point for starting game.
@@ -42,7 +61,8 @@ We assume that the camera is initalized using cl-web-2d-game[.camera]:init-camer
   (let* ((scene (new (#j.THREE.Scene#)))
          (renderer (new #j.THREE.WebGLRenderer#)))
     (setf *rendered-dom* rendered-dom)
-    (register-default-systems scene)
+    (when stats-dom
+      (init-stats stats-dom))
     (renderer.set-size screen-width screen-height)
     (chain rendered-dom
            (append-child renderer.dom-element))
