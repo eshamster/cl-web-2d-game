@@ -76,5 +76,8 @@ We assume that the camera is initalized using cl-web-2d-game[.camera]:init-camer
                  (renderer.render scene camera))
                (update-stats)
                (with-trace "update"
+                 (clear-debug-area)
+                 (process-input)
+                 (ecs-main)
                  (funcall update-function))))
       (render-loop))))
