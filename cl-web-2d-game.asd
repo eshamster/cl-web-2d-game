@@ -20,6 +20,7 @@
   :license "LLGPL"
   :depends-on (:parenscript
                :ps-experiment
+               :dexador
                :cl-ps-ecs)
   :components ((:module "src"
                 :serial t

@@ -63,6 +63,9 @@
    :convert-to-layered-hash
    :get-layered-hash
 
+   :ensure-js-files
+   :make-src-list-for-script-tag
+
    ;; calc
    :incf-vector
    :decf-vector
