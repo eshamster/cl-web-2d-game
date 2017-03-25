@@ -16,6 +16,7 @@
         :cl-web-2d-game.draw-model-system
         :cl-web-2d-game.performance
         :cl-web-2d-game.gui
+        :cl-web-2d-game.logger
         :cl-web-2d-game.initializer
         :cl-ps-ecs)
   (:export
@@ -62,6 +63,9 @@
    :with-trace
    :convert-to-layered-hash
    :get-layered-hash
+
+   :ensure-js-files
+   :make-src-list-for-script-tag
 
    ;; calc
    :incf-vector
@@ -147,6 +151,15 @@
    :add-panel-bool
    :add-panel-number
    :add-panel-button
+
+   ;; logger
+   :init-monitoring-log
+   :clear-monitoring-log
+   :add-to-monitoring-log
+
+   :*max-event-log-count*
+   :init-event-log-area
+   :add-to-event-log
 
    ;; initializer
    :start-2d-game

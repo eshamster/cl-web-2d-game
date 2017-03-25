@@ -8,6 +8,7 @@
         :cl-web-2d-game.performance
         :cl-web-2d-game.collision
         :cl-web-2d-game.draw-model-system
+        :cl-web-2d-game.logger
         :cl-web-2d-game.utils)
   (:export :start-2d-game
            :init-default-system
@@ -54,6 +55,8 @@
                               camera
                               rendered-dom
                               stats-dom
+                              monitoring-log-dom
+                              event-log-dom
                               (init-function (lambda (scene) nil))
                               (update-function (lambda () nil)))
   "Entry point for starting game.
@@ -63,6 +66,8 @@ We assume that the camera is initalized using cl-web-2d-game[.camera]:init-camer
     (setf *rendered-dom* rendered-dom)
     (when stats-dom
       (init-stats stats-dom))
+    (init-monitoring-log monitoring-log-dom)
+    (init-event-log-area event-log-dom)
     (renderer.set-size screen-width screen-height)
     (chain rendered-dom
            (append-child renderer.dom-element))
@@ -76,5 +81,8 @@ We assume that the camera is initalized using cl-web-2d-game[.camera]:init-camer
                  (renderer.render scene camera))
                (update-stats)
                (with-trace "update"
+                 (clear-monitoring-log)
+                 (process-input)
+                 (ecs-main)
                  (funcall update-function))))
       (render-loop))))
