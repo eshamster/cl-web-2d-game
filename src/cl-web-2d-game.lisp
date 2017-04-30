@@ -23,6 +23,7 @@
    ;; basic-components
    :vector-abs
    :vector-angle
+   :setf-vector-abs
    :setf-vector-angle
    :make-vector-2d
    :vector-2d

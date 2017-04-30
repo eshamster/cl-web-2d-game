@@ -66,6 +66,17 @@
         (is (vector-2d-y target) 15)
         (is (vector-2d-x diff) 5)
         (is (vector-2d-y diff) -5))))
+  (subtest "setf-vector-abs"
+    (with-prove-in-both ()
+      (let* ((target (make-vector-2d :x 10 :y 10))
+             (before-angle (vector-angle target)))
+        (flet ((prove-abs (expected-abs)
+                 (within (vector-abs target) expected-abs
+                         *length-error*)
+                 (within (vector-angle target) before-angle
+                         *angle-error*)))
+          (setf-vector-abs target 200)
+          (prove-abs 200)))))
   (subtest "Test rotation functions"
     (subtest "setf-vector-angle"
       (with-prove-in-both ()
