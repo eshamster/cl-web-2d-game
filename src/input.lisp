@@ -47,29 +47,39 @@ device-state = boolean-value"
 (defvar.ps keyboard (new (#j.THREEx.KeyboardState#)))
 (defvar.ps key-status (make-hash-table))
 
-(defun.ps is-key-down (keyname)
-  "Return if the key is down"
-  (let ((value (gethash (keyboard.keyname-to-keycode keyname) key-status)))
+(defvar.ps *button-to-keyboard*
+    (create :a "z"
+            :b "x"
+            :c "c"
+            :left  "left"
+            :right "right"
+            :up    "up"
+            :down  "down"))
+
+(defun.ps is-key-down (button)
+  "Return if the button is down"
+  (let ((value (gethash button  key-status)))
     (and (not (null value))
          (or (eq value :down) (eq value :down-now)))))
 
-(defun.ps is-key-down-now (keyname)
-  "Return if the key is down just in this frame"
-  (let ((value (gethash (keyboard.keyname-to-keycode keyname) key-status)))
+(defun.ps is-key-down-now (button)
+  "Return if the button is down just in this frame"
+  (let ((value (gethash button key-status)))
     (and (not (null value))
          (eq value :down-now))))
 
-(defun.ps is-key-up-now (keyname)
-  "Return if the key is down just in this frame"
-  (let ((value (gethash (keyboard.keyname-to-keycode keyname) key-status)))
+(defun.ps is-key-up-now (button)
+  "Return if the button is down just in this frame"
+  (let ((value (gethash button key-status)))
     (and (not (null value))
          (eq value :up-now))))
 
 (defun.ps process-keyboard-input ()
-  (maphash (lambda (k v)
-             (setf (gethash k key-status)
-                   (calc-next-input-state (gethash k key-status) v)))
-           keyboard.key-codes))
+  (maphash (lambda (button key)
+             (setf (gethash button key-status)
+                   (calc-next-input-state (gethash button key-status)
+                                          (keyboard.pressed key))))
+           *button-to-keyboard*))
 
 ;; ---- mouse ---- ;;
 

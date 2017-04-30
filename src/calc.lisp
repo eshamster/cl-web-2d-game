@@ -9,6 +9,7 @@
                 :with-slots-pair)
   (:export :vector-abs
            :vector-angle
+           :setf-vector-abs
            :setf-vector-angle
            :incf-vector
            :decf-vector
@@ -48,12 +49,18 @@ The angle of the vector (1, 0) is 0 and the rotation is counterclockwize."
                (* PI (if (< y 0) -1 1))
                0)))))
 
+(defun.ps+ setf-vector-abs-angle (vector abs angle)
+  (setf (vector-2d-x vector) (* abs (cos angle))
+        (vector-2d-y vector) (* abs (sin angle)))
+  vector)
+
+(defun.ps+ setf-vector-abs (vector abs)
+  "Set the absolute length of the vector keeping its angle."
+  (setf-vector-abs-angle vector abs (vector-angle vector)))
+
 (defun.ps+ setf-vector-angle (vector angle)
   "Set the angle of the vector keeping its length."
-  (let ((abs (vector-abs vector)))
-    (setf (vector-2d-x vector) (* abs (cos angle))
-          (vector-2d-y vector) (* abs (sin angle)))
-    vector))
+  (setf-vector-abs-angle vector (vector-abs vector) angle))
 
 (defun.ps+ incf-vector (target-vec diff-vec)
   (incf (vector-2d-x target-vec) (vector-2d-x diff-vec))
