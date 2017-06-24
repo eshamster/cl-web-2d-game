@@ -21,7 +21,8 @@
   :depends-on (:parenscript
                :ps-experiment
                :dexador
-               :cl-ps-ecs)
+               :cl-ps-ecs
+               :cl-reexport)
   :components ((:module "src"
                 :serial t
                 :components
