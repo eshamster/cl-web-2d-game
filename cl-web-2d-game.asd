@@ -37,6 +37,7 @@
                  (:file "draw-model-system")
                  (:file "gui")
                  (:file "logger")
+                 (:file "debug-drawer")
                  (:file "initializer")
                  (:file "cl-web-2d-game"))))
   :description "A library to create 2d game using Parenscript and three.js"
