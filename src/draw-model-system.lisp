@@ -11,7 +11,8 @@
                 :point-2d-y
                 :point-2d-angle
                 :make-point-2d)
-  (:export :model-2d
+  (:export :make-model-2d
+           :model-2d
            :model-2d-p
            :model-2d-model
            :model-2d-depth

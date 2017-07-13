@@ -28,6 +28,7 @@
            :rotate-2d-angle
            :rotate-2d-radious
 
+           :make-script-2d
            :script-2d
            :script-2d-func
            :make-script-system

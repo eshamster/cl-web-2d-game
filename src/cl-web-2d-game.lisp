@@ -5,8 +5,12 @@
 ;; - dat.gui.js
 ;; - threex.keyboardstate.js
 
+;; Note: ":use" not only re-exporting is also requred. Because
+;; ps-experiment:with-use-ps-pack solves dependencies using package-use-list.
+
 (defpackage :cl-web-2d-game
-  (:use :cl-web-2d-game.basic-components
+  (:use :cl
+        :cl-web-2d-game.basic-components
         :cl-web-2d-game.utils
         :cl-web-2d-game.calc
         :cl-web-2d-game.camera
@@ -17,152 +21,20 @@
         :cl-web-2d-game.performance
         :cl-web-2d-game.gui
         :cl-web-2d-game.logger
-        :cl-web-2d-game.initializer
-        :cl-ps-ecs)
-  (:export
-   ;; basic-components
-   :vector-abs
-   :vector-angle
-   :setf-vector-abs
-   :setf-vector-angle
-   :make-vector-2d
-   :vector-2d
-   :vector-2d-p
-   :vector-2d-x
-   :vector-2d-y
+        :cl-web-2d-game.debug-drawer
+        :cl-web-2d-game.initializer))
+(in-package :cl-web-2d-game)
 
-   :make-point-2d
-   :point-2d
-   :point-2d-p
-   :point-2d-x
-   :point-2d-y
-   :point-2d-angle
-
-   :make-rotate-2d
-   :rotate-2d
-   :rotate-2d-p
-   :rotate-2d-speed
-   :rotate-2d-angle
-   :rotate-2d-radious
-
-   :script-2d
-   :script-2d-func
-   :make-script-system
-
-   :params
-   :params-table
-   :get-entity-param
-   :set-entity-param
-   :init-entity-params
-
-   :copy-vector-2d-to
-   :clone-vector-2d
-   :copy-point-2d-to
-   :clone-point-2d
-
-   ;; utils
-   :with-trace
-   :convert-to-layered-hash
-   :get-layered-hash
-
-   :ensure-js-files
-   :make-src-list-for-script-tag
-
-   ;; calc
-   :incf-vector
-   :decf-vector
-   :incf-rotate-diff
-   :decf-rotate-diff
-   :rotatef-point-by
-   :movef-vector-to-circle
-
-   :calc-global-point
-
-   :calc-dist
-   :calc-dist-p2
-   :calc-dist-to-line
-   :calc-dist-to-line-seg
-
-   :adjust-to-target
-   :lerp-scalar
-
-   ;; camera
-   :get-camera-offset-x
-   :get-camera-offset-y
-   :init-camera
-
-   ;; collision
-   :collide-entities-p
-   :collide-physics-p
-   :collision-system
-   :make-collision-system
-
-   :physic-2d
-   :make-physic-2d
-
-   :physic-circle
-   :make-physic-circle
-
-   :physic-triangle
-   :make-physic-triangle
-
-   ;; input
-   :add-mouse-down-callback
-   :add-mouse-up-callback
-   :add-mouse-move-callback
-   :add-touch-start-callback
-   :add-touch-end-callback
-   :add-touch-move-callback
-
-   :mouse-event-x
-   :mouse-event-y
-
-   :touch-event-touches
-   :touch-event-element-x
-   :touch-event-element-y
-
-   :initialize-input
-
-   ;; 2d-geometry
-   :make-line
-   :make-lines
-   :make-solid-rect
-   :make-wired-rect
-   :make-solid-regular-polygon
-   :make-wired-regular-polygon
-   :make-wired-polygon
-   :make-solid-polygon
-   :change-model-color
-
-   ;; draw-model-system
-   :model-2d
-   :model-2d-p
-   :model-2d-model
-   :model-2d-depth
-   :model-2d-offset
-   :enable-model-2d
-   :disable-model-2d
-   :init-draw-model-system
-
-   ;; performance
-   :with-trace
-
-   ;; gui
-   :init-gui
-   :add-panel-bool
-   :add-panel-number
-   :add-panel-button
-
-   ;; logger
-   :init-monitoring-log
-   :clear-monitoring-log
-   :add-to-monitoring-log
-
-   :*max-event-log-count*
-   :init-event-log-area
-   :add-to-event-log
-
-   ;; initializer
-   :start-2d-game
-   :init-default-system
-   :get-rendered-dom))
+(cl-reexport:reexport-from :cl-web-2d-game.basic-components)
+(cl-reexport:reexport-from :cl-web-2d-game.utils)
+(cl-reexport:reexport-from :cl-web-2d-game.calc)
+(cl-reexport:reexport-from :cl-web-2d-game.camera)
+(cl-reexport:reexport-from :cl-web-2d-game.collision)
+(cl-reexport:reexport-from :cl-web-2d-game.input)
+(cl-reexport:reexport-from :cl-web-2d-game.2d-geometry)
+(cl-reexport:reexport-from :cl-web-2d-game.draw-model-system)
+(cl-reexport:reexport-from :cl-web-2d-game.performance)
+(cl-reexport:reexport-from :cl-web-2d-game.gui)
+(cl-reexport:reexport-from :cl-web-2d-game.logger)
+(cl-reexport:reexport-from :cl-web-2d-game.debug-drawer)
+(cl-reexport:reexport-from :cl-web-2d-game.initializer)
