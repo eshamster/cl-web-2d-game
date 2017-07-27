@@ -28,7 +28,6 @@
                 :components
                 ((:file "basic-components")
                  (:file "utils")
-                 (:file "performance")
                  (:file "calc")
                  (:file "camera")
                  (:file "collision")
@@ -38,6 +37,7 @@
                  (:file "gui")
                  (:file "logger")
                  (:file "debug-drawer")
+                 (:file "performance")
                  (:file "initializer")
                  (:file "cl-web-2d-game"))))
   :description "A library to create 2d game using Parenscript and three.js"
