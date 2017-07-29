@@ -23,8 +23,7 @@
            :physic-polygon
            :make-physic-polygon
 
-           :collision-system
-           :make-collision-system))
+           :process-collision))
 (in-package :cl-web-2d-game.collision)
 
 #|
@@ -250,20 +249,3 @@ Note: The second condition can't check only the case where
       (funcall event1 entity1 entity2)
       (funcall event2 entity2 entity1))))
 
-;; --- system --- ;;
-
-(defstruct.ps+
-    (collision-system
-     (:include ecs-system
-               (target-component-types '(point-2d physic-2d))
-               (process-all
-                (lambda (system)
-                  (with-slots ((entities target-entities)) system
-                    (let ((length (length entities)))
-                      (loop for outer-idx from 0 below (1- length) do
-                           (let ((entity1 (aref entities outer-idx)))
-                             (with-ecs-components ((ph1 physic-2d)) entity1
-                               (loop for inner-idx from (1+ outer-idx) below length do
-                                    (let ((entity2 (aref entities inner-idx)))
-                                      (with-ecs-components ((ph2 physic-2d)) entity2
-                                        (process-collision entity1 ph1 entity2 ph2))))))))))))))

@@ -11,6 +11,7 @@
 (defpackage :cl-web-2d-game
   (:use :cl
         :cl-web-2d-game.basic-components
+        :cl-web-2d-game.basic-systems
         :cl-web-2d-game.utils
         :cl-web-2d-game.calc
         :cl-web-2d-game.camera
@@ -26,6 +27,7 @@
 (in-package :cl-web-2d-game)
 
 (cl-reexport:reexport-from :cl-web-2d-game.basic-components)
+(cl-reexport:reexport-from :cl-web-2d-game.basic-systems)
 (cl-reexport:reexport-from :cl-web-2d-game.utils)
 (cl-reexport:reexport-from :cl-web-2d-game.calc)
 (cl-reexport:reexport-from :cl-web-2d-game.camera)

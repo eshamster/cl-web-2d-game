@@ -38,6 +38,7 @@
                  (:file "logger")
                  (:file "debug-drawer")
                  (:file "performance")
+                 (:file "basic-systems")
                  (:file "initializer")
                  (:file "cl-web-2d-game"))))
   :description "A library to create 2d game using Parenscript and three.js"
