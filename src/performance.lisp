@@ -70,7 +70,7 @@
                     (- (performance.now) ,before)))
          (setf (performance-timer-manager-current-node
                 *performance-timer*)
-               prev-node)))))
+               ,prev-node)))))
 
 (defmacro with-performance ((name &key color) &body body)
   ;; dummy to compile
@@ -81,16 +81,23 @@
 ;; functions to draw
 
 (defun.ps dump-performance-counter (&key (timer *performance-timer*))
-  (labels ((rec (result node)
-             (when node.length
-               (let* ((element (performance-timer-node-element node))
-                      (children (peformance-timer-node-children node)))
-                 (setf result (+ result "("
-                                 (peformance-timer-element-name element) ":"
-                                 (peformance-timer-element-result element)))
-                 (when children.length
-                   (setf result (+ result " "))
-                   (dolist (child children)
-                     (setf result (rec result child))))
-                 (setf result (+ result ")"))))))
+  (labels ((format-number (num upper-digit lower-digit)
+             (let ((temp (num.to-fixed lower-digit))
+                   (min-length (+ upper-digit lower-digit 1)))
+               (while (< (length temp) min-length)
+                 (setf temp (+ "0" temp)))
+               temp))
+           (rec (result node)
+             (let* ((element (performance-timer-node-element node))
+                    (children (performance-timer-node-children node))
+                    (time-ms (performance-timer-element-result element)))
+               (setf result (+ result "("
+                               (performance-timer-element-name element) ":"
+                               (format-number time-ms 2 2)))
+               (when children.length
+                 (setf result (+ result " "))
+                 (dolist (child children)
+                   (setf result (rec result child))))
+               (setf result (+ result ")"))
+               result)))
     (rec "" (performance-timer-manager-tree timer))))
