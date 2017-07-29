@@ -31,11 +31,37 @@
 
 ;; structures
 
-(defstruct.ps+ performance-timer-manager (tree '()) (target-fps 60) (current-node nil))
+(defstruct.ps+ performance-timer-manager
+    tree current-node (target-fps 60))
 
-(defstruct.ps+ performance-timer-element (name "") (result -1) (color 0))
+(defstruct.ps+ performance-timer-element
+    (name "") (results (init-ring-buffer 30)) (count 0) (color 0))
 
 (defstruct.ps+ performance-timer-node element (children '()))
+
+;; utilities
+
+(defstruct.ps+ ring-buffer array (count 0) (next 0))
+
+(defun.ps+ init-ring-buffer (size)
+  (make-ring-buffer :array (make-array size)))
+
+(defun.ps+ push-to-ring-buffer (value buffer)
+  (with-slots (array next count) buffer
+    (setf (aref array next) value)
+    (incf count)
+    (setf next (if (< (1+ next) (length array))
+                   (1+ next)
+                   0))))
+
+(defun.ps+ ring-buffer-average (buffer)
+  (with-slots (array count) buffer
+    (if (> count 0)
+        (let ((valid-length (min count (length array))))
+          (/ (loop for i from 0 below valid-length
+                sum (aref array i))
+             valid-length))
+        0)))
 
 ;; variables
 
@@ -43,18 +69,31 @@
 
 ;; functions to measure
 
-(defun.ps+ add-performance-timer-element (element &optional (manager *performance-timer*))
-  (check-type element performance-timer-element)
+(defun.ps+ pick-performance-timer-element
+    (name color &optional (manager *performance-timer*))
   (check-type manager performance-timer-manager)
-  (let ((new-node (make-performance-timer-node
-                   :element element)))
-    (with-slots (tree current-node) manager
-      ;; TODO: Measure total time from a previous frame
-      (if (null current-node)
-          (setf tree new-node)
-          (progn (push new-node
-                       (performance-timer-node-children current-node))))
-      (setf current-node new-node))))
+  (with-slots (tree current-node) manager
+    (let ((found-node
+           (If (not (null current-node))
+               (find-if (lambda (node)
+                          (string= (performance-timer-element-name
+                                    (performance-timer-node-element node))
+                                   name))
+                        (performance-timer-node-children current-node))
+               tree)))
+      (if (not (null found-node))
+          (progn (setf current-node found-node)
+                 (performance-timer-node-element found-node))
+          (let* ((new-elem (make-performance-timer-element
+                            :name name :color color))
+                 (new-node (make-performance-timer-node
+                            :element new-elem)))
+            (if (null tree)
+                (setf tree new-node)
+                (push new-node
+                      (performance-timer-node-children current-node)))
+            (setf current-node new-node)
+            new-elem)))))
 
 (defmacro.ps with-performance ((name &key (color 0)) &body body)
   (with-gensyms (prev-node before element)
@@ -62,12 +101,10 @@
                        *performance-timer*)))
        (unwind-protect
             (let ((,before (performance.now))
-                  (,element (make-performance-timer-element
-                            :name ,name :color ,color)))
-              (add-performance-timer-element ,element)
+                  (,element (pick-performance-timer-element ,name ,color)))
               ,@body
-              (setf (performance-timer-element-result ,element)
-                    (- (performance.now) ,before)))
+              (push-to-ring-buffer (- (performance.now) ,before)
+                                   (performance-timer-element-results ,element)))
          (setf (performance-timer-manager-current-node
                 *performance-timer*)
                ,prev-node)))))
@@ -90,7 +127,8 @@
            (rec (result node)
              (let* ((element (performance-timer-node-element node))
                     (children (performance-timer-node-children node))
-                    (time-ms (performance-timer-element-result element)))
+                    (time-ms (ring-buffer-average
+                              (performance-timer-element-results element))))
                (setf result (+ result "("
                                (performance-timer-element-name element) ":"
                                (format-number time-ms 2 2)))
