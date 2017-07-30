@@ -71,7 +71,7 @@ Example:
 ;; --- CL tools for building application --- ;
 
 (defparameter *cdns*
-  '("https://cdnjs.cloudflare.com/ajax/libs/three.js/r73/three.js"
+  '("https://cdnjs.cloudflare.com/ajax/libs/three.js/86/three.js"
     "https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.3/dat.gui.js"
     "https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.js"))
 
