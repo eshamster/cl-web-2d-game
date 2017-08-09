@@ -2,7 +2,8 @@
 (defpackage cl-web-2d-game.2d-geometry
   (:use :cl
         :cl-ppcre
-        :parenscript)
+        :parenscript
+        :cl-web-2d-game.texture)
   (:import-from :ps-experiment
                 :defmacro.ps+
                 :defun.ps
@@ -15,6 +16,7 @@
            :make-wired-regular-polygon
            :make-wired-polygon
            :make-solid-polygon
+           :make-texture-model-async
            :change-model-color))
 (in-package :cl-web-2d-game.2d-geometry)
 
@@ -88,6 +90,26 @@
   (push-vertices (list 0 0) (list width 0)
                  (list width height) (list 0 height)
                  (list 0 0)))
+
+;; --- textured model --- ;;
+
+(defun.ps make-texture-model-async (&key width height texture-name callback)
+  (let* ((geometry (new (#j.THREE.Geometry#)))
+         (uvs (@ geometry face-vertex-uvs 0)))
+    (push-vertices-to geometry
+                      (list (list 0 0) (list width 0)
+                            (list width height) (list 0 height)))
+    (push-faces-to geometry (list '(0 1 2) '(2 3 0)))
+    (get-texture-async
+     texture-name
+     (lambda (texture)
+       (dolist (uv (texture-2d-uv texture))
+         (uvs.push uv))
+       (geometry.compute-face-normals)
+       (geometry.compute-vertex-normals)
+       (funcall callback
+                (new (#j.THREE.Mesh# geometry
+                                     (texture-2d-material texture))))))))
 
 ;; --- regular polygon --- ;;
 

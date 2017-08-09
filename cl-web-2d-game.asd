@@ -32,6 +32,7 @@
                  (:file "camera")
                  (:file "collision")
                  (:file "input")
+                 (:file "texture")
                  (:file "2d-geometry")
                  (:file "draw-model-system")
                  (:file "gui")
