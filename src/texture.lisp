@@ -32,7 +32,7 @@
            *texture-table*))
 
 (defun.ps load-texture (&key path name)
-  "Synchronously load texture by path and register it by name" 
+  "Asynchronously Load texture by path and register it by name"
   ;; TODO: Unload a registred texture that has the same name if exists.
   (push (make-texture-2d :name name
                          :material nil)
