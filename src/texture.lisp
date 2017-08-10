@@ -31,21 +31,33 @@
                       name))
            *texture-table*))
 
-(defun.ps load-texture (&key path name)
+(defun.ps load-texture (&key path name (alpha-path nil))
   "Asynchronously Load texture by path and register it by name"
   ;; TODO: Unload a registred texture that has the same name if exists.
   (push (make-texture-2d :name name
                          :material nil)
         *texture-table*)
-  (let ((loader (new (#j.THREE.TextureLoader#))))
+  (let* ((loader (new (#j.THREE.TextureLoader#)))
+         (promise-alpha
+          (new (-promise
+                (lambda (resolve)
+                  (if alpha-path
+                      (loader.load alpha-path
+                                   (lambda (image-bitmap)
+                                     (resolve image-bitmap)))
+                      (resolve nil)))))))
     (flet ((load-callback (image-bitmap)
              (let ((tex (find-texture name)))
                (unless tex
                  (error "The find-texture should be successed"))
-               (setf (texture-2d-material tex)
-                     (new (#j.THREE.MeshBasicMaterial#
-                           (create map image-bitmap
-                                   color 0xffffff))))))))
+               (promise-alpha.then
+                (lambda (alpha-bitmap)
+                  (setf (texture-2d-material tex)
+                        (new (#j.THREE.MeshBasicMaterial#
+                              (create map image-bitmap
+                                      alpha-map alpha-bitmap
+                                      transparent (if alpha-bitmap true false)
+                                      color 0xffffff))))))))))
     (loader.load path
                  (lambda (image-bitmap)
                    (load-callback image-bitmap)))))

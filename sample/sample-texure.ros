@@ -42,34 +42,40 @@ exec ros -Q -- $0 "$@"
 (defvar *js-game-file*
   (merge-pathnames "sample.js" *downloaded-js-dir*))
 
-(defun.ps init-func (scene)
-  (load-texture :path "/images/sample.png" :name "sample")
-  (let ((circle (make-ecs-entity))
-        (r 20))
-    (add-ecs-component-list
-     circle
-     (make-point-2d :x 50 :y 50)
-     (make-model-2d :model (make-wired-regular-polygon :n 60 :color 0xff0000 :r r)
-                    :offset (make-vector-2d :x (* -1 r) :y (* -1 r))
-                    :depth 0))
-    (add-ecs-entity circle))
+(defun.ps add-textured-model (&key x y depth transparent
+                                   rot-speed-ratio)
   (let ((rect (make-ecs-entity)))
     (add-ecs-component-list
      rect
-     (make-point-2d :x 100 :y 100)
+     (make-point-2d :x x :y y)
      (make-script-2d :func (lambda (entity)
                              (with-ecs-components (point-2d) entity
-                               (incf (point-2d-angle point-2d) (/ PI 180)))))
+                               (incf (point-2d-angle point-2d)
+                                     (* rot-speed-ratio (/ PI 180))))))
      (make-model-2d :model (make-wired-rect :width 80 :height 80 :color 0x00ff00)
-                    :depth 10))
+                    :depth depth))
     (make-texture-model-async
      :width 80 :height 80
-     :texture-name "sample"
+     :texture-name (if transparent "sample-alpha" "sample")
      :callback (lambda (model)
                  (add-ecs-component-list
                   rect
-                  (make-model-2d :model model :depth 0))
-                 (add-ecs-entity rect))))
+                  (make-model-2d :model model :depth depth))
+                 (add-ecs-entity rect)))))
+
+(defun.ps init-func (scene)
+  (load-texture :path "/images/sample.png" :name "sample")
+  (load-texture :path "/images/sample.png" :name "sample-alpha"
+                :alpha-path "/images/sample_alpha.png")
+  (add-textured-model :transparent nil
+                      :x 250 :y 250 :depth 10
+                      :rot-speed-ratio -0.8)
+  (add-textured-model :transparent t
+                      :x 220 :y 220 :depth 30
+                      :rot-speed-ratio 0.1)
+  (add-textured-model :transparent t
+                      :x 200 :y 200 :depth 20
+                      :rot-speed-ratio 1)
   (init-default-systems :scene scene))
 
 (defun.ps update-func ()
