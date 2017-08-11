@@ -19,10 +19,26 @@
 
 ;; TODO: Enable to process multiple texture in one image
 
-(defstruct.ps+ texture-2d (name "") material
+(defstruct.ps+ texture-2d (path-list '()) (name "") material
                (uv (make-rect-uvs 0 0 1.0 1.0)))
 
+(defstruct.ps+ raw-image-bitmap promise (ref-count 0))
+
 (defvar.ps+ *texture-table* '())
+
+(defvar.ps+ *raw-image-bitmap-table* (make-hash-table))
+
+(defun.ps find-raw-image-bitmap (path)
+  ;; Note: As Common Lisp code, ":test #'string=" is required.
+  ;; But ":test" is not implemented for Parenscript...
+  (gethash path *raw-image-bitmap-table*))
+
+(defun.ps remove-raw-image-bitmap (path material)
+  (console-log :loader :debug
+               "Remove raw-image-bitmap (path = ~A)" path)
+  (material.map.dispose)
+  (setf (gethash path *raw-image-bitmap-table*)
+        nil))
 
 (defun.ps find-texture (name)
   (find-if (lambda (wrapper)
@@ -31,22 +47,42 @@
            *texture-table*))
 
 (defun.ps get-load-texture-promise (&key path loader)
-  (setf start-time (performance.now))
-  (new (-promise
-        (lambda (resolve)
-          (if path
-              (loader.load path
-                           (lambda (image-bitmap)
-                             (console-log :loader :debug
-                                          "Time to load texture ~A: ~F ms" path
-                                          (- (performance.now) start-time))
-                             (resolve image-bitmap)))
-              (resolve nil))))))
+  (let ((raw (find-raw-image-bitmap path)))
+    (if raw
+        (with-slots (ref-count) raw
+          (incf ref-count)
+          (console-log :loader :debug
+                       "Skip loading ~A (Increase ref-count to ~D)"
+                       path ref-count)
+          (raw-image-bitmap-promise raw))
+        (progn
+          (when path
+            (console-log :loader :debug
+                         "Start loading ~A" path))
+          (setf start-time (performance.now))
+          (let ((promise
+                 (new (-promise
+                       (lambda (resolve)
+                         (if path
+                             (loader.load path
+                                          (lambda (image-bitmap)
+                                            (console-log :loader :debug
+                                                         "Time to load texture ~A: ~F ms" path
+                                                         (- (performance.now) start-time))
+                                            (resolve image-bitmap)))
+                             (resolve nil)))))))
+            (setf (gethash path *raw-image-bitmap-table*)
+                  (make-raw-image-bitmap :promise promise
+                                         :ref-count 1))
+            promise)))))
 
 (defun.ps load-texture (&key path name (alpha-path nil))
   "Asynchronously Load texture by path and register it by name"
   ;; TODO: Unload a registred texture that has the same name if exists.
   (push (make-texture-2d :name name
+                         :path-list (if alpha-path
+                                        (list path alpha-path)
+                                        (list path))
                          :material nil)
         *texture-table*)
   (let* ((loader (new (#j.THREE.TextureLoader#)))
@@ -69,13 +105,24 @@
      (lambda (values)
        (load-callback (nth 0 values) (nth 1 values))))))
 
+;; Note: not tested function
 (defun.ps unload-texture (name)
   (let ((tex (find-texture name)))
     (unless tex
       (error "The texture \"~A\" is not loaded." name))
-    (with-slots (material) tex
-      (material.map.dispose))
-    (setf *texture-table* (remove tex *texture-table*)))) 
+    (setf *texture-table* (remove tex *texture-table*))
+    (dolist (path (texture-2d-path-list tex))
+      (let ((raw (find-raw-image-bitmap path)))
+        (unless raw
+          (error "The path \"~A\" is not loaded." path))
+        (with-slots (ref-count) raw
+          (if (= ref-count 1)
+              (remove-raw-image-bitmap path
+                                       (texture-2d-material tex))
+              (progn (decf ref-count)
+                     (console-log :loader :debug
+                                  "Decrease the ref-count of ~A to ~D"
+                                  path ref-count))))))))
 
 (defvar.ps+ *load-texture-timeout-frames* 120)
 
