@@ -74,7 +74,7 @@
 
 (defvar.ps *console-log-function* (lambda (log-kind log-level control-string &rest args)
                                     (console.log (+ log-kind ": "
-                                                    log-level + ": "
+                                                    log-level ": "
                                                     control-string
                                                     " (args = " args ")"))))
 
