@@ -30,6 +30,19 @@
                       name))
            *texture-table*))
 
+(defun.ps get-load-texture-promise (&key path loader)
+  (setf start-time (performance.now))
+  (new (-promise
+        (lambda (resolve)
+          (if path
+              (loader.load path
+                           (lambda (image-bitmap)
+                             (console-log :loader :debug
+                                          "Time to load texture ~A: ~F ms" path
+                                          (- (performance.now) start-time))
+                             (resolve image-bitmap)))
+              (resolve nil))))))
+
 (defun.ps load-texture (&key path name (alpha-path nil))
   "Asynchronously Load texture by path and register it by name"
   ;; TODO: Unload a registred texture that has the same name if exists.
@@ -38,34 +51,23 @@
         *texture-table*)
   (let* ((loader (new (#j.THREE.TextureLoader#)))
          (start-time nil)
-         (promise-alpha
-          (new (-promise
-                (lambda (resolve)
-                  (if alpha-path
-                      (loader.load alpha-path
-                                   (lambda (image-bitmap)
-                                     (resolve image-bitmap)))
-                      (resolve nil)))))))
-    (flet ((load-callback (image-bitmap)
+         (promise-main (get-load-texture-promise :path path
+                                                 :loader loader))
+         (promise-alpha (get-load-texture-promise :path alpha-path
+                                                  :loader loader)))
+    (flet ((load-callback (image-bitmap alpha-bitmap)
              (let ((tex (find-texture name)))
                (unless tex
                  (error "The find-texture should be successed"))
-               (promise-alpha.then
-                (lambda (alpha-bitmap)
-                  (setf (texture-2d-material tex)
-                        (new (#j.THREE.MeshBasicMaterial#
-                              (create map image-bitmap
-                                      alpha-map alpha-bitmap
-                                      transparent (if alpha-bitmap true false)
-                                      color 0xffffff))))))))))
-    (setf start-time (performance.now))
-    (loader.load path
-                 (lambda (image-bitmap)
-                   (console-log :loader :debug
-                                "Time to load texture ~A: ~F ms"
-                                path
-                                (- (performance.now) start-time))
-                   (load-callback image-bitmap)))))
+               (setf (texture-2d-material tex)
+                     (new (#j.THREE.MeshBasicMaterial#
+                           (create map image-bitmap
+                                   alpha-map alpha-bitmap
+                                   transparent (if alpha-bitmap true false)
+                                   color #xffffff))))))))
+    ((@ (-promise.all (list promise-main promise-alpha)) then)
+     (lambda (values)
+       (load-callback (nth 0 values) (nth 1 values))))))
 
 (defun.ps unload-texture (name)
   (let ((tex (find-texture name)))
