@@ -11,11 +11,13 @@
 (defpackage :cl-web-2d-game
   (:use :cl
         :cl-web-2d-game.basic-components
+        :cl-web-2d-game.basic-systems
         :cl-web-2d-game.utils
         :cl-web-2d-game.calc
         :cl-web-2d-game.camera
         :cl-web-2d-game.collision
         :cl-web-2d-game.input
+        :cl-web-2d-game.texture
         :cl-web-2d-game.2d-geometry
         :cl-web-2d-game.draw-model-system
         :cl-web-2d-game.performance
@@ -26,11 +28,13 @@
 (in-package :cl-web-2d-game)
 
 (cl-reexport:reexport-from :cl-web-2d-game.basic-components)
+(cl-reexport:reexport-from :cl-web-2d-game.basic-systems)
 (cl-reexport:reexport-from :cl-web-2d-game.utils)
 (cl-reexport:reexport-from :cl-web-2d-game.calc)
 (cl-reexport:reexport-from :cl-web-2d-game.camera)
 (cl-reexport:reexport-from :cl-web-2d-game.collision)
 (cl-reexport:reexport-from :cl-web-2d-game.input)
+(cl-reexport:reexport-from :cl-web-2d-game.texture)
 (cl-reexport:reexport-from :cl-web-2d-game.2d-geometry)
 (cl-reexport:reexport-from :cl-web-2d-game.draw-model-system)
 (cl-reexport:reexport-from :cl-web-2d-game.performance)

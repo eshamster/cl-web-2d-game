@@ -21,6 +21,7 @@
                 :components
                 ((:file "test-utils")
                  (:test-file "utils")
+                 (:test-file "logger")
                  (:test-file "basic-components")
                  (:test-file "calc")
                  (:test-file "collision"))))

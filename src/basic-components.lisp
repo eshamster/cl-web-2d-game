@@ -31,7 +31,6 @@
            :make-script-2d
            :script-2d
            :script-2d-func
-           :make-script-system
 
            :params
            :params-table
@@ -105,13 +104,3 @@
                  (rec (cddr rest-pairs)))))
       (rec key-value-pairs))
     (make-params :table table)))
-
-;; - simple systems
-
-(defstruct.ps+
-    (script-system
-     (:include ecs-system
-               (target-component-types '(script-2d))
-               (process (lambda (entity)
-                          (with-ecs-components (script-2d) entity
-                            (funcall (script-2d-func script-2d) entity)))))))

@@ -4,7 +4,6 @@
         :cl-ppcre
         :ps-experiment
         :cl-ps-ecs
-        :cl-web-2d-game.camera
         :parenscript)
   (:export :init-monitoring-log
            :clear-monitoring-log
@@ -12,7 +11,11 @@
            
            :*max-event-log-count*
            :init-event-log-area
-           :add-to-event-log))
+           :add-to-event-log
+
+           :*console-log-function*
+           :set-console-log-level
+           :console-log))
 (in-package :cl-web-2d-game.logger)
 
 (enable-ps-experiment-syntax)
@@ -59,3 +62,48 @@
       (dolist (one-line *event-log-text-list*)
         (setf log (+ log one-line "<br>")))
       (setf #j.*event-log-area*.innerHTML# log))))
+
+;; --- console log --- ;;
+
+(defvar *console-log-function* (lambda (log-kind log-level control-string &rest args)
+                                 (eval `(format t (format nil "~D: ~D: ~D"
+                                                          ,log-kind
+                                                          ,log-level
+                                                          ,control-string)
+                                                ,@args))))
+
+(defvar.ps *console-log-function* (lambda (log-kind log-level control-string &rest args)
+                                    (console.log (+ log-kind ": "
+                                                    log-level ": "
+                                                    control-string
+                                                    " (args = " args ")"))))
+
+(defvar.ps+ +console-log-level-debug+ 10)
+(defvar.ps+ +console-log-level-warning+ 20)
+(defvar.ps+ +console-log-level-error+ 30)
+
+;; TODO: Set log level for each log-kind
+
+(defvar.ps+ *current-console-log-level* +console-log-level-error+)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun.ps+ convert-to-console-log-level-symbol (log-level-keyward)
+    (case log-level-keyward
+      (:debug '+console-log-level-debug+)
+      (:warning '+console-log-level-warning+)
+      (:error '+console-log-level-error+)
+      (t (error "The console level ~D is not recognized" log-level-keyward)))))
+
+(defun.ps+ set-console-log-level (log-level)
+  ;; Note: In Common Lisp, "symbol-value" is more appropriate than "eval".
+  ;; However, in JavaScript, the former is not exist. So "eval" is selcted here.
+  ;; In addition, because convert-to-console-log-level-symbol should return only
+  ;; a known symbol, "eval" should not be so dangerous.
+  (setf *current-console-log-level*
+        (eval (convert-to-console-log-level-symbol log-level))))
+
+;; This is defined as macro in order not to affect to main processes
+(defmacro.ps+ console-log (log-kind log-level control-string &rest args)
+  `(when (<= *current-console-log-level*
+             ,(convert-to-console-log-level-symbol log-level))
+     (funcall *console-log-function* ,log-kind ,log-level ,control-string ,@args)))

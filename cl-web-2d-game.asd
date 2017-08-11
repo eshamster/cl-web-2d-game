@@ -26,18 +26,20 @@
   :components ((:module "src"
                 :serial t
                 :components
-                ((:file "basic-components")
+                ((:file "logger")
+                 (:file "basic-components")
                  (:file "utils")
-                 (:file "performance")
                  (:file "calc")
                  (:file "camera")
                  (:file "collision")
                  (:file "input")
+                 (:file "texture")
                  (:file "2d-geometry")
                  (:file "draw-model-system")
                  (:file "gui")
-                 (:file "logger")
                  (:file "debug-drawer")
+                 (:file "performance")
+                 (:file "basic-systems")
                  (:file "initializer")
                  (:file "cl-web-2d-game"))))
   :description "A library to create 2d game using Parenscript and three.js"

@@ -2,7 +2,8 @@
 (defpackage cl-web-2d-game.2d-geometry
   (:use :cl
         :cl-ppcre
-        :parenscript)
+        :parenscript
+        :cl-web-2d-game.texture)
   (:import-from :ps-experiment
                 :defmacro.ps+
                 :defun.ps
@@ -15,6 +16,7 @@
            :make-wired-regular-polygon
            :make-wired-polygon
            :make-solid-polygon
+           :make-texture-model-async
            :change-model-color))
 (in-package :cl-web-2d-game.2d-geometry)
 
@@ -22,16 +24,19 @@
 
 ;; --- basic funcations and macros
 
-;; Without eval-when, "defun"s are compiled after "defmacro.ps"
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun make-push-vertices (vertices raw-vertex-lst)
-    `((@ ,vertices push) ,@(mapcar (lambda (v)
-                                     `(new (#j.THREE.Vector3# ,@(append v '(0)))))
-                                   raw-vertex-lst)))
-  (defun make-push-faces (faces raw-face-lst)
-    `((@ ,faces push) ,@ (mapcar (lambda (face)
-                                   `(new (#j.THREE.Face3# ,@face)))
-                                 raw-face-lst))))
+(defun.ps push-vertices-to (geometry raw-vertex-lst)
+  (dolist (vertex-as-lst raw-vertex-lst)
+    (geometry.vertices.push
+     (new (#j.THREE.Vector3# (nth 0 vertex-as-lst)
+                             (nth 1 vertex-as-lst)
+                             0)))))
+
+(defun.ps push-faces-to (geometry raw-face-lst)
+  (dolist (face-as-lst raw-face-lst)
+    (geometry.faces.push
+     (new (#j.THREE.Face3# (nth 0 face-as-lst)
+                           (nth 1 face-as-lst)
+                           (nth 2 face-as-lst))))))
 
 (defun.ps to-rad (degree)
   (/ (* degree pi) 180))
@@ -41,12 +46,11 @@
     (new (#j.THREE.Line# geometry material))))
 
 (defmacro.ps+ def-wired-geometry (name args &body body)
-  (with-ps-gensyms (geometry vertices)
+  (with-ps-gensyms (geometry)
     `(defun.ps ,name (&key ,@args color z)
-       (let* ((,geometry (new (#j.THREE.Geometry#)))
-              (,vertices (@ ,geometry vertices)))
-         (macrolet ((push-vertices (&rest rest)
-                      (make-push-vertices ',vertices rest)))
+       (let ((,geometry (new (#j.THREE.Geometry#))))
+         (flet ((push-vertices (&rest rest)
+                  (push-vertices-to ,geometry rest)))
            ,@body)
          (make-line-model ,geometry color z)))))
 
@@ -55,70 +59,89 @@
     (new (#j.THREE.Mesh# geometry material))))
 
 (defmacro.ps+ def-solid-geometry (name args &body body)
-  (with-ps-gensyms (geometry vertices faces)
+  (with-ps-gensyms (geometry)
     `(defun.ps ,name (&key ,@args color z)
-       (let* ((,geometry (new (#j.THREE.Geometry#)))
-              (,vertices (@ ,geometry vertices))
-              (,faces (@ ,geometry faces)))
-         (macrolet ((push-vertices (&rest rest)
-                      (make-push-vertices ',vertices rest))
-                    (push-faces (&rest rest)
-                      (make-push-faces ',faces rest)))
+       (let ((,geometry (new (#j.THREE.Geometry#))))
+         (flet ((push-vertices (&rest rest)
+                  (push-vertices-to ,geometry rest))
+                (push-faces (&rest rest)
+                  (push-faces-to ,geometry rest)))
            ,@body)
          (make-solid-model ,geometry color z)))))
 
 ;; --- line --- ;;
 
 (def-wired-geometry make-line (pos-a pos-b)
-  (push-vertices ((aref pos-a 0) (aref pos-a 1))
-                 ((aref pos-b 0) (aref pos-b 1))))
+  (push-vertices (list (aref pos-a 0) (aref pos-a 1))
+                 (list (aref pos-b 0) (aref pos-b 1))))
 
 (def-wired-geometry make-lines (pnt-list)
   (dolist (pnt pnt-list)
-    (push-vertices ((aref pnt 0) (aref pnt 1)))))
+    (push-vertices (list (aref pnt 0) (aref pnt 1)))))
 
 ;; --- rectangle --- ;;
 
 (def-solid-geometry make-solid-rect (width height)
-  (push-vertices (0 0) (width 0) (width height) (0 height))
-  (push-faces (0 1 2) (2 3 0)))
+  (push-vertices (list 0 0) (list width 0)
+                 (list width height) (list 0 height))
+  (push-faces '(0 1 2) '(2 3 0)))
 
 (def-wired-geometry make-wired-rect (width height)
-  (push-vertices (0 0) (width 0) (width height) (0 height) (0 0)))
+  (push-vertices (list 0 0) (list width 0)
+                 (list width height) (list 0 height)
+                 (list 0 0)))
+
+;; --- textured model --- ;;
+
+(defun.ps make-texture-model-async (&key width height texture-name callback)
+  (let* ((geometry (new (#j.THREE.Geometry#)))
+         (uvs (@ geometry face-vertex-uvs 0)))
+    (push-vertices-to geometry
+                      (list (list 0 0) (list width 0)
+                            (list width height) (list 0 height)))
+    (push-faces-to geometry (list '(0 1 2) '(2 3 0)))
+    (get-texture-async
+     texture-name
+     (lambda (texture)
+       (dolist (uv (texture-2d-uv texture))
+         (uvs.push uv))
+       (geometry.compute-face-normals)
+       (geometry.compute-vertex-normals)
+       (funcall callback
+                (new (#j.THREE.Mesh# geometry
+                                     (texture-2d-material texture))))))))
 
 ;; --- regular polygon --- ;;
 
 (def-solid-geometry make-solid-regular-polygon (r n (start-angle 0))
   (dotimes (i n)
     (let ((angle (to-rad (+ (/ (* 360 i) n) start-angle))))
-      (push-vertices ((+ r (* r (cos angle)))
-                      (+ r (* r (sin angle)))))))
-  (push-vertices (r r))
+      (push-vertices (list (+ r (* r (cos angle)))
+                           (+ r (* r (sin angle)))))))
+  (push-vertices (list r r))
   (dotimes (i n)
-    (push-faces (n i (rem (1+ i) n)))))
+    (push-faces (list n i (rem (1+ i) n)))))
 
 (def-wired-geometry make-wired-regular-polygon (r n (start-angle 0))
   (dotimes (i (1+ n))
     (let ((angle (to-rad (+ (/ (* 360 i) n) start-angle))))
-      (push-vertices ((+ r (* r (cos angle)))
-                      (+ r (* r (sin angle))))))))
+      (push-vertices (list (+ r (* r (cos angle)))
+                           (+ r (* r (sin angle))))))))
 
 ;; --- arbitrary polygon --- ;;
 
 (def-wired-geometry make-wired-polygon (pnt-list)
   (dolist (pnt pnt-list)
-    (push-vertices ((car pnt) (cadr pnt))))
-  (let ((first (car pnt-list)))
-    (push-vertices ((car first) (cadr first)))))
+    (push-vertices pnt))
+  (push-vertices (nth 0 pnt-list)))
 
 (def-solid-geometry make-solid-polygon (pnt-list)
   (dolist (pnt pnt-list)
-    (push-vertices ((car pnt) (cadr pnt))))
-  (let ((len (length pnt-list))))
+    (push-vertices pnt))
   (dotimes (i (1- len))
-    (push-faces (0
-                 (+ i 1)
-                 (rem (+ i 2) len)))))
+    (push-faces (list 0
+                      (+ i 1)
+                      (rem (+ i 2) len)))))
 
 ;; --- auxiliary functions --- ;;
 
