@@ -3,7 +3,8 @@
   (:use :cl
         :parenscript
         :ps-experiment
-        :cl-ps-ecs)
+        :cl-ps-ecs
+        :cl-web-2d-game.logger)
   (:export :texture-2d
            :texture-2d-p
            :texture-2d-material
@@ -38,6 +39,7 @@
                          :material nil)
         *texture-table*)
   (let* ((loader (new (#j.THREE.TextureLoader#)))
+         (start-time nil)
          (promise-alpha
           (new (-promise
                 (lambda (resolve)
@@ -58,8 +60,13 @@
                                       alpha-map alpha-bitmap
                                       transparent (if alpha-bitmap true false)
                                       color 0xffffff))))))))))
+    (setf start-time (performance.now))
     (loader.load path
                  (lambda (image-bitmap)
+                   (console-log :loader :debug
+                                "Time to load texture ~A: ~F ms"
+                                path
+                                (- (performance.now) start-time))
                    (load-callback image-bitmap)))))
 
 (defun.ps unload-texture (name)
