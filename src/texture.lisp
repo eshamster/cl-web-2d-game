@@ -22,8 +22,6 @@
 (defstruct.ps+ texture-2d (name "") material
                (uv (make-rect-uvs 0 0 1.0 1.0)))
 
-(defvar.ps+ *texture-load-timeout-ms* 2000)
-
 (defvar.ps+ *texture-table* '())
 
 (defun.ps find-texture (name)
