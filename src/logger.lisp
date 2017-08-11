@@ -4,7 +4,6 @@
         :cl-ppcre
         :ps-experiment
         :cl-ps-ecs
-        :cl-web-2d-game.camera
         :parenscript)
   (:export :init-monitoring-log
            :clear-monitoring-log

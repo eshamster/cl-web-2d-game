@@ -26,7 +26,8 @@
   :components ((:module "src"
                 :serial t
                 :components
-                ((:file "basic-components")
+                ((:file "logger")
+                 (:file "basic-components")
                  (:file "utils")
                  (:file "calc")
                  (:file "camera")
@@ -36,7 +37,6 @@
                  (:file "2d-geometry")
                  (:file "draw-model-system")
                  (:file "gui")
-                 (:file "logger")
                  (:file "debug-drawer")
                  (:file "performance")
                  (:file "basic-systems")
