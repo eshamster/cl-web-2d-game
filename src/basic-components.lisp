@@ -21,6 +21,16 @@
            :point-2d-angle
            :angle
 
+           :make-rect-2d
+           :rect-2d
+           :rect-2d-p
+           :rect-2d-x
+           :rect-2d-y
+           :rect-2d-width
+           :rect-2d-height
+           :width
+           :height
+
            :make-rotate-2d
            :rotate-2d
            :rotate-2d-p
@@ -52,6 +62,8 @@
 ;; point-2d is mainly used as a local translation and rotation.
 (defstruct.ps+ (point-2d (:include vector-2d)) (angle 0))
 (defstruct.ps+ (speed-2d (:include vector-2d)))
+
+(defstruct.ps+ (rect-2d (:include ecs-component)) (x 0) (y 0) (width 0) (height 0))
 
 (defstruct.ps+ (rotate-2d (:include ecs-component)) (speed 0) (angle 0) (radious 0))
 
