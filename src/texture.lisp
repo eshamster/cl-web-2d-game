@@ -4,21 +4,21 @@
         :parenscript
         :ps-experiment
         :cl-ps-ecs
+        :cl-web-2d-game.basic-components
         :cl-web-2d-game.logger)
   (:export :texture-2d
            :texture-2d-p
            :texture-2d-material
-           :texture-2d-uv
+           :texture-2d-rect-uv
            :load-texture
            :unload-texture
-           :get-texture-async
-           :make-rect-uvs))
+           :get-texture-async))
 (in-package :cl-web-2d-game.texture)
 
 (enable-ps-experiment-syntax)
 
 (defstruct.ps+ texture-2d (path-list '()) (name "") material
-               (uv (make-rect-uvs 0 0 1.0 1.0)))
+               (rect-uv (make-rect-2d)))
 
 (defstruct.ps+ raw-image-bitmap promise (ref-count 0))
 
@@ -83,7 +83,8 @@
                                         (list path alpha-path)
                                         (list path))
                          :material nil
-                         :uv (make-rect-uvs x y width height))
+                         :rect-uv (make-rect-2d :x x :y y
+                                                :width width :height height))
         *texture-table*)
   (let* ((loader (new (#j.THREE.TextureLoader#)))
          (start-time nil)
@@ -137,14 +138,3 @@
          (lambda () (texture-2d-material tex))
          :timeout-frame *load-texture-timeout-frames*))))
 
-;; --- UV functions --- ;;
-
-(defun.ps make-rect-uvs (x y width height)
-  (flet ((new-uv (u v)
-           (new (#j.THREE.Vector2# u v))))
-    (list (list (new-uv x y)
-                (new-uv (+ x width) y)
-                (new-uv (+ x width) (+ y height)))
-          (list (new-uv (+ x width) (+ y height))
-                (new-uv x (+ y height))
-                (new-uv x y)))))

@@ -3,7 +3,8 @@
   (:use :cl
         :cl-ppcre
         :parenscript
-        :cl-web-2d-game.texture)
+        :cl-web-2d-game.texture
+        :cl-web-2d-game.basic-components)
   (:import-from :ps-experiment
                 :defmacro.ps+
                 :defun.ps
@@ -93,6 +94,16 @@
 
 ;; --- textured model --- ;;
 
+(defun.ps make-rect-uvs (x y width height)
+  (flet ((new-uv (u v)
+           (new (#j.THREE.Vector2# u v))))
+    (list (list (new-uv x y)
+                (new-uv (+ x width) y)
+                (new-uv (+ x width) (+ y height)))
+          (list (new-uv (+ x width) (+ y height))
+                (new-uv x (+ y height))
+                (new-uv x y)))))
+
 (defun.ps make-texture-model-async (&key width height texture-name callback)
   (let* ((geometry (new (#j.THREE.Geometry#)))
          (uvs (@ geometry face-vertex-uvs 0)))
@@ -103,8 +114,9 @@
     (get-texture-async
      texture-name
      (lambda (texture)
-       (dolist (uv (texture-2d-uv texture))
-         (uvs.push uv))
+       (with-slots (x y width height) (texture-2d-rect-uv texture)
+         (dolist (uv (make-rect-uvs x y width height))
+           (uvs.push uv)))
        (geometry.compute-face-normals)
        (geometry.compute-vertex-normals)
        (funcall callback
