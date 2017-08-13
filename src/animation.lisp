@@ -12,6 +12,7 @@
   (:export :init-animation-2d
            :start-animation
            :start-reversed-animation
+           :reverse-animation
            :stop-animation
            :run-animation-process))
 (in-package :cl-web-2d-game.animation)
@@ -60,6 +61,11 @@
     (setf runs-animation t)
     (setf goes-to-forward nil)))
 
+(defun.ps+ reverse-animation (anime)
+  (if (animation-2d-goes-to-forward anime)
+      (start-reversed-animation anime)
+      (start-animation anime)))
+
 (defun.ps+ stop-animation (anime)
   (setf (animation-2d-runs-animation anime) nil))
 
@@ -94,5 +100,5 @@
                                              (if goes-to-forward
                                                  (1+ image-counter)
                                                  (1- image-counter))))
-              (progn (funcall animation-end-callback anime)
-                     (setf runs-animation nil)))))))
+              (progn (setf runs-animation nil)
+                     (funcall animation-end-callback anime)))))))
