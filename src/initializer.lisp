@@ -5,6 +5,7 @@
         :ps-experiment
         :cl-ps-ecs
         :cl-web-2d-game.basic-components
+        :cl-web-2d-game.basic-systems
         :cl-web-2d-game.performance
         :cl-web-2d-game.collision
         :cl-web-2d-game.draw-model-system
@@ -40,11 +41,11 @@
   (when *stats*
     (*stats*.update)))
 
-(defun.ps init-default-systems (&key scene
-                                     (script-system t)
-                                     (draw-system t)
-                                     (animation-system t)
-                                     (collision-system t))
+(defun.ps+ init-default-systems (&key scene
+                                      (script-system t)
+                                      (draw-system t)
+                                      (animation-system t)
+                                      (collision-system t))
   (when script-system
     (register-ecs-system "script2d" (make-script-system)))
   (when collision-system
