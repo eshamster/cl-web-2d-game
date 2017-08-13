@@ -43,11 +43,14 @@
 (defun.ps init-default-systems (&key scene
                                      (script-system t)
                                      (draw-system t)
+                                     (animation-system t)
                                      (collision-system t))
   (when script-system
     (register-ecs-system "script2d" (make-script-system)))
   (when collision-system
     (register-ecs-system "collision" (make-collision-system)))
+  (when animation-system
+    (register-ecs-system "animation" (make-animation-system)))
   (when draw-system
     (register-ecs-system "draw2d" (init-draw-model-system scene))))
 

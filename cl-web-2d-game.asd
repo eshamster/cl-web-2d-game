@@ -36,6 +36,7 @@
                  (:file "texture")
                  (:file "2d-geometry")
                  (:file "draw-model-system")
+                 (:file "animation")
                  (:file "gui")
                  (:file "debug-drawer")
                  (:file "performance")

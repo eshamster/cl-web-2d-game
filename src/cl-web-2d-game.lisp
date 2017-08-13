@@ -18,6 +18,7 @@
         :cl-web-2d-game.collision
         :cl-web-2d-game.input
         :cl-web-2d-game.texture
+        :cl-web-2d-game.animation
         :cl-web-2d-game.2d-geometry
         :cl-web-2d-game.draw-model-system
         :cl-web-2d-game.performance
@@ -35,6 +36,7 @@
 (cl-reexport:reexport-from :cl-web-2d-game.collision)
 (cl-reexport:reexport-from :cl-web-2d-game.input)
 (cl-reexport:reexport-from :cl-web-2d-game.texture)
+(cl-reexport:reexport-from :cl-web-2d-game.animation)
 (cl-reexport:reexport-from :cl-web-2d-game.2d-geometry)
 (cl-reexport:reexport-from :cl-web-2d-game.draw-model-system)
 (cl-reexport:reexport-from :cl-web-2d-game.performance)

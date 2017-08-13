@@ -5,11 +5,14 @@
         :ps-experiment
         :cl-ps-ecs
         :parenscript
+        :cl-web-2d-game.animation
         :cl-web-2d-game.basic-components
         :cl-web-2d-game.collision
         :cl-web-2d-game.performance)
   (:export :script-system
            :make-script-system
+           :animation-system
+           :make-animation-system
            :collision-system
            :make-collision-system))
 (in-package :cl-web-2d-game.basic-systems)
@@ -23,6 +26,14 @@
                (process (lambda (entity)
                           (with-ecs-components (script-2d) entity
                             (funcall (script-2d-func script-2d) entity)))))))
+
+(defstruct.ps+
+    (animation-system
+     (:include ecs-system
+               (target-component-types '(animation-2d))
+               (process (lambda (entity)
+                          (with-ecs-components (animation-2d) entity
+                            (run-animation-process animation-2d)))))))
 
 (defstruct.ps+
     (collision-system
