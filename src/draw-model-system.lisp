@@ -17,6 +17,7 @@
            :model-2d-model
            :model-2d-depth
            :model-2d-offset
+           :model-2d-geometry
            :enable-model-2d
            :disable-model-2d
            :init-draw-model-system))
@@ -31,6 +32,14 @@
   (depth 0)
   (offset (make-point-2d))
   (enable nil))
+
+(defmacro.ps model-2d-geometry (model)
+  `(progn (check-type ,model model-2d)
+          (@ ,model model geometry)))
+
+(defmacro model-2d-geometry (model)
+  (declare (ignore model))
+  `(error "model-2d-geometry for CL is not implemented"))
 
 ;; --- system --- ;;
 
