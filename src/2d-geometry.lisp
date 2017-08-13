@@ -18,7 +18,8 @@
            :make-wired-polygon
            :make-solid-polygon
            :make-texture-model-async
-           :change-model-color))
+           :change-model-color
+           :change-geometry-uvs))
 (in-package :cl-web-2d-game.2d-geometry)
 
 (enable-ps-experiment-syntax)
@@ -104,9 +105,19 @@
                 (new-uv x (+ y height))
                 (new-uv x y)))))
 
+(defun.ps change-geometry-uvs (texture geometry x y width height)
+  (check-type texture texture-2d)
+  (with-slots ((base-x x) (base-y y)
+               (base-width width) (base-height height)) (texture-2d-rect-uv texture)
+    (let ((uvs (@ geometry face-vertex-uvs 0)))
+      (dolist (uv (make-rect-uvs (+ base-x (* base-width x))
+                                 (+ base-y (* base-height y))
+                                 (* base-width width)
+                                 (* base-height height)))
+        (uvs.push uv)))))
+
 (defun.ps make-texture-model-async (&key width height texture-name callback)
-  (let* ((geometry (new (#j.THREE.Geometry#)))
-         (uvs (@ geometry face-vertex-uvs 0)))
+  (let* ((geometry (new (#j.THREE.Geometry#))))
     (push-vertices-to geometry
                       (list (list 0 0) (list width 0)
                             (list width height) (list 0 height)))
@@ -114,9 +125,7 @@
     (get-texture-async
      texture-name
      (lambda (texture)
-       (with-slots (x y width height) (texture-2d-rect-uv texture)
-         (dolist (uv (make-rect-uvs x y width height))
-           (uvs.push uv)))
+       (change-geometry-uvs texture geometry 0 0 1 1)
        (geometry.compute-face-normals)
        (geometry.compute-vertex-normals)
        (funcall callback
