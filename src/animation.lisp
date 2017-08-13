@@ -24,20 +24,23 @@
 (defstruct.ps+ (animation-2d (:include ecs-component))
     ;; input parameter
     interval (horiz-count 1) (vert-count 1) model texture
+    animation-end-callback
     ;; state parameter
     (goes-to-forward t)
     (runs-animation nil)
     (interval-counter 0)
     (image-counter 0))
 
-(defun.ps+ init-animation-2d (&key interval (horiz-count 1) (vert-count 1) model texture)
+(defun.ps+ init-animation-2d (&key interval (horiz-count 1) (vert-count 1) model texture
+                                   (animation-end-callback (lambda (anime) (declare (ignore anime)))))
   (check-type model model-2d)
   (check-type texture texture-2d)
   (let ((anime (make-animation-2d :interval interval
                                   :horiz-count horiz-count
                                   :vert-count vert-count
                                   :model model
-                                  :texture texture)))
+                                  :texture texture
+                                  :animation-end-callback animation-end-callback)))
     (switch-animation-image anime 0)
     anime))
 
@@ -78,15 +81,18 @@
 
 (defun.ps+ run-animation-process (anime)
   (with-slots (runs-animation goes-to-forward interval interval-counter
-                              image-counter horiz-count vert-count) anime
+                              image-counter horiz-count vert-count
+                              animation-end-callback) anime
     (when runs-animation
       (if (< (1+ interval-counter) interval)
           (incf interval-counter)
-          (when (or (and goes-to-forward (< (1+ image-counter)
-                                            (* horiz-count vert-count)))
-                    (and (not goes-to-forward) (> image-counter 0)))
-            (setf interval-counter 0)
-            (switch-animation-image anime
-                                    (if goes-to-forward
-                                        (1+ image-counter)
-                                        (1- image-counter))))))))
+          (if (or (and goes-to-forward (< (1+ image-counter)
+                                          (* horiz-count vert-count)))
+                  (and (not goes-to-forward) (> image-counter 0)))
+              (progn (setf interval-counter 0)
+                     (switch-animation-image anime
+                                             (if goes-to-forward
+                                                 (1+ image-counter)
+                                                 (1- image-counter))))
+              (progn (funcall animation-end-callback anime)
+                     (setf runs-animation nil)))))))

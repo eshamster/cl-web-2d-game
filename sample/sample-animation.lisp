@@ -62,9 +62,12 @@ exec ros -Q -- $0 "$@"
                   texture-name
                   (lambda (texture)
                     (let* ((model-2d (make-model-2d :model mesh :depth depth))
-                           (anime-2d (init-animation-2d :interval 30
-                                                        :vert-count 4 :horiz-count 2
-                                                        :model model-2d :texture texture)))
+                           (anime-2d (init-animation-2d
+                                      :interval 30 :vert-count 4 :horiz-count 2
+                                      :model model-2d :texture texture
+                                      :animation-end-callback (lambda (anime)
+                                                                (declare (ignore anime))
+                                                                (delete-ecs-entity rect)))))
                       (add-ecs-component-list rect model-2d anime-2d))
                     (start-animation anime-2d)
                     (add-ecs-entity rect)))))))
