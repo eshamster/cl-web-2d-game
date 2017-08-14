@@ -20,7 +20,6 @@
 (enable-ps-experiment-syntax)
 
 ;; TODO: Enable to repeat animation
-;; TODO: Enable to notify animation end to caller
 
 (defstruct.ps+ (animation-2d (:include ecs-component))
     ;; input parameter
