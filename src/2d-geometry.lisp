@@ -168,10 +168,11 @@
 (def-solid-geometry make-solid-polygon (pnt-list)
   (dolist (pnt pnt-list)
     (push-vertices pnt))
-  (dotimes (i (1- len))
-    (push-faces (list 0
-                      (+ i 1)
-                      (rem (+ i 2) len)))))
+  (let ((len (length pnt-list)))
+    (dotimes (i (1- len))
+      (push-faces (list 0
+                        (+ i 1)
+                        (rem (+ i 2) len))))))
 
 ;; --- auxiliary functions --- ;;
 
