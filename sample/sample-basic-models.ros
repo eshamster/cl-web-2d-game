@@ -81,7 +81,39 @@ exec ros -Q -- $0 "$@"
                                      :color #x00ffff))
     (add-a-model 500 50 20
                  (make-solid-polygon :pnt-list pnts
-                                     :color #x00ffff))))
+                                     :color #x00ffff)))
+  ;; for enabling and disabling model
+  (let ((entity (make-ecs-entity))
+        (model1 (make-model-2d :model (make-wired-regular-polygon
+                                       :r 30 :n 4
+                                       :color #xff0000)))
+        (model2 (make-model-2d :model (make-wired-regular-polygon
+                                       :r 30 :n 60
+                                       :color #xff0000)))
+        (interval 30)
+        (rest-interval 20)
+        (current-stage 0))
+    (add-ecs-component-list
+     entity
+     (make-point-2d :x 300 :y 200)
+     model1
+     model2
+     (make-script-2d
+      :func (lambda (entity)
+              (decf rest-interval)
+              (add-to-monitoring-log current-stage)
+              (when (<= rest-interval 0)
+                (setf rest-interval interval)
+                (incf current-stage)
+                (case current-stage
+                  (1 (disable-model-2d entity :target-model-2d model1))
+                  (2 (disable-model-2d entity))
+                  (3 (enable-model-2d entity))
+                  (4 (disable-model-2d entity))
+                  (5 (enable-model-2d entity :target-model-2d model2))
+                  (6 (enable-model-2d entity))
+                  (t (setf current-stage 0)))))))
+    (add-ecs-entity entity)))
 
 (defun.ps+ init-gui-panel ()
   (init-gui)
