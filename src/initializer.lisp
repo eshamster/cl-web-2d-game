@@ -12,7 +12,7 @@
         :cl-web-2d-game.logger
         :cl-web-2d-game.utils)
   (:export :start-2d-game
-           :init-default-system
+           :init-default-systems
            :get-rendered-dom))
 (in-package :cl-web-2d-game.initializer)
 
