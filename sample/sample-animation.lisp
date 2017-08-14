@@ -42,20 +42,14 @@ exec ros -Q -- $0 "$@"
 (defvar *js-game-file*
   (merge-pathnames "sample.js" *downloaded-js-dir*))
 
-(defun.ps add-animation-model (&key x y depth texture-name
-                                   rot-speed-ratio)
+(defun.ps add-animation-model (&key x y depth texture-name)
   (let ((rect (make-ecs-entity)))
     (add-ecs-component-list
      rect
-     (make-point-2d :x x :y y)
-     (make-script-2d :func (lambda (entity)
-                             (with-ecs-components (point-2d) entity
-                               (incf (point-2d-angle point-2d)
-                                     (* rot-speed-ratio (/ PI 180))))))
-     (make-model-2d :model (make-wired-rect :width 80 :height 80 :color 0x00ff00)
-                    :depth depth))
+     (make-point-2d :x x :y y
+                    :angle (* 2 PI (random))))
     (make-texture-model-async
-     :width 80 :height 80
+     :width 160 :height 160
      :texture-name texture-name
      :callback (lambda (mesh)
                  (get-texture-async
@@ -63,29 +57,44 @@ exec ros -Q -- $0 "$@"
                   (lambda (texture)
                     (let* ((model-2d (make-model-2d :model mesh :depth depth))
                            (anime-2d (init-animation-2d
-                                      :interval 30 :vert-count 4 :horiz-count 2
+                                      :interval 4 :vert-count 5 :horiz-count 3
                                       :model model-2d :texture texture
                                       :animation-end-callback (lambda (anime)
-                                                                (reverse-animation anime)))))
+                                                                (if (< (random) 0.5)
+                                                                    (delete-ecs-entity rect)
+                                                                    (reverse-animation anime))))))
                       (add-ecs-component-list rect model-2d anime-2d))
                     (start-animation anime-2d)
-                    (add-ecs-entity rect)))))))
+                    (add-ecs-entity-to-buffer rect)))))))
 
 (defun.ps load-textures ()
-  (load-texture :path "/images/multiple_image.png" :name "ab"
-                :alpha-path "/images/multiple_image_alpha.png"))
+  (load-texture :path "/images/sample_explosion.png" :name "explosion"
+                :alpha-path "/images/sample_explosion_alpha.png"))
 
 (defun.ps init-func (scene)
   (set-console-log-level :debug)
   (load-textures)
-  (add-animation-model :texture-name "ab"
-                       :x 250 :y 250 :depth 10
-                       :rot-speed-ratio -0.8)
   (init-default-systems :scene scene))
 
+(defvar.ps *creation-interval* 20)
+(defvar.ps *creation-interval-rest* 0)
+
+(defun.ps count-entity ()
+  (let ((count 0))
+    (do-ecs-entities entity
+      (incf count))
+    count))
+
 (defun.ps update-func ()
-  (do-ecs-entities entity
-    (add-to-monitoring-log (ecs-entity-id entity))))
+  (add-to-monitoring-log (count-entity))
+  (decf *creation-interval-rest*)
+  (when (<= *creation-interval-rest* 0)
+    (setf *creation-interval-rest*
+          (floor (* (random) *creation-interval*)))
+    (add-animation-model :texture-name "explosion"
+                         :x (+ 80 (* (random 480)))
+                         :y (+ 80 (* (random 320)))
+                         :depth 10)))
 
 ;; --- Make js main file --- ;;
 
