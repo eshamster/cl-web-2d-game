@@ -13,6 +13,7 @@
            :start-animation
            :start-reversed-animation
            :reverse-animation
+           :reset-animation
            :stop-animation
            :run-animation-process))
 (in-package :cl-web-2d-game.animation)
@@ -64,6 +65,19 @@
   (if (animation-2d-goes-to-forward anime)
       (start-reversed-animation anime)
       (start-animation anime)))
+
+(defun.ps+ reset-animation (anime &key (stop-p t) (forward-p :asis))
+  (with-slots (goes-to-forward interval-counter runs-animation
+                               horiz-count vert-count) anime
+    (when (eq forward-p :asis)
+      (setf forward-p goes-to-forward))
+    (setf interval-counter 0)
+    (switch-animation-image anime
+                            (if forward-p
+                                0
+                                (1- (* horiz-count vert-count))))
+    (setf runs-animation (not stop-p))
+    (setf goes-to-forward forward-p)))
 
 (defun.ps+ stop-animation (anime)
   (setf (animation-2d-runs-animation anime) nil))

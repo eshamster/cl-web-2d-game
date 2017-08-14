@@ -47,7 +47,10 @@ exec ros -Q -- $0 "$@"
     (add-ecs-component-list
      rect
      (make-point-2d :x x :y y
-                    :angle (* 2 PI (random))))
+                    :angle (* 2 PI (random)))
+     (make-model-2d :model (make-wired-rect :width 160 :height 160
+                                            :color #x226622)
+                    :depth (- depth 30)))
     (make-texture-model-async
      :width 160 :height 160
      :texture-name texture-name
@@ -59,10 +62,12 @@ exec ros -Q -- $0 "$@"
                            (anime-2d (init-animation-2d
                                       :interval 4 :vert-count 5 :horiz-count 3
                                       :model model-2d :texture texture
-                                      :animation-end-callback (lambda (anime)
-                                                                (if (< (random) 0.5)
-                                                                    (delete-ecs-entity rect)
-                                                                    (reverse-animation anime))))))
+                                      :animation-end-callback
+                                      (lambda (anime)
+                                        (case (floor (* 3 (random)))
+                                          (1 (reverse-animation anime))
+                                          (2 (reset-animation anime :stop-p nil))
+                                          (t (delete-ecs-entity rect)))))))
                       (add-ecs-component-list rect model-2d anime-2d))
                     (start-animation anime-2d)
                     (add-ecs-entity-to-buffer rect)))))))
@@ -76,7 +81,7 @@ exec ros -Q -- $0 "$@"
   (load-textures)
   (init-default-systems :scene scene))
 
-(defvar.ps *creation-interval* 20)
+(defvar.ps *creation-interval* 60)
 (defvar.ps *creation-interval-rest* 0)
 
 (defun.ps count-entity ()
