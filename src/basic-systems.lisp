@@ -32,8 +32,9 @@
      (:include ecs-system
                (target-component-types '(animation-2d))
                (process (lambda (entity)
-                          (with-ecs-components (animation-2d) entity
-                            (run-animation-process animation-2d)))))))
+                          (do-ecs-components-of-entity (anime entity
+                                                              :component-type 'animation-2d)
+                            (run-animation-process anime)))))))
 
 (defstruct.ps+
     (collision-system
