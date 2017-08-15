@@ -9,7 +9,8 @@
         :cl-web-2d-game.texture
         :cl-web-2d-game.draw-model-system
         :cl-web-2d-game.logger)
-  (:export :init-animation-2d
+  (:export :animation-2d
+           :init-animation-2d
            :start-animation
            :start-reversed-animation
            :reverse-animation
