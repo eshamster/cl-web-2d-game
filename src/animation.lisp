@@ -16,6 +16,8 @@
            :reverse-animation
            :reset-animation
            :stop-animation
+           :enable-animation
+           :disable-animation
            :run-animation-process))
 (in-package :cl-web-2d-game.animation)
 
@@ -45,6 +47,21 @@
                                   :animation-end-callback animation-end-callback)))
     (switch-animation-image anime 0)
     anime))
+
+(defun.ps+ enable-animation (entity anime-2d)
+  "Enable drawing the model"
+  (check-type entity ecs-entity)
+  (check-type anime-2d animation-2d)
+  (enable-model-2d entity
+                   :target-model-2d (animation-2d-model anime-2d)))
+
+(defun.ps+ disable-animation (entity anime-2d)
+  "Stop the animation and disable drawing the model"
+  (check-type entity ecs-entity)
+  (check-type anime-2d animation-2d)
+  (stop-animation anime-2d)
+  (disable-model-2d entity
+                    :target-model-2d (animation-2d-model anime-2d)))
 
 (defun.ps+ start-animation (anime)
   (with-slots (goes-to-forward interval-counter interval runs-animation) anime
