@@ -49,48 +49,44 @@ exec ros -Q -- $0 "$@"
      (make-model-2d :model (make-wired-rect :width 160 :height 160
                                             :color #x226622)
                     :depth (- depth 30)))
-    (make-texture-model-async
-     :width 160 :height 160
-     :texture-name texture-name
-     :callback (lambda (mesh)
-                 (get-texture-async
-                  texture-name
-                  (lambda (texture)
-                    (let* ((model-2d (make-model-2d :model mesh :depth depth))
-                           (anime-2d (init-animation-2d
-                                      :interval 4 :vert-count 5 :horiz-count 3
-                                      :model model-2d :texture texture
-                                      :animation-end-callback
-                                      (lambda (anime)
-                                        (case (floor (* 3 (random)))
-                                          (1 (reverse-animation anime))
-                                          (2 (reset-animation anime :stop-p nil))
-                                          (t (delete-ecs-entity rect)))))))
-                      (add-ecs-component-list rect model-2d anime-2d))
-                    (start-animation anime-2d)
-                    (add-ecs-entity-to-buffer rect)))))))
+    (get-texture-async
+     texture-name
+     (lambda (texture)
+       (let* ((model-2d (make-model-2d :model (make-texture-model :width 160 :height 160
+                                                                  :texture texture)
+                                       :depth depth))
+              (anime-2d (init-animation-2d
+                         :interval 4 :vert-count 5 :horiz-count 3
+                         :model model-2d :texture texture
+                         :animation-end-callback
+                         (lambda (anime)
+                           (case (floor (* 3 (random)))
+                             (1 (reverse-animation anime))
+                             (2 (reset-animation anime :stop-p nil))
+                             (t (delete-ecs-entity rect)))))))
+         (add-ecs-component-list rect model-2d anime-2d))
+       (start-animation anime-2d)
+       (add-ecs-entity-to-buffer rect)))))
 
 (defun.ps+ init-moving-animation (entity manager texture-name register-name)
   (let* ((width 120)
          (height width))
-    (make-texture-model-async
-     :texture-name texture-name
-     :width width :height height
-     :callback
-     (lambda (mesh)
-       (get-texture-async
-        texture-name
-        (lambda (texture)
-          (let* ((model-2d (make-model-2d :model mesh :depth 50))
-                 (anime-2d (init-animation-2d
-                            :interval 20 :vert-count 4
-                            :model model-2d :texture texture)))
-            (add-ecs-component-list
-             entity
-             (make-point-2d :x 200 :y 200)
-             model-2d
-             anime-2d)
-            (register-animation manager register-name anime-2d))))))))
+    (get-texture-async
+     texture-name
+     (lambda (texture)
+       (let* ((model-2d (make-model-2d :model (make-texture-model :width width
+                                                                  :height height
+                                                                  :texture texture)
+                                       :depth 50))
+              (anime-2d (init-animation-2d
+                         :interval 20 :vert-count 4
+                         :model model-2d :texture texture)))
+         (add-ecs-component-list
+          entity
+          (make-point-2d :x 200 :y 200)
+          model-2d
+          anime-2d)
+         (register-animation manager register-name anime-2d))))))
 
 (defun.ps+ add-moving-model ()
   ;; TODO: Rethink asynchronicity

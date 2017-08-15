@@ -3,12 +3,9 @@
   (:use :cl
         :cl-ppcre
         :parenscript
+        :ps-experiment
         :cl-web-2d-game.texture
         :cl-web-2d-game.basic-components)
-  (:import-from :ps-experiment
-                :defmacro.ps+
-                :defun.ps
-                :enable-ps-experiment-syntax)
   (:export :make-line
            :make-lines
            :make-solid-rect
@@ -17,6 +14,7 @@
            :make-wired-regular-polygon
            :make-wired-polygon
            :make-solid-polygon
+           :make-texture-model
            :make-texture-model-async
            :change-model-color
            :change-geometry-uvs))
@@ -125,21 +123,26 @@
         (incf count-outer)))
     (setf geometry.uvs-need-update t)))
 
-(defun.ps make-texture-model-async (&key width height texture-name callback)
+(defun.ps make-texture-model (&key width height texture)
+  (check-type texture texture-2d)
   (let* ((geometry (new (#j.THREE.Geometry#))))
     (push-vertices-to geometry
                       (list (list 0 0) (list width 0)
                             (list width height) (list 0 height)))
     (push-faces-to geometry (list '(0 1 2) '(2 3 0)))
-    (get-texture-async
-     texture-name
-     (lambda (texture)
-       (change-geometry-uvs texture geometry 0 0 1 1)
-       (geometry.compute-face-normals)
-       (geometry.compute-vertex-normals)
-       (funcall callback
-                (new (#j.THREE.Mesh# geometry
-                                     (texture-2d-material texture))))))))
+    (change-geometry-uvs texture geometry 0 0 1 1)
+    (geometry.compute-face-normals)
+    (geometry.compute-vertex-normals)
+    (new (#j.THREE.Mesh# geometry
+                         (texture-2d-material texture)))))
+
+(defun.ps+ make-texture-model-async (&key width height texture-name callback)
+  (get-texture-async
+   texture-name
+   (lambda (texture)
+     (funcall callback
+              (make-texture-model :width width :height height
+                                  :texture texture)))))
 
 ;; --- regular polygon --- ;;
 
