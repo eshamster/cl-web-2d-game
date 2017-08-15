@@ -19,10 +19,8 @@ exec ros -Q -- $0 "$@"
   (:use :cl
         :cl-markup
         :cl-ps-ecs
-        :cl-web-2d-game)
-  (:import-from :ps-experiment
-                :defun.ps
-                :defvar.ps))
+        :cl-web-2d-game
+        :ps-experiment))
 (in-package :ros.script.sample-animation)
 
 ;; --- Definitions about directories --- ;;
@@ -42,7 +40,7 @@ exec ros -Q -- $0 "$@"
 (defvar *js-game-file*
   (merge-pathnames "sample.js" *downloaded-js-dir*))
 
-(defun.ps add-animation-model (&key x y depth texture-name)
+(defun.ps add-explosion-model (&key x y depth texture-name)
   (let ((rect (make-ecs-entity)))
     (add-ecs-component-list
      rect
@@ -72,13 +70,63 @@ exec ros -Q -- $0 "$@"
                     (start-animation anime-2d)
                     (add-ecs-entity-to-buffer rect)))))))
 
+(defun.ps+ init-moving-animation (entity manager texture-name register-name)
+  (let* ((width 120)
+         (height width))
+    (make-texture-model-async
+     :texture-name texture-name
+     :width width :height height
+     :callback
+     (lambda (mesh)
+       (get-texture-async
+        texture-name
+        (lambda (texture)
+          (let* ((model-2d (make-model-2d :model mesh :depth 50))
+                 (anime-2d (init-animation-2d
+                            :interval 20 :vert-count 4
+                            :model model-2d :texture texture)))
+            (add-ecs-component-list
+             entity
+             (make-point-2d :x 200 :y 200)
+             model-2d
+             anime-2d)
+            (register-animation manager register-name anime-2d))))))))
+
+(defun.ps+ add-moving-model ()
+  ;; TODO: Rethink asynchronicity
+  ;;       Althought the entity can be enabled before animation loading,
+  ;;       the following implementation doesn't consider it.
+  (let* ((entity (make-ecs-entity))
+         (manager (init-animation-manager entity)))
+    (add-ecs-entity entity)
+    (add-ecs-component-list
+     entity
+     (make-script-2d :func (lambda (entity)
+                             (declare (ignore entity))
+                             (when (or (is-key-up-now :left)
+                                       (is-key-up-now :right))
+                               (reverse-current-animation manager))
+                             (when (is-key-down-now :left)
+                               (switch-current-animation manager "left"))
+                             (when (is-key-down-now :right)
+                               (switch-current-animation manager "right")))))
+    (init-moving-animation entity manager "moving-left" "left")
+    (init-moving-animation entity manager "moving-right" "right")))
+
 (defun.ps load-textures ()
   (load-texture :path "/images/sample_explosion.png" :name "explosion"
-                :alpha-path "/images/sample_explosion_alpha.png"))
+                :alpha-path "/images/sample_explosion_alpha.png")
+  (load-texture :path "/images/sample_moving.png" :name "moving-left"
+                :alpha-path "/images/sample_moving_alpha.png"
+                :height 0.5)
+  (load-texture :path "/images/sample_moving.png" :name "moving-right"
+                :alpha-path "/images/sample_moving_alpha.png"
+                :y 0.5 :height 0.5))
 
 (defun.ps init-func (scene)
   (set-console-log-level :debug)
   (load-textures)
+  (add-moving-model)
   (init-default-systems :scene scene))
 
 (defvar.ps *creation-interval* 60)
@@ -96,7 +144,7 @@ exec ros -Q -- $0 "$@"
   (when (<= *creation-interval-rest* 0)
     (setf *creation-interval-rest*
           (floor (* (random) *creation-interval*)))
-    (add-animation-model :texture-name "explosion"
+    (add-explosion-model :texture-name "explosion"
                          :x (+ 80 (* (random 480)))
                          :y (+ 80 (* (random 320)))
                          :depth 10)))
