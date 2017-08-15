@@ -185,6 +185,7 @@ exec ros -Q -- $0 "$@"
                       (markup (:script :src js-src nil))))
                    (:body
                     (:div :id "stats-output")
+                    (:div "The purple circle can be animated by left or right key")
                     (:div :id "renderer" nil)
                     (:div :id "monitor" "(for Monitoring Log)")
                     (:div (:pre :id "eventlog" "(for Event Log)"))
