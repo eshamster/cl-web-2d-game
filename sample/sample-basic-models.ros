@@ -1,0 +1,215 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+;;; vim: set ft=lisp lisp:
+
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(:ps-experiment
+                              :cl-ps-ecs
+                              :cl-web-2d-game
+                              :ningle
+                              :cl-markup
+                              :clack)
+                            :silent t))
+
+(defpackage :ros.script.sample-basic-models
+  (:use :cl
+        :cl-markup
+        :cl-ps-ecs
+        :cl-web-2d-game
+        :ps-experiment))
+(in-package :ros.script.sample-basic-models)
+
+;; --- Definitions about directories --- ;;
+
+(defvar *script-dir*
+  (merge-pathnames "sample/"
+                   (asdf:component-pathname
+                    (asdf:find-system :cl-web-2d-game))))
+
+(defvar *js-relative-dir* "js/")
+
+(defvar *downloaded-js-dir*
+  (merge-pathnames *js-relative-dir* *script-dir*))
+
+;; --- Parenscript program --- ;;
+
+(defvar *js-game-file*
+  (merge-pathnames "sample.js" *downloaded-js-dir*))
+
+(defun.ps+ add-a-model (x y depth model)
+  (let ((entity (make-ecs-entity)))
+    (add-ecs-component-list
+     entity
+     (make-point-2d :x x :y y)
+     (make-model-2d :model model
+                    :depth depth))
+    (add-ecs-entity entity)))
+
+(defun.ps+ init-models ()
+    ;; line
+  (add-a-model 50 50 20
+               (make-line :pos-a (list 10 10)
+                          :pos-b (list 20 50)
+                          :color #x00ff00))
+  (add-a-model 100 50 20
+               (make-lines :pnt-list '((10 10) (20 50) (12 65) (-5 25))
+                           :color #xff0000))
+  ;; rect
+  (add-a-model 150 50 20
+               (make-wired-rect :width 20 :height 50
+                                :color #x00ff00))
+  (add-a-model 200 50 20
+               (make-solid-rect :width 20 :height 50
+                                :color #x00ff00))
+  ;; regular polygon
+  (add-a-model 250 50 20
+               (make-wired-regular-polygon :r 20 :n 5 :color #xff00ff))
+  (add-a-model 300 50 20
+               (make-wired-regular-polygon :r 20 :n 5 :start-angle 30))
+  (add-a-model 350 50 20
+               (make-solid-regular-polygon :r 20 :n 5 :color #xff00ff))
+  (add-a-model 400 50 20
+               (make-solid-regular-polygon :r 20 :n 5 :start-angle 30))
+  ;; polygon
+  (let ((pnts '((10 10) (20 50) (12 65) (-5 25))))
+    (add-a-model 450 50 20
+                 (make-wired-polygon :pnt-list pnts
+                                     :color #x00ffff))
+    (add-a-model 500 50 20
+                 (make-solid-polygon :pnt-list pnts
+                                     :color #x00ffff)))
+  ;; for enabling and disabling model
+  (let ((entity (make-ecs-entity))
+        (model1 (make-model-2d :model (make-wired-regular-polygon
+                                       :r 30 :n 4
+                                       :color #xff0000)))
+        (model2 (make-model-2d :model (make-wired-regular-polygon
+                                       :r 30 :n 60
+                                       :color #xff0000)))
+        (interval 30)
+        (rest-interval 20)
+        (current-stage 0))
+    (add-ecs-component-list
+     entity
+     (make-point-2d :x 300 :y 200)
+     model1
+     model2
+     (make-script-2d
+      :func (lambda (entity)
+              (decf rest-interval)
+              (add-to-monitoring-log current-stage)
+              (when (<= rest-interval 0)
+                (setf rest-interval interval)
+                (incf current-stage)
+                (case current-stage
+                  (1 (disable-model-2d entity :target-model-2d model1))
+                  (2 (disable-model-2d entity))
+                  (3 (enable-model-2d entity))
+                  (4 (disable-model-2d entity))
+                  (5 (enable-model-2d entity :target-model-2d model2))
+                  (6 (enable-model-2d entity))
+                  (t (setf current-stage 0)))))))
+    (add-ecs-entity entity)))
+
+(defun.ps+ init-gui-panel ()
+  (init-gui)
+  ;; for test change-model-color
+  (let ((entity (add-a-model 200 200 20
+                             (make-solid-rect :width 50 :height 50
+                                              :color #xffffff))))
+    (add-panel-number "change color" 1 :min 0 :max 1 :step 0.01
+                      :on-change (lambda (value)
+                                   (with-ecs-components (model-2d) entity
+                                     (change-model-color model-2d
+                                                         (+ #xff0000
+                                                            (* #x100 #xff value)
+                                                            (* #xff value))))))))
+
+(defun.ps+ init-func (scene)
+  (set-console-log-level :debug)
+  (init-default-systems :scene scene)
+  (init-models)
+  (init-gui-panel))
+
+(defun.ps update-func ()
+  (do-ecs-entities entity
+    (add-to-monitoring-log (ecs-entity-id entity))))
+
+;; --- Make js main file --- ;;
+
+(defun make-js-main-file ()
+  (with-open-file (out *js-game-file*
+                       :direction :output
+                       :if-exists :supersede
+                       :if-does-not-exist :create)
+    (princ
+     (pse:with-use-ps-pack (:this)
+       (let ((width 640)
+             (height 480))
+         (start-2d-game :screen-width width
+                        :screen-height height
+                        :camera (init-camera 0 0 width height)
+                        :rendered-dom (document.query-selector "#renderer")
+                        :stats-dom (document.query-selector "#stats-output")
+                        :monitoring-log-dom (document.query-selector "#monitor")
+                        :event-log-dom (document.query-selector "#eventlog")
+                        :init-function init-func
+                        :update-function update-func)))
+     out)))
+
+;; --- Server --- ;;
+
+(defvar *app* (make-instance 'ningle:<app>))
+
+(defvar *server* nil)
+
+(setf (ningle:route *app* "/" :method :GET)
+      (lambda (params)
+        (declare (ignorable params))
+        (make-js-main-file)
+        (with-output-to-string (str)
+          (let ((cl-markup:*output-stream* str))
+            (html5 (:head
+                    (:title "test")
+                    (dolist (js-src (make-src-list-for-script-tag *js-relative-dir*))
+                      (markup (:script :src js-src nil))))
+                   (:body
+                    (:div :id "stats-output")
+                    (:div :id "renderer" nil)
+                    (:div :id "monitor" "(for Monitoring Log)")
+                    (:div (:pre :id "eventlog" "(for Event Log)"))
+                    (:script :src "js/sample.js" nil)))))))
+
+(defun stop ()
+  (when *server*
+    (clack:stop *server*)
+    (setf *server* nil)))
+
+(defun run (&key (port 5000))
+  (ensure-js-files *downloaded-js-dir*)
+  (stop)
+  (setf *server*
+        (clack:clackup
+         (lack:builder
+          (:static :path (lambda (path)
+                           (print path)
+                           (if (ppcre:scan "^(?:/images/|/css/|/js/|/robot\\.txt$|/favicon\\.ico$)"
+                                           path)
+                               path
+                               nil))
+                   :root *script-dir*)
+          *app*)
+         :port port)))
+
+;; --- Roswell script main --- ;;
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (run :port 16896)
+  (princ "--- Press enter key to stop ---")
+  (peek-char)
+  (stop))

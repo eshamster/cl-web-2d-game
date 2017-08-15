@@ -3,11 +3,9 @@
   (:use :cl
         :cl-ppcre
         :parenscript
-        :cl-web-2d-game.texture)
-  (:import-from :ps-experiment
-                :defmacro.ps+
-                :defun.ps
-                :enable-ps-experiment-syntax)
+        :ps-experiment
+        :cl-web-2d-game.texture
+        :cl-web-2d-game.basic-components)
   (:export :make-line
            :make-lines
            :make-solid-rect
@@ -16,8 +14,10 @@
            :make-wired-regular-polygon
            :make-wired-polygon
            :make-solid-polygon
+           :make-texture-model
            :make-texture-model-async
-           :change-model-color))
+           :change-model-color
+           :change-geometry-uvs))
 (in-package :cl-web-2d-game.2d-geometry)
 
 (enable-ps-experiment-syntax)
@@ -93,23 +93,56 @@
 
 ;; --- textured model --- ;;
 
-(defun.ps make-texture-model-async (&key width height texture-name callback)
-  (let* ((geometry (new (#j.THREE.Geometry#)))
-         (uvs (@ geometry face-vertex-uvs 0)))
+(defun.ps make-rect-uvs (x y width height)
+  (flet ((new-uv (u v)
+           (new (#j.THREE.Vector2# u v))))
+    (list (list (new-uv x y)
+                (new-uv (+ x width) y)
+                (new-uv (+ x width) (+ y height)))
+          (list (new-uv (+ x width) (+ y height))
+                (new-uv x (+ y height))
+                (new-uv x y)))))
+
+(defun.ps change-geometry-uvs (texture geometry x y width height)
+  (check-type texture texture-2d)
+  (with-slots ((base-x x) (base-y y)
+               (base-width width) (base-height height)) (texture-2d-rect-uv texture)
+    (let ((uvs (@ geometry face-vertex-uvs 0))
+          (count-outer 0))
+      (dolist (uv (make-rect-uvs (+ base-x (* base-width x))
+                                 (+ base-y (* base-height y))
+                                 (* base-width width)
+                                 (* base-height height)))
+        (if (>= count-outer uvs.length)
+            (uvs.push uv)
+            (let ((count-inner 0))
+              (dolist (vector uv)
+                (setf (@ (nth count-inner (nth count-outer uvs)) x) vector.x
+                      (@ (nth count-inner (nth count-outer uvs)) y) vector.y)
+                (incf count-inner))))
+        (incf count-outer)))
+    (setf geometry.uvs-need-update t)))
+
+(defun.ps make-texture-model (&key width height texture)
+  (check-type texture texture-2d)
+  (let* ((geometry (new (#j.THREE.Geometry#))))
     (push-vertices-to geometry
                       (list (list 0 0) (list width 0)
                             (list width height) (list 0 height)))
     (push-faces-to geometry (list '(0 1 2) '(2 3 0)))
-    (get-texture-async
-     texture-name
-     (lambda (texture)
-       (dolist (uv (texture-2d-uv texture))
-         (uvs.push uv))
-       (geometry.compute-face-normals)
-       (geometry.compute-vertex-normals)
-       (funcall callback
-                (new (#j.THREE.Mesh# geometry
-                                     (texture-2d-material texture))))))))
+    (change-geometry-uvs texture geometry 0 0 1 1)
+    (geometry.compute-face-normals)
+    (geometry.compute-vertex-normals)
+    (new (#j.THREE.Mesh# geometry
+                         (texture-2d-material texture)))))
+
+(defun.ps+ make-texture-model-async (&key width height texture-name callback)
+  (get-texture-async
+   texture-name
+   (lambda (texture)
+     (funcall callback
+              (make-texture-model :width width :height height
+                                  :texture texture)))))
 
 ;; --- regular polygon --- ;;
 
@@ -138,10 +171,11 @@
 (def-solid-geometry make-solid-polygon (pnt-list)
   (dolist (pnt pnt-list)
     (push-vertices pnt))
-  (dotimes (i (1- len))
-    (push-faces (list 0
-                      (+ i 1)
-                      (rem (+ i 2) len)))))
+  (let ((len (length pnt-list)))
+    (dotimes (i (1- len))
+      (push-faces (list 0
+                        (+ i 1)
+                        (rem (+ i 2) len))))))
 
 ;; --- auxiliary functions --- ;;
 

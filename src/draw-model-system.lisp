@@ -17,6 +17,7 @@
            :model-2d-model
            :model-2d-depth
            :model-2d-offset
+           :model-2d-geometry
            :enable-model-2d
            :disable-model-2d
            :init-draw-model-system))
@@ -31,6 +32,14 @@
   (depth 0)
   (offset (make-point-2d))
   (enable nil))
+
+(defmacro.ps model-2d-geometry (model)
+  `(progn (check-type ,model model-2d)
+          (@ ,model model geometry)))
+
+(defmacro model-2d-geometry (model)
+  (declare (ignore model))
+  `(error "model-2d-geometry for CL is not implemented"))
 
 ;; --- system --- ;;
 
@@ -55,24 +64,34 @@
 (defvar.ps *scene-for-draw-system* nil)
 
 ;; TODO: Don't enabel if the entity is not registered in the draw-model-system.
-(defun.ps enable-model-2d (entity)
+(defun.ps enable-model-2d (entity &key target-model-2d)
+  ;; TODO: Check the entity has the target-model-2d if not nil
   (unless *scene-for-draw-system*
     (error "The scene for the draw system is not initialized"))
-  (do-ecs-components-of-entity (modelc entity
-                                       :component-type model-2d)
-    (with-slots (model enable) modelc
-      (unless enable
-        (*scene-for-draw-system*.add model)
-        (setf enable t)))))
+  (flet ((enable (target)
+           (with-slots (model enable) target
+             (unless enable
+               (*scene-for-draw-system*.add model)
+               (setf enable t)))))
+    (if target-model-2d
+        (enable target-model-2d)
+        (do-ecs-components-of-entity (modelc entity
+                                             :component-type model-2d)
+          (enable modelc)))))
 
-(defun.ps disable-model-2d (entity)
+(defun.ps disable-model-2d (entity &key target-model-2d)
+  ;; TODO: Check the entity has the target-model-2d if not nil
   (unless *scene-for-draw-system*
     (error "The scene for the draw system is not initialized"))
-  (do-ecs-components-of-entity (modelc entity
-                                       :component-type model-2d)
-    (with-slots (model enable) modelc
-      (*scene-for-draw-system*.remove model)
-      (setf enable nil))))
+  (flet ((disable (target)
+           (with-slots (model enable) target
+             (*scene-for-draw-system*.remove model)
+             (setf enable nil))))
+    (if target-model-2d
+        (disable target-model-2d)
+        (do-ecs-components-of-entity (modelc entity
+                                             :component-type model-2d)
+          (disable modelc)))))
 
 (defun.ps init-draw-model-system (scene)
   (setf *scene-for-draw-system* scene)

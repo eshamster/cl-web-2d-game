@@ -4,23 +4,21 @@
         :parenscript
         :ps-experiment
         :cl-ps-ecs
+        :cl-web-2d-game.basic-components
         :cl-web-2d-game.logger)
   (:export :texture-2d
            :texture-2d-p
            :texture-2d-material
-           :texture-2d-uv
+           :texture-2d-rect-uv
            :load-texture
            :unload-texture
-           :get-texture-async
-           :make-rect-uvs))
+           :get-texture-async))
 (in-package :cl-web-2d-game.texture)
 
 (enable-ps-experiment-syntax)
 
-;; TODO: Enable to process multiple texture in one image
-
 (defstruct.ps+ texture-2d (path-list '()) (name "") material
-               (uv (make-rect-uvs 0 0 1.0 1.0)))
+               (rect-uv (make-rect-2d)))
 
 (defstruct.ps+ raw-image-bitmap promise (ref-count 0))
 
@@ -76,14 +74,17 @@
                                          :ref-count 1))
             promise)))))
 
-(defun.ps load-texture (&key path name (alpha-path nil))
+(defun.ps load-texture (&key path name (alpha-path nil)
+                             (x 0) (y 0) (width 1.0) (height 1.0))
   "Asynchronously Load texture by path and register it by name"
   ;; TODO: Unload a registred texture that has the same name if exists.
   (push (make-texture-2d :name name
                          :path-list (if alpha-path
                                         (list path alpha-path)
                                         (list path))
-                         :material nil)
+                         :material nil
+                         :rect-uv (make-rect-2d :x x :y y
+                                                :width width :height height))
         *texture-table*)
   (let* ((loader (new (#j.THREE.TextureLoader#)))
          (start-time nil)
@@ -137,14 +138,3 @@
          (lambda () (texture-2d-material tex))
          :timeout-frame *load-texture-timeout-frames*))))
 
-;; --- UV functions --- ;;
-
-(defun.ps make-rect-uvs (x y width height)
-  (flet ((new-uv (u v)
-           (new (#j.THREE.Vector2# u v))))
-    (list (list (new-uv x y)
-                (new-uv (+ x width) y)
-                (new-uv (+ x width) (+ y height)))
-          (list (new-uv (+ x width) (+ y height))
-                (new-uv x (+ y height))
-                (new-uv x y)))))

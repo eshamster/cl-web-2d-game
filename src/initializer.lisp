@@ -5,13 +5,14 @@
         :ps-experiment
         :cl-ps-ecs
         :cl-web-2d-game.basic-components
+        :cl-web-2d-game.basic-systems
         :cl-web-2d-game.performance
         :cl-web-2d-game.collision
         :cl-web-2d-game.draw-model-system
         :cl-web-2d-game.logger
         :cl-web-2d-game.utils)
   (:export :start-2d-game
-           :init-default-system
+           :init-default-systems
            :get-rendered-dom))
 (in-package :cl-web-2d-game.initializer)
 
@@ -40,14 +41,17 @@
   (when *stats*
     (*stats*.update)))
 
-(defun.ps init-default-systems (&key scene
-                                     (script-system t)
-                                     (draw-system t)
-                                     (collision-system t))
+(defun.ps+ init-default-systems (&key scene
+                                      (script-system t)
+                                      (draw-system t)
+                                      (animation-system t)
+                                      (collision-system t))
   (when script-system
     (register-ecs-system "script2d" (make-script-system)))
   (when collision-system
     (register-ecs-system "collision" (make-collision-system)))
+  (when animation-system
+    (register-ecs-system "animation" (make-animation-system)))
   (when draw-system
     (register-ecs-system "draw2d" (init-draw-model-system scene))))
 

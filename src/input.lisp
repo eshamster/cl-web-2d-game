@@ -13,6 +13,11 @@
            :add-touch-end-callback
            :add-touch-move-callback
 
+           :is-key-down
+           :is-key-down-now
+           :is-key-up
+           :is-key-up-now
+
            :mouse-event-x
            :mouse-event-y
 
