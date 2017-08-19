@@ -54,14 +54,15 @@ exec ros -Q -- $0 "$@"
                                      (* rot-speed-ratio (/ PI 180))))))
      (make-model-2d :model (make-wired-rect :width 80 :height 80 :color 0x00ff00)
                     :depth depth))
-    (make-texture-model-async
-     :width 80 :height 80
-     :texture-name texture-name
-     :callback (lambda (model)
-                 (add-ecs-component-list
-                  rect
-                  (make-model-2d :model model :depth depth))
-                 (add-ecs-entity rect)))))
+    (frame-promise-then
+     (make-texture-model-promise
+      :width 80 :height 80
+      :texture-name texture-name)
+     (lambda (model)
+       (add-ecs-component-list
+        rect
+        (make-model-2d :model model :depth depth))
+       (add-ecs-entity rect)))))
 
 (defun.ps load-textures ()
   (load-texture :path "/images/sample.png" :name "sample")

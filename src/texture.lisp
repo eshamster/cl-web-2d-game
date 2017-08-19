@@ -12,17 +12,19 @@
            :texture-2d-rect-uv
            :load-texture
            :unload-texture
-           :get-texture-async))
+           :get-texture-promise))
 (in-package :cl-web-2d-game.texture)
 
 (enable-ps-experiment-syntax)
 
-(defstruct.ps+ texture-2d (path-list '()) (name "") material
+(defstruct.ps+ texture-2d (path-list '()) material
                (rect-uv (make-rect-2d)))
 
 (defstruct.ps+ raw-image-bitmap promise (ref-count 0))
 
-(defvar.ps+ *texture-table* '())
+;; A bitmap can include multiple textures. So the former is managed in *raw-image-bitmap-table*
+;; and the latter is managed in *texture-promise-table*
+(defvar.ps+ *texture-promise-table* (make-hash-table))
 
 (defvar.ps+ *raw-image-bitmap-table* (make-hash-table))
 
@@ -38,11 +40,8 @@
   (setf (gethash path *raw-image-bitmap-table*)
         nil))
 
-(defun.ps find-texture (name)
-  (find-if (lambda (wrapper)
-             (string= (texture-2d-name wrapper)
-                      name))
-           *texture-table*))
+(defun.ps find-texture-promise (name)
+  (gethash name *texture-promise-table*))
 
 (defun.ps get-load-texture-promise (&key path loader)
   (let ((raw (find-raw-image-bitmap path)))
@@ -59,82 +58,81 @@
                          "Start loading ~A" path))
           (setf start-time (performance.now))
           (let ((promise
-                 (new (-promise
-                       (lambda (resolve)
-                         (if path
-                             (loader.load path
-                                          (lambda (image-bitmap)
-                                            (console-log :loader :debug
-                                                         "Time to load texture ~A: ~F ms" path
-                                                         (- (performance.now) start-time))
-                                            (resolve image-bitmap)))
-                             (resolve nil)))))))
+                 (init-frame-promise
+                  (lambda (resolve)
+                    (if path
+                        (loader.load path
+                                     (lambda (image-bitmap)
+                                       (console-log :loader :debug
+                                                    "Time to load texture ~A: ~F ms" path
+                                                    (- (performance.now) start-time))
+                                       (resolve image-bitmap)))
+                        (resolve nil))))))
             (setf (gethash path *raw-image-bitmap-table*)
                   (make-raw-image-bitmap :promise promise
                                          :ref-count 1))
             promise)))))
 
+(defvar.ps+ *load-texture-timeout-frames* 120)
+
 (defun.ps load-texture (&key path name (alpha-path nil)
                              (x 0) (y 0) (width 1.0) (height 1.0))
   "Asynchronously Load texture by path and register it by name"
   ;; TODO: Unload a registred texture that has the same name if exists.
-  (push (make-texture-2d :name name
-                         :path-list (if alpha-path
-                                        (list path alpha-path)
-                                        (list path))
-                         :material nil
-                         :rect-uv (make-rect-2d :x x :y y
-                                                :width width :height height))
-        *texture-table*)
   (let* ((loader (new (#j.THREE.TextureLoader#)))
-         (start-time nil)
          (promise-main (get-load-texture-promise :path path
                                                  :loader loader))
          (promise-alpha (get-load-texture-promise :path alpha-path
-                                                  :loader loader)))
-    (flet ((load-callback (image-bitmap alpha-bitmap)
-             (let ((tex (find-texture name)))
-               (unless tex
-                 (error "The find-texture should be successed"))
+                                                  :loader loader))
+         (tex (make-texture-2d :name name
+                               :path-list (if alpha-path
+                                              (list path alpha-path)
+                                              (list path))
+                               :material nil
+                               :rect-uv (make-rect-2d :x x
+                                                      :y y
+                                                      :width width
+                                                      :height height))))
+    (setf (gethash name *texture-promise-table*)
+          (frame-promise-all
+           (list promise-main promise-alpha)
+           (lambda (values)
+             (let ((image-bitmap (nth 0 values))
+                   (alpha-bitmap (nth 1 values)))
                (setf (texture-2d-material tex)
                      (new (#j.THREE.MeshBasicMaterial#
                            (create map image-bitmap
                                    alpha-map alpha-bitmap
                                    transparent (if alpha-bitmap true false)
-                                   color #xffffff))))))))
-    ((@ (-promise.all (list promise-main promise-alpha)) then)
-     (lambda (values)
-       (load-callback (nth 0 values) (nth 1 values))))))
+                                   color #xffffff)))))
+             tex)
+           :timeout-frame *load-texture-timeout-frames*))))
 
 ;; Note: not tested function
-(defun.ps unload-texture (name)
-  (let ((tex (find-texture name)))
-    (unless tex
+(defun.ps+ unload-texture (name)
+  (let ((tex-promise (find-texture-promise name)))
+    (unless tex-promise
       (error "The texture \"~A\" is not loaded." name))
-    (setf *texture-table* (remove tex *texture-table*))
-    (dolist (path (texture-2d-path-list tex))
-      (let ((raw (find-raw-image-bitmap path)))
-        (unless raw
-          (error "The path \"~A\" is not loaded." path))
-        (with-slots (ref-count) raw
-          (if (= ref-count 1)
-              (remove-raw-image-bitmap path
-                                       (texture-2d-material tex))
-              (progn (decf ref-count)
-                     (console-log :loader :debug
-                                  "Decrease the ref-count of ~A to ~D"
-                                  path ref-count))))))))
+    (frame-promise-then
+     tex-promise
+     (lambda (tex)
+       (setf *texture-promise-table* (remove tex-promise *texture-promise-table*))
+       (dolist (path (texture-2d-path-list tex))
+         (let ((raw (find-raw-image-bitmap path)))
+           (unless raw
+             (error "The path \"~A\" is not loaded." path))
+           (with-slots (ref-count) raw
+             (if (= ref-count 1)
+                 (remove-raw-image-bitmap path
+                                          (texture-2d-material tex))
+                 (progn (decf ref-count)
+                        (console-log :loader :debug
+                                     "Decrease the ref-count of ~A to ~D"
+                                     path ref-count))))))))))
 
-(defvar.ps+ *load-texture-timeout-frames* 120)
-
-(defun.ps+ get-texture-async (name callback)
-  (let ((tex (find-texture name)))
-    (unless tex
+(defun.ps+ get-texture-promise (name)
+  (let ((tex-promise (find-texture-promise name)))
+    (unless tex-promise
       (error "The texture \"~A\" is not loaded." name))
-    (if (texture-2d-material tex)
-        (funcall callback tex)
-        (register-func-with-pred
-         (lambda () (funcall callback tex))
-         (lambda () (texture-2d-material tex))
-         :timeout-frame *load-texture-timeout-frames*))))
+    tex-promise))
 
