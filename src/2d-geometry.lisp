@@ -4,6 +4,7 @@
         :cl-ppcre
         :parenscript
         :ps-experiment
+        :cl-ps-ecs
         :cl-web-2d-game.texture
         :cl-web-2d-game.basic-components)
   (:export :make-line
@@ -15,7 +16,7 @@
            :make-wired-polygon
            :make-solid-polygon
            :make-texture-model
-           :make-texture-model-async
+           :make-texture-model-promise
            :change-model-color
            :change-geometry-uvs))
 (in-package :cl-web-2d-game.2d-geometry)
@@ -136,13 +137,12 @@
     (new (#j.THREE.Mesh# geometry
                          (texture-2d-material texture)))))
 
-(defun.ps+ make-texture-model-async (&key width height texture-name callback)
-  (get-texture-async
-   texture-name
+(defun.ps+ make-texture-model-promise (&key width height texture-name)
+  (frame-promise-then
+   (get-texture-promise texture-name)
    (lambda (texture)
-     (funcall callback
-              (make-texture-model :width width :height height
-                                  :texture texture)))))
+     (make-texture-model :width width :height height
+                         :texture texture))))
 
 ;; --- regular polygon --- ;;
 

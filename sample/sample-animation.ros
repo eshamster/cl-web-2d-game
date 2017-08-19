@@ -49,8 +49,8 @@ exec ros -Q -- $0 "$@"
      (make-model-2d :model (make-wired-rect :width 160 :height 160
                                             :color #x226622)
                     :depth (- depth 30)))
-    (get-texture-async
-     texture-name
+    (frame-promise-then
+     (get-texture-promise texture-name)
      (lambda (texture)
        (let* ((model-2d (make-model-2d :model (make-texture-model :width 160 :height 160
                                                                   :texture texture)
@@ -71,8 +71,8 @@ exec ros -Q -- $0 "$@"
 (defun.ps+ init-moving-animation (entity manager texture-name register-name)
   (let* ((width 120)
          (height width))
-    (get-texture-async
-     texture-name
+    (frame-promise-then
+     (get-texture-promise texture-name)
      (lambda (texture)
        (let* ((model-2d (make-model-2d :model (make-texture-model :width width
                                                                   :height height
@@ -89,12 +89,8 @@ exec ros -Q -- $0 "$@"
          (register-animation manager register-name anime-2d))))))
 
 (defun.ps+ add-moving-model ()
-  ;; TODO: Rethink asynchronicity
-  ;;       Althought the entity can be enabled before animation loading,
-  ;;       the following implementation doesn't consider it.
   (let* ((entity (make-ecs-entity))
          (manager (init-animation-manager entity)))
-    (add-ecs-entity entity)
     (add-ecs-component-list
      entity
      (make-script-2d :func (lambda (entity)
@@ -106,8 +102,12 @@ exec ros -Q -- $0 "$@"
                                (switch-current-animation manager "left"))
                              (when (is-key-down-now :right)
                                (switch-current-animation manager "right")))))
-    (init-moving-animation entity manager "moving-left" "left")
-    (init-moving-animation entity manager "moving-right" "right")))
+    (frame-promise-all
+     (list (init-moving-animation entity manager "moving-left" "left")
+           (init-moving-animation entity manager "moving-right" "right"))
+     (lambda (values)
+       (declare (ignore values))
+       (add-ecs-entity entity)))))
 
 (defun.ps load-textures ()
   (load-texture :path "/images/sample_explosion.png" :name "explosion"
