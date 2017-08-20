@@ -4,7 +4,8 @@
         :cl-ppcre
         :ps-experiment
         :cl-ps-ecs
-        :parenscript)
+        :parenscript
+        :cl-web-2d-game.calc)
   (:import-from :cl-web-2d-game.basic-components
                 :point-2d
                 :point-2d-x
@@ -61,7 +62,7 @@
                                    (model-2d-depth modelc))
                                   (setf model.rotation.z (point-2d-angle new-pos)))))))))))
 
-(defvar.ps *scene-for-draw-system* nil)
+(defvar.ps+ *scene-for-draw-system* nil)
 
 ;; TODO: Don't enabel if the entity is not registered in the draw-model-system.
 (defun.ps enable-model-2d (entity &key target-model-2d)
@@ -90,10 +91,10 @@
     (if target-model-2d
         (disable target-model-2d)
         (do-ecs-components-of-entity (modelc entity
-                                             :component-type model-2d)
+                                             :component-type 'model-2d)
           (disable modelc)))))
 
-(defun.ps init-draw-model-system (scene)
+(defun.ps+ init-draw-model-system (scene)
   (setf *scene-for-draw-system* scene)
   (make-draw-model-system
    :add-entity-hook #'enable-model-2d
