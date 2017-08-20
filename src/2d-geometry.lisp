@@ -42,33 +42,33 @@
 (defun.ps to-rad (degree)
   (/ (* degree pi) 180))
 
-(defun.ps make-line-model (geometry color z)
+(defun.ps make-line-model (geometry color)
   (let ((material (new (#j.THREE.LineBasicMaterial# (create :color color)))))
     (new (#j.THREE.Line# geometry material))))
 
 (defmacro.ps+ def-wired-geometry (name args &body body)
   (with-ps-gensyms (geometry)
-    `(defun.ps ,name (&key ,@args color z)
+    `(defun.ps ,name (&key ,@args color)
        (let ((,geometry (new (#j.THREE.Geometry#))))
          (flet ((push-vertices (&rest rest)
                   (push-vertices-to ,geometry rest)))
            ,@body)
-         (make-line-model ,geometry color z)))))
+         (make-line-model ,geometry color)))))
 
-(defun.ps make-solid-model (geometry color z)
+(defun.ps make-solid-model (geometry color)
   (let ((material (new (#j.THREE.MeshBasicMaterial# (create :color color)))))
     (new (#j.THREE.Mesh# geometry material))))
 
 (defmacro.ps+ def-solid-geometry (name args &body body)
   (with-ps-gensyms (geometry)
-    `(defun.ps ,name (&key ,@args color z)
+    `(defun.ps ,name (&key ,@args color)
        (let ((,geometry (new (#j.THREE.Geometry#))))
          (flet ((push-vertices (&rest rest)
                   (push-vertices-to ,geometry rest))
                 (push-faces (&rest rest)
                   (push-faces-to ,geometry rest)))
            ,@body)
-         (make-solid-model ,geometry color z)))))
+         (make-solid-model ,geometry color)))))
 
 ;; --- line --- ;;
 
