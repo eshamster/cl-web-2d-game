@@ -13,6 +13,8 @@
            :make-wired-rect
            :make-solid-regular-polygon
            :make-wired-regular-polygon
+           :make-solid-circle
+           :make-wired-circle
            :make-wired-polygon
            :make-solid-polygon
            :make-texture-model
@@ -160,6 +162,15 @@
     (let ((angle (to-rad (+ (/ (* 360 i) n) start-angle))))
       (push-vertices (list (+ r (* r (cos angle)))
                            (+ r (* r (sin angle))))))))
+
+;; --- circle --- ;;
+;; TODO: Adaptively decide the 'n' according to the 'r'
+
+(defun.ps+ make-solid-circle (&key r color)
+  (make-solid-regular-polygon :r r :n 60 :color color))
+
+(defun.ps+ make-wired-circle (&key r color)
+  (make-wired-regular-polygon :r r :n 60 :color color))
 
 ;; --- arbitrary polygon --- ;;
 
