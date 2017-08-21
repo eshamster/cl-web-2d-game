@@ -74,12 +74,17 @@ exec ros -Q -- $0 "$@"
                (make-solid-regular-polygon :r 20 :n 5 :color #xff00ff))
   (add-a-model 400 50 20
                (make-solid-regular-polygon :r 20 :n 5 :start-angle 30))
+  ;; circle
+  (add-a-model 450 50 20
+               (make-solid-circle :r 20 :color #x00ffff))
+  (add-a-model 500 50 20
+               (make-wired-circle :r 20 :color #x00ffff))
   ;; polygon
   (let ((pnts '((10 10) (20 50) (12 65) (-5 25))))
-    (add-a-model 450 50 20
+    (add-a-model 50 150 20
                  (make-wired-polygon :pnt-list pnts
                                      :color #x00ffff))
-    (add-a-model 500 50 20
+    (add-a-model 100 150 20
                  (make-solid-polygon :pnt-list pnts
                                      :color #x00ffff)))
   ;; for enabling and disabling model
