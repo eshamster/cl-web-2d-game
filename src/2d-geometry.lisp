@@ -151,17 +151,17 @@
 (def-solid-geometry make-solid-regular-polygon (r n (start-angle 0))
   (dotimes (i n)
     (let ((angle (to-rad (+ (/ (* 360 i) n) start-angle))))
-      (push-vertices (list (+ r (* r (cos angle)))
-                           (+ r (* r (sin angle)))))))
-  (push-vertices (list r r))
+      (push-vertices (list (* r (cos angle))
+                           (* r (sin angle))))))
+  (push-vertices (list 0 0))
   (dotimes (i n)
     (push-faces (list n i (rem (1+ i) n)))))
 
 (def-wired-geometry make-wired-regular-polygon (r n (start-angle 0))
   (dotimes (i (1+ n))
     (let ((angle (to-rad (+ (/ (* 360 i) n) start-angle))))
-      (push-vertices (list (+ r (* r (cos angle)))
-                           (+ r (* r (sin angle))))))))
+      (push-vertices (list (* r (cos angle))
+                           (* r (sin angle)))))))
 
 ;; --- circle --- ;;
 ;; TODO: Adaptively decide the 'n' according to the 'r'
