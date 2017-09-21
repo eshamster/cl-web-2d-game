@@ -16,6 +16,7 @@
         :cl-web-2d-game.calc
         :cl-web-2d-game.camera
         :cl-web-2d-game.collision
+        :cl-web-2d-game.collision-system
         :cl-web-2d-game.input
         :cl-web-2d-game.texture
         :cl-web-2d-game.animation
@@ -35,6 +36,7 @@
 (cl-reexport:reexport-from :cl-web-2d-game.calc)
 (cl-reexport:reexport-from :cl-web-2d-game.camera)
 (cl-reexport:reexport-from :cl-web-2d-game.collision)
+(cl-reexport:reexport-from :cl-web-2d-game.collision-system)
 (cl-reexport:reexport-from :cl-web-2d-game.input)
 (cl-reexport:reexport-from :cl-web-2d-game.texture)
 (cl-reexport:reexport-from :cl-web-2d-game.animation)

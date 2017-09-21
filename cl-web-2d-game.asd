@@ -41,6 +41,7 @@
                  (:file "gui")
                  (:file "debug-drawer")
                  (:file "performance")
+                 (:file "collision-system")
                  (:file "basic-systems")
                  (:file "initializer")
                  (:file "cl-web-2d-game"))))
