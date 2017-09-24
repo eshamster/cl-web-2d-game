@@ -18,6 +18,9 @@
            :is-key-up
            :is-key-up-now
 
+           :get-mouse-x
+           :get-mouse-y
+
            :mouse-event-x
            :mouse-event-y
 
