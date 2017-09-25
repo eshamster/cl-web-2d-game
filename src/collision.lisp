@@ -13,15 +13,21 @@
 
            :physic-2d
            :make-physic-2d
+           :physic-2d-offset
 
            :physic-circle
            :make-physic-circle
+           :physic-circle-r
 
            :physic-triangle
            :make-physic-triangle
+           :physic-triangle-pnt1
+           :physic-triangle-pnt2
+           :physic-triangle-pnt3
 
            :physic-polygon
            :make-physic-polygon
+           :physic-polygon-pnt-list
 
            :process-collision))
 (in-package :cl-web-2d-game.collision)
