@@ -79,7 +79,7 @@ exec ros -Q -- $0 "$@"
 
 (defun.ps+ init-func (scene)
   (init-gui)
-  (initialize-input)
+  (init-input)
   (add-mouse-pointer)
   (add-colliders)
   (add-panel-bool 'display-collider-model t

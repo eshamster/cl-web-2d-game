@@ -28,7 +28,7 @@
            :touch-event-element-x
            :touch-event-element-y
 
-           :initialize-input))
+           :init-input))
 (in-package :cl-web-2d-game.input)
 
 (enable-ps-experiment-syntax)
@@ -206,7 +206,7 @@ device-state = boolean-value"
 
 ;; register
 
-(defun.ps initialize-input ()
+(defun.ps init-input ()
   (window.add-event-listener "mousemove" on-mouse-move-event)
   (window.add-event-listener "mousedown" on-mouse-down-event)
   (window.add-event-listener "mouseup" on-mouse-up-event)
