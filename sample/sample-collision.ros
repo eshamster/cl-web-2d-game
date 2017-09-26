@@ -37,6 +37,9 @@ exec ros -Q -- $0 "$@"
 
 ;; --- Parenscript program --- ;;
 
+(defvar.ps+ *screen-width* 800)
+(defvar.ps+ *screen-height* 600)
+
 (defvar *js-game-file*
   (merge-pathnames "sample.js" *downloaded-js-dir*))
 
@@ -55,27 +58,85 @@ exec ros -Q -- $0 "$@"
      (make-physic-circle :r r))
     (add-ecs-entity pointer)))
 
-;; [WIP]
+(defstruct.ps+ collider-generator
+    tag target-tag min-r max-r
+    interval
+    circle-p num-vertices
+    up-to-down-p)
+
+(defvar.ps+ *generator-from-up*
+    (make-collider-generator
+     :tag :a :target-tag :b
+     :min-r 20 :max-r 40
+     :interval 40
+     :circle-p t :num-vertices 10
+     :up-to-down-p t))
+
+(defvar.ps+ *generator-from-down*
+    (make-collider-generator
+     :tag :b :target-tag :a
+     :min-r 20 :max-r 40
+     :interval 40
+     :circle-p t :num-vertices 10
+     :up-to-down-p nil))
+
+(defvar.ps+ *collider-speed* 3)
+
+;; The following should be reported and fixed.
+;; (ps:ps (random 1.0))
+;;  -> "Math.floor(1.0 * Math.random());"
+(defun.ps random1 () (random))
+(defun random1 () (random 1.0))
+
+;; TODO: Implement (not circle-p) case
+(defun.ps+ add-a-collider (generator)
+  (with-slots (min-r max-r up-to-down-p
+                     tag target-tag)
+      generator
+    (let* ((entity (make-ecs-entity))
+           (r (+ min-r (* max-r (random1))))
+           (model (make-model-2d :model (make-solid-circle :r r :color #x888888)
+                                 :depth 0))
+           (collide-p nil)
+           (point (make-point-2d :x (* *screen-width* (random1))
+                                 :y (if up-to-down-p
+                                        (+ *screen-height* r)
+                                        (* r -1))))
+           (speed-abs *collider-speed*))
+      (add-ecs-component-list
+       entity
+       point
+       (make-physic-circle :r r
+                           :target-tags (list target-tag)
+                           :on-collision (lambda (mine target)
+                                           (declare (ignore mine target))
+                                           (setf collide-p t)))
+       (make-script-2d :func (lambda (entity)
+                               (with-slots (y) point
+                                 (incf (point-2d-y point)
+                                       (* speed-abs (if up-to-down-p -1 1)))
+                                 (when (or (< y (* r -1 5))
+                                           (> y (+ *screen-height* (* r 5))))
+                                   (register-next-frame-func
+                                    (lambda () (delete-ecs-entity entity)))))
+                               (if collide-p
+                                   (progn (setf collide-p nil)
+                                          (enable-model-2d entity :target-model-2d model))
+                                   (disable-model-2d entity :target-model-2d model))))
+       model)
+      (add-entity-tag entity tag)
+      (add-ecs-entity entity))))
+
 (defun.ps+ add-colliders ()
-  (let* ((entity (make-ecs-entity))
-         (r 40)
-         (model (make-model-2d :model (make-solid-circle :r r :color #x888888)
-                               :depth 0))
-         (collide-p nil))
-    (add-ecs-component-list
-     entity
-     (make-point-2d :x 200 :y 200)
-     (make-physic-circle :r r
-                         :on-collision (lambda (mine target)
-                                         (declare (ignore mine target))
-                                         (setf collide-p t)))
-     (make-script-2d :func (lambda (entity)
-                             (if collide-p
-                                 (progn (setf collide-p nil)
-                                        (enable-model-2d entity :target-model-2d model))
-                                 (disable-model-2d entity :target-model-2d model))))
-     model)
-    (add-ecs-entity entity)))
+  (labels ((rec (generator)
+             (with-slots (interval) generator
+               (register-nframes-after-func
+                (lambda ()
+                  (add-a-collider generator)
+                  (rec generator))
+                interval))))
+    (rec *generator-from-up*)
+    (rec *generator-from-down*)))
 
 (defun.ps+ init-func (scene)
   (init-gui)
@@ -99,8 +160,8 @@ exec ros -Q -- $0 "$@"
                        :if-does-not-exist :create)
     (princ
      (pse:with-use-ps-pack (:this)
-       (let ((width 800)
-             (height 600))
+       (let ((width *screen-width*)
+             (height *screen-height*))
          (start-2d-game :screen-width width
                         :screen-height height
                         :camera (init-camera 0 0 width height)
