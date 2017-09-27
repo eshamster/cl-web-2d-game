@@ -67,13 +67,14 @@
                                          :component-type 'physic-2d)
         (let ((model (find-a-component (lambda (target) (typep target 'model-2d))
                                        comp)))
-          (when model
-            (if value
-                (enable-model-2d entity :target-model-2d model)
-                (disable-model-2d entity :target-model-2d model))))))
+          (if model
+              (if value
+                  (enable-model-2d entity :target-model-2d model)
+                  (disable-model-2d entity :target-model-2d model))
+              (when value
+                (add-collider-model entity))))))
     t))
 
-;; TODO: Don't make collider model when *collider-model-enable* is nil
 (defstruct.ps+
     (collision-system
      (:include ecs-system
@@ -90,4 +91,6 @@
                                       (let ((entity2 (aref entities inner-idx)))
                                         (with-ecs-components ((ph2 physic-2d)) entity2
                                           (process-collision entity1 ph1 entity2 ph2))))))))))))
-               (add-entity-hook #'add-collider-model))))
+               (add-entity-hook (lambda (entity)
+                                  (when *collider-model-enable*
+                                    (add-collider-model entity)))))))
