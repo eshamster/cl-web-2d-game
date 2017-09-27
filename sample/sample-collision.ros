@@ -148,8 +148,19 @@ exec ros -Q -- $0 "$@"
                                (setf-collider-model-enable value)))
   (init-default-systems :scene scene))
 
+(defun.ps count-to-string (count-a count-b)
+  (+ "↓: " count-a ", ↑: " count-b))
+
+(defun.ps+ monitor-collider-count ()
+  (let ((count-a 0)
+        (count-b 0))
+    (do-ecs-entities entity
+      (cond ((has-entity-tag entity :a) (incf count-a))
+            ((has-entity-tag entity :b) (incf count-b))))
+    (add-to-monitoring-log (count-to-string count-a count-b))))
+
 (defun.ps+ update-func ()
-  )
+  (monitor-collider-count))
 
 ;; --- Make js main file --- ;;
 
