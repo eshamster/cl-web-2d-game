@@ -27,9 +27,7 @@
 
            :physic-polygon
            :make-physic-polygon
-           :physic-polygon-pnt-list
-
-           :process-collision))
+           :physic-polygon-pnt-list))
 (in-package :cl-web-2d-game.collision)
 
 #|
@@ -242,13 +240,4 @@ Note: The second condition can't check only the case where
     (when (has-entity-tag entity1 tag)
       (return-from judge-collision-target-tags t)))
   nil)
-
-(defun.ps+ process-collision (entity1 ph1 entity2 ph2)
-  (when (not (judge-collision-target-tags entity1 ph1 entity2 ph2))
-    (return-from process-collision))
-  (when (collide-entities-with-physics-p entity1 ph1 entity2 ph2)
-    (with-slots-pair (((event1 on-collision)) ph1
-                      ((event2 on-collision)) ph2)
-      (funcall event1 entity1 entity2)
-      (funcall event2 entity2 entity1))))
 

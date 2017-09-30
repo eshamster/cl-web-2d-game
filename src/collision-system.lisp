@@ -6,10 +6,13 @@
         :cl-ps-ecs
         :parenscript
         :cl-web-2d-game.basic-components
+        :cl-web-2d-game.calc
         :cl-web-2d-game.collision
         :cl-web-2d-game.2d-geometry
         :cl-web-2d-game.draw-model-system
         :cl-web-2d-game.performance)
+  (:import-from :ps-experiment.common-macros
+                :with-slots-pair)
   (:export :collision-system
            :make-collision-system
            :setf-collider-model-enable))
@@ -74,6 +77,15 @@
               (when value
                 (add-collider-model entity))))))
     t))
+
+(defun.ps+ process-collision (entity1 ph1 entity2 ph2)
+  (when (not (judge-collision-target-tags entity1 ph1 entity2 ph2))
+    (return-from process-collision))
+  (when (collide-entities-with-physics-p entity1 ph1 entity2 ph2)
+    (with-slots-pair (((event1 on-collision)) ph1
+                      ((event2 on-collision)) ph2)
+      (funcall event1 entity1 entity2)
+      (funcall event2 entity2 entity1))))
 
 (defstruct.ps+
     (collision-system
