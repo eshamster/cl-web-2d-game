@@ -219,12 +219,9 @@ Note: The second condition can't check only the case where
           (t (error "not recognized physical type")))))
 
 (defun.ps+ collide-entities-with-physics-p (entity1 ph1 entity2 ph2)
-  (labels ((is-kind-pair (physic1 physic2 kind1 kind2)
-             (and (eq (physic-2d-kind physic1) kind1)
-                  (eq (physic-2d-kind physic2) kind2))))
-    (let ((pnt1 (calc-global-point entity1))
-          (pnt2 (calc-global-point entity2)))
-      (collide-physics-p ph1 pnt1 ph2 pnt2))))
+  (let ((pnt1 (calc-global-point entity1))
+        (pnt2 (calc-global-point entity2)))
+    (collide-physics-p ph1 pnt1 ph2 pnt2)))
 
 (defun.ps+ collide-entities-p (entity1 entity2)
   (with-ecs-components ((ph1 physic-2d)) entity1
