@@ -5,6 +5,7 @@
         :ps-experiment
         :cl-ps-ecs)
   (:export :init-gui
+           :add-panel-folder
            :add-panel-bool
            :add-panel-number
            :add-panel-button))
@@ -19,19 +20,25 @@
   (setf *gui-panel* (new (#j.dat.GUI#)))
   (setf *gui-panel-params* (make-hash-table)))
 
-(defmacro.ps add-to-global (name init-value on-change &rest args)
+(defmacro.ps add-to-global (name init-value on-change folder &rest args)
   `(progn (setf (gethash ,name *gui-panel-params*) ,init-value)
-          (symbol-macrolet ((adding ((@ *gui-panel* add) *gui-panel-params* ,name ,@args)))
-            (if on-change
-                (-- adding (on-change ,on-change))
-                adding))))
+          ,(append `(-- ((@ (if ,folder ,folder *gui-panel*) add)
+                         *gui-panel-params* ,name ,@args))
+                   (when on-change
+                     `((on-change ,on-change))))))
 
-(defun.ps add-panel-bool (name init-value &key (on-change nil))
-  (add-to-global name init-value on-change))
+(defun.ps add-panel-folder (name &key (open-p t))
+  (let ((folder (*gui-panel*.add-folder name)))
+    (when open-p
+      (folder.open))
+    folder))
 
-(defun.ps add-panel-number (name init-value &key (on-change nil) (min -100) (max -100) (step 0.1))
-  (add-to-global name init-value on-change
+(defun.ps add-panel-bool (name init-value &key (on-change nil) (folder nil))
+  (add-to-global name init-value on-change folder))
+
+(defun.ps add-panel-number (name init-value &key (on-change nil) (folder nil) (min -100) (max -100) (step 0.1))
+  (add-to-global name init-value on-change folder
                  min max step))
 
-(defun.ps add-panel-button (name &key (on-change nil))
-  (add-to-global name on-change nil))
+(defun.ps add-panel-button (name &key (on-change nil) (folder nil))
+  (add-to-global name on-change folder nil))
