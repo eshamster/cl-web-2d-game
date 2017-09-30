@@ -138,14 +138,27 @@ exec ros -Q -- $0 "$@"
     (rec *generator-from-up*)
     (rec *generator-from-down*)))
 
+(defun.ps+ add-gui-panels ()
+  (flet ((add (folder-name generator)
+           (let ((folder (add-panel-folder folder-name)))
+             (with-slots (interval) generator
+               (add-panel-number "num per second" (/ 60.0 interval)
+                                 :min 1 :max 60 :step 1
+                                 :folder folder
+                                 :on-change (lambda (value)
+                                              (setf interval (floor (/ 60.0 value)))))))))
+    (add "From up" *generator-from-up*)
+    (add "From down" *generator-from-down*))
+  (add-panel-bool 'display-collider-model t
+                  :on-change (lambda (value)
+                               (setf-collider-model-enable value))))
+
 (defun.ps+ init-func (scene)
   (init-gui)
   (init-input)
   (add-mouse-pointer)
   (add-colliders)
-  (add-panel-bool 'display-collider-model t
-                  :on-change (lambda (value)
-                               (setf-collider-model-enable value)))
+  (add-gui-panels)
   (init-default-systems :scene scene))
 
 (defun.ps count-to-string (count-a count-b)
