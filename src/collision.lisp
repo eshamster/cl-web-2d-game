@@ -27,7 +27,9 @@
 
            :physic-polygon
            :make-physic-polygon
-           :physic-polygon-pnt-list))
+           :physic-polygon-pnt-list
+
+           :judge-collision-target-tags))
 (in-package :cl-web-2d-game.collision)
 
 #|

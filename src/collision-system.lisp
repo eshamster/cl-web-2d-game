@@ -20,6 +20,8 @@
 
 (enable-ps-experiment-syntax)
 
+;; --- collider model --- ;;
+
 (defvar.ps+ *collider-model-color* #x00ff00)
 (defvar.ps+ *collider-model-depth* 10)
 (defvar.ps+ *collider-model-enable* t)
@@ -78,10 +80,17 @@
                 (add-collider-model entity))))))
     t))
 
-(defun.ps+ process-collision (entity1 ph1 entity2 ph2)
+;; --- collision --- ;;
+
+;; The with-ecs-components takes some time, so buffer
+;; components before collision loop (double loop)
+(defstruct.ps+ collision-entity-info
+    entity global-point physic)
+
+(defun.ps+ process-collision (entity1 ph1 pnt1 entity2 ph2 pnt2)
   (when (not (judge-collision-target-tags entity1 ph1 entity2 ph2))
     (return-from process-collision))
-  (when (collide-entities-with-physics-p entity1 ph1 entity2 ph2)
+  (when (collide-physics-p ph1 pnt1 ph2 pnt2)
     (with-slots-pair (((event1 on-collision)) ph1
                       ((event2 on-collision)) ph2)
       (funcall event1 entity1 entity2)
@@ -95,14 +104,26 @@
                 (lambda (system)
                   (with-performance ("collision")
                     (with-slots ((entities target-entities)) system
-                      (let ((length (length entities)))
-                        (loop for outer-idx from 0 below (1- length) do
-                             (let ((entity1 (aref entities outer-idx)))
-                               (with-ecs-components ((ph1 physic-2d)) entity1
+                      (let ((info-list '()))
+                        (dolist (entity entities)
+                          (push (make-collision-entity-info
+                                 :entity entity
+                                 :global-point (calc-global-point entity)
+                                 :physic (get-ecs-component 'physic-2d entity))
+                                info-list))
+                        (let ((length (length info-list)))
+                          (loop for outer-idx from 0 below (1- length) do
+                               (with-slots ((entity1 entity)
+                                            (ph1 physic)
+                                            (pnt1 global-point))
+                                   (aref info-list outer-idx)
                                  (loop for inner-idx from (1+ outer-idx) below length do
-                                      (let ((entity2 (aref entities inner-idx)))
-                                        (with-ecs-components ((ph2 physic-2d)) entity2
-                                          (process-collision entity1 ph1 entity2 ph2))))))))))))
+                                      (with-slots ((entity2 entity)
+                                                   (ph2 physic)
+                                                   (pnt2 global-point))
+                                          (aref info-list inner-idx)
+                                        (process-collision entity1 ph1 pnt1
+                                                           entity2 ph2 pnt2)))))))))))
                (add-entity-hook (lambda (entity)
                                   (when *collider-model-enable*
                                     (add-collider-model entity)))))))
