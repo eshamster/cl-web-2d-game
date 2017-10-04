@@ -37,16 +37,6 @@
                         (make-wired-circle
                          :color color
                          :r (physic-circle-r physic-2d)))))
-      (physic-triangle (make-a-model
-                        (lambda (color)
-                          (make-wired-polygon
-                           :color color
-                           :pnt-list (mapcar (lambda (pnt)
-                                               (list (vector-2d-x pnt)
-                                                     (vector-2d-y pnt)))
-                                             (list (physic-triangle-pnt1 physic-2d)
-                                                   (physic-triangle-pnt2 physic-2d)
-                                                   (physic-triangle-pnt3 physic-2d)))))))
       (physic-polygon (make-a-model
                        (lambda (color)
                          (make-wired-polygon

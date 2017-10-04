@@ -16,7 +16,7 @@
 
 ;; --- test --- ;;
 
-(plan 3)
+(plan 2)
 
 (defun.ps+ same-bool-p (a b)
   "This is required because 'false' and 'null' is not same in JavaScript."
@@ -39,34 +39,6 @@
       (test-2-circles t 2 1 0 1 0 0)
       (print "doesn't collide")
       (test-2-circles nil 1 -10 1 3 1 1))))
-
-(subtest "Circle to Triangle"
-  (with-prove-in-both ()
-    ;; A half triangle of a regular triangle
-    (let ((triangle (make-physic-triangle
-                     :pnt1 (make-point-2d :x 0 :y 0)
-                     :pnt2 (make-point-2d :x 0 :y 1)
-                     :pnt3 (make-point-2d :x (sqrt 3) :y 0))))
-      (labels ((test-ct (expected rc xc yc
-                                  pnt-triangle)
-                 (is (collide-physics-p
-                      (make-physic-circle :r rc) (make-point-2d :x xc :y yc)
-                      triangle pnt-triangle)
-                     expected
-                     :test #'same-bool-p)))
-        (print "A circle includes a triangle")
-        (test-ct t 2 1 0 (make-point-2d))
-        (print "A circle is included in a triangle")
-        (test-ct t 0.1 0.25 0.25 (make-point-2d))
-        (print "A circle crosses to a triangle")
-        (test-ct t 1 (sqrt 3) 0 (make-point-2d))
-        (print "Doesn't collide in default, but collides when a triangle rotates")
-        (labels ((test-rotate (expected angle)
-                   (test-ct expected 0.8 -2 0
-                            (make-point-2d :angle angle))))
-          (test-rotate nil 0)
-          (test-rotate nil (/ PI 2))
-          (test-rotate t PI))))))
 
 (subtest "Circle to Polygon"
   (with-prove-in-both ()

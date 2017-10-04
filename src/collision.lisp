@@ -19,12 +19,6 @@
            :make-physic-circle
            :physic-circle-r
 
-           :physic-triangle
-           :make-physic-triangle
-           :physic-triangle-pnt1
-           :physic-triangle-pnt2
-           :physic-triangle-pnt3
-
            :physic-polygon
            :make-physic-polygon
            :physic-polygon-pnt-list
@@ -46,16 +40,12 @@ Note: col-xx-vec takes 'point' and 'offset' for each physic. The 'point' means a
 
 (defstruct.ps+ (physic-circle (:include physic-2d (kind :circle))) (r 0))
 
-(defstruct.ps+ (physic-triangle (:include physic-2d (kind :triangle)))
-    (pnt1 (make-vector-2d)) (pnt2 (make-vector-2d)) (pnt3 (make-vector-2d)))
-
 (defstruct.ps+ (physic-polygon (:include physic-2d (kind :polygon)))
   (pnt-list '()))
 
 ;; --- basic funcions --- ;;
 
 ;; c: Circle
-;; t: Triangle
 ;; p: Polygon (Only convex polygon)
 ;; r: Rectangle
 
@@ -145,32 +135,6 @@ Note: The second condition can't check only the case where
     (col-cp-vec point-c offset-c r
                 point-po offset-po pnt-list)))
 
-;; - c to t - ;;
-
-(defun.ps+ col-ct-vec (point-c offset-c rc
-                               point-t offset-t vertex-t1 vertex-t2 vertex-t3)
-  ;; TODO: Reduce memory allocations
-  (let ((global-point-c (clone-point-2d offset-c))
-        (buffer-pnts '()))
-    (transformf-point global-point-c point-c)
-    (dolist (vertex (list vertex-t1 vertex-t2 vertex-t3))
-        (let ((pnt (make-point-2d :x (vector-2d-x vertex) :y (vector-2d-y vertex))))
-          (transformf-point pnt offset-t)
-          (transformf-point pnt point-t)
-          (push pnt buffer-pnts)))
-    (col-cp (point-2d-x global-point-c)
-            (point-2d-y global-point-c)
-            rc
-            buffer-pnts)))
-
-(defun.ps+ col-ct-physic (circle point-c triangle point-t)
-  (check-type circle physic-circle)
-  (check-type triangle physic-triangle)
-  (with-slots-pair (((offset-c offset) r) circle
-                    ((offset-t offset) pnt1 pnt2 pnt3) triangle)
-    (col-ct-vec point-c offset-c r
-                point-t offset-t pnt1 pnt2 pnt3)))
-
 ;; --- auxiliary functions --- ;;
 
 (defun.ps+ intersects-line-and-circle (cx cy cr lx1 ly1 lx2 ly2)
@@ -199,22 +163,12 @@ Note: The second condition can't check only the case where
                   (eq (physic-2d-kind physic2) kind2))))
     (cond ((is-kind-pair ph1 ph2 :circle :circle)
            (col-cc-physic ph1 pnt1 ph2 pnt2))
-          ((is-kind-pair ph1 ph2 :circle :triangle)
-           (col-ct-physic ph1 pnt1 ph2 pnt2))
-          ((is-kind-pair ph1 ph2 :triangle :circle)
-           (col-ct-physic ph2 pnt2 ph1 pnt1))
           ((is-kind-pair ph1 ph2 :circle :polygon)
            (col-cp-physic ph1 pnt1 ph2 pnt2))
           ((is-kind-pair ph1 ph2 :polygon :circle)
            (col-cp-physic ph2 pnt2 ph1 pnt1))
           ;;--- TODO: Implement the followings
-          ((is-kind-pair ph1 ph2 :triangle :polygon)
-           nil)
-          ((is-kind-pair ph1 ph2 :polygon :triangle)
-           nil)
           ((is-kind-pair ph1 ph2 :polygon :polygon)
-           nil)
-          ((is-kind-pair ph1 ph2 :triangle :triangle)
            nil)
           (t (error "not recognized physical type")))))
 
