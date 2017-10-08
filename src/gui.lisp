@@ -34,7 +34,7 @@
     folder))
 
 (defun.ps add-panel-bool (name init-value &key (on-change nil) (folder nil))
-  (add-to-global name init-value on-change folder))
+  (add-to-global name (if init-value t false) on-change folder))
 
 (defun.ps add-panel-number (name init-value &key (on-change nil) (folder nil) (min -100) (max -100) (step 0.1))
   (add-to-global name init-value on-change folder
