@@ -91,16 +91,8 @@ Note: The second condition can't check only the case where
     (when (< num-pnts 3)
       (error "Can't do collision with an point (length 1) or a line (length 2)."))
     ;; Check the center of the circle is in the polygon.
-    (dotimes (i (- num-pnts 2))
-      (when (is-pnt-in-triangle
-             cx cy
-             (vector-2d-x (nth 0 point-list-po))
-             (vector-2d-y (nth 0 point-list-po))
-             (vector-2d-x (nth (+ i 1) point-list-po))
-             (vector-2d-y (nth (+ i 1) point-list-po))
-             (vector-2d-x (nth (+ i 2) point-list-po))
-             (vector-2d-y (nth (+ i 2) point-list-po)))
-        (return-from col-cp t)))
+    (when (is-pnt-in-polygon cx cy point-list-po)
+      (return-from col-cp t))
     ;; Check a line of the polygon intersects to the circle.
     (dotimes (i num-pnts)
       (when (intersects-line-and-circle
@@ -115,13 +107,9 @@ Note: The second condition can't check only the case where
 (defun.ps+ col-cp-vec (point-c offset-c rc point-po offset-po vec-list-po)
   ;; TODO: Reduce memory allocations
   (let ((global-point-c (clone-point-2d offset-c))
-        (global-point-list-po '()))
+        (global-point-list-po (make-global-point-list
+                               point-po offset-po vec-list-po)))
     (transformf-point global-point-c point-c)
-    (dolist (vec vec-list-po)
-      (let ((point (clone-point-2d offset-po)))
-        (incf-vector point vec)
-        (transformf-point point point-po)
-        (push point global-point-list-po)))
     (col-cp (point-2d-x global-point-c)
             (point-2d-y global-point-c)
             rc
@@ -135,6 +123,44 @@ Note: The second condition can't check only the case where
     (col-cp-vec point-c offset-c r
                 point-po offset-po pnt-list)))
 
+;; - p (po) to p (po) - ;;
+
+;; Algorithm: Two polygons collision under following conditions
+;; 1. Any of line of each intersects. <OR>
+;; 2. A point in a polygon is in the other polygon.
+(defun.ps+ col-pp (point-list1 point-list2)
+  "Do collision between two convec polygons."
+  (let ((len1 (length point-list1))
+        (len2 (length point-list2)))
+    ;; Check condition 1
+    (dotimes (i len1)
+      (let ((pnt1-1 (nth i point-list1))
+            (pnt1-2 (nth (mod (1+ i) len1) point-list1)))
+        (dotimes (j len2)
+          (let ((pnt2-1 (nth j point-list2))
+                (pnt2-2 (nth (mod (1+ j) len2) point-list2)))
+            (when (intersects-two-lines
+                   (vector-2d-x pnt1-1) (vector-2d-y pnt1-1)
+                   (vector-2d-x pnt1-2) (vector-2d-y pnt1-2)
+                   (vector-2d-x pnt2-1) (vector-2d-y pnt2-1)
+                   (vector-2d-x pnt2-2) (vector-2d-y pnt2-2))
+              (return-from  col-pp t))))))
+    ;; Check condition2
+    (let ((pnt1 (nth 0 point-list1))
+          (pnt2 (nth 0 point-list2)))
+      (or (is-pnt-in-polygon (vector-2d-x pnt1) (vector-2d-y pnt1) point-list2)
+          (is-pnt-in-polygon (vector-2d-x pnt2) (vector-2d-y pnt2) point-list1)))))
+
+(defun.ps+ col-pp-vec (point1 offset1 point-list1 point2 offset2 point-list2)
+  (col-pp (make-global-point-list point1 offset1 point-list1)
+          (make-global-point-list point2 offset2 point-list2)))
+
+(defun.ps+ col-pp-physic (polygon1 point1 polygon2 point2)
+  (check-type polygon1 physic-polygon)
+  (check-type polygon2 physic-polygon)
+  (col-pp-vec point1 (physic-2d-offset polygon1) (physic-polygon-pnt-list polygon1)
+              point2 (physic-2d-offset polygon2) (physic-polygon-pnt-list polygon2)))
+
 ;; --- auxiliary functions --- ;;
 
 (defun.ps+ intersects-line-and-circle (cx cy cr lx1 ly1 lx2 ly2)
@@ -144,6 +170,17 @@ Note: The second condition can't check only the case where
      (abs (calc-dist-to-line-seg (make-vector-2d :x cx :y cy)
                                  (make-vector-2d :x lx1 :y ly1)
                                  (make-vector-2d :x lx2 :y ly2)))))
+
+(defun.ps+ intersects-two-lines (l1x1 l1y1 l1x2 l1y2
+                                 l2x1 l2y1 l2x2 l2y2)
+  (flet ((calc-to-line1 (x y)
+           (- (* (- l1y2 l1y1) (- x l1x1))
+              (* (- l1x2 l1x1) (- y l1y1))))
+         (calc-to-line2 (x y)
+           (- (* (- l2y2 l2y1) (- x l2x1))
+              (* (- l2x2 l2x1) (- y l2y1)))))
+    (and (> 0 (* (calc-to-line1 l2x1 l2y1) (calc-to-line1 l2x2 l2y2)))
+         (> 0 (* (calc-to-line2 l1x1 l1y1) (calc-to-line2 l1x2 l1y2))))))
 
 (defun.ps+ is-pnt-in-triangle (target-x target-y x1 y1 x2 y2 x3 y3)
   "Judge if a target point is in triangle or not by calculating vector product"
@@ -157,6 +194,28 @@ Note: The second condition can't check only the case where
      (calc-vector-product (- x3 x2) (- y3 y2) (- target-x x2) (- target-y y2))
      (calc-vector-product (- x1 x3) (- y1 y3) (- target-x x3) (- target-y y3)))))
 
+(defun.ps+ is-pnt-in-polygon (target-x target-y point-list-po)
+  (dotimes (i (- (length point-list-po) 2))
+    (when (is-pnt-in-triangle
+           target-x target-y
+           (vector-2d-x (nth 0 point-list-po))
+           (vector-2d-y (nth 0 point-list-po))
+           (vector-2d-x (nth (+ i 1) point-list-po))
+           (vector-2d-y (nth (+ i 1) point-list-po))
+           (vector-2d-x (nth (+ i 2) point-list-po))
+           (vector-2d-y (nth (+ i 2) point-list-po)))
+      (return-from is-pnt-in-polygon t))))
+
+(defun.ps+ make-global-point-list (coordinate offset vec-list)
+  ;; TODO: Reduce memory allocations
+  (let ((global-point-list '()))
+    (dolist (vec vec-list)
+      (let ((point (clone-point-2d offset)))
+        (incf-vector point vec)
+        (transformf-point point coordinate)
+        (push point global-point-list)))
+    global-point-list))
+
 (defun.ps+ collide-physics-p (ph1 pnt1 ph2 pnt2)
   (labels ((is-kind-pair (physic1 physic2 kind1 kind2)
              (and (eq (physic-2d-kind physic1) kind1)
@@ -167,9 +226,8 @@ Note: The second condition can't check only the case where
            (col-cp-physic ph1 pnt1 ph2 pnt2))
           ((is-kind-pair ph1 ph2 :polygon :circle)
            (col-cp-physic ph2 pnt2 ph1 pnt1))
-          ;;--- TODO: Implement the followings
           ((is-kind-pair ph1 ph2 :polygon :polygon)
-           nil)
+           (col-pp-physic ph1 pnt1 ph2 pnt2))
           (t (error "not recognized physical type")))))
 
 (defun.ps+ collide-entities-with-physics-p (entity1 ph1 entity2 ph2)

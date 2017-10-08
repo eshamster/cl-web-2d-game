@@ -16,7 +16,7 @@
 
 ;; --- test --- ;;
 
-(plan 2)
+(plan 3)
 
 (defun.ps+ same-bool-p (a b)
   "This is required because 'false' and 'null' is not same in JavaScript."
@@ -69,5 +69,39 @@
                             (make-point-2d :angle angle))))
           (test-rotate nil 0)
           (test-rotate t (/ PI 6)))))))
+
+(subtest "Polygon to Polygon"
+  (with-prove-in-both ()
+    ;; Use a regular hexagon as a polygon
+    (flet ((make-test-polygon (r)
+             (let ((pnt-list (list (make-point-2d :x  2 :y 0)
+                                   (make-point-2d :x  1 :y (sqrt 3))
+                                   (make-point-2d :x -1 :y (sqrt 3))
+                                   (make-point-2d :x -2 :y 0)
+                                   (make-point-2d :x -1 :y (* -1 (sqrt 3)))
+                                   (make-point-2d :x  1 :y (* -1 (sqrt 3))))))
+               (dolist (pnt pnt-list)
+                 (setf-vector-abs pnt r))
+               (make-physic-polygon :pnt-list pnt-list))))
+      (print "A polygon includes another")
+      (ok (collide-physics-p
+           (make-test-polygon 2) (make-point-2d)
+           (make-test-polygon 1) (make-point-2d)))
+      (print "Two polygons cross")
+      (ok (collide-physics-p
+           (make-test-polygon 1) (make-point-2d)
+           (make-test-polygon 1) (make-point-2d :x 1)))
+      (print "Doesn't collide")
+      (ok (not (collide-physics-p
+                (make-test-polygon 1) (make-point-2d)
+                (make-test-polygon 1) (make-point-2d :x 2.1))))
+      (print "Doesn't collide in default, but collides when a polygon rotates")
+      (let ((dist (* (sqrt 3) 2.1)))
+        (ok (not (collide-physics-p
+                  (make-test-polygon 2) (make-point-2d)
+                  (make-test-polygon 2) (make-point-2d :y dist))))
+        (ok (collide-physics-p
+             (make-test-polygon 2) (make-point-2d)
+             (make-test-polygon 2) (make-point-2d :y dist :angle (/ PI 6))))))))
 
 (finalize)
