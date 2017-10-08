@@ -69,7 +69,7 @@ exec ros -Q -- $0 "$@"
      :tag :a :target-tag :b
      :min-r 20 :max-r 40
      :interval 40
-     :circle-p t :num-vertices 10
+     :circle-p t :num-vertices 4
      :up-to-down-p t))
 
 (defvar.ps+ *generator-from-down*
@@ -77,7 +77,7 @@ exec ros -Q -- $0 "$@"
      :tag :b :target-tag :a
      :min-r 20 :max-r 40
      :interval 40
-     :circle-p t :num-vertices 10
+     :circle-p t :num-vertices 4
      :up-to-down-p nil))
 
 (defvar.ps+ *collider-speed* 3)
@@ -87,6 +87,20 @@ exec ros -Q -- $0 "$@"
 ;;  -> "Math.floor(1.0 * Math.random());"
 (defun.ps random1 () (random))
 (defun random1 () (random 1.0))
+
+(defun.ps+ make-a-test-physic (generator r on-collision)
+  (with-slots (target-tag circle-p num-vertices)
+      generator
+    (if circle-p
+        (make-physic-circle :r r
+                            :target-tags (list target-tag)
+                            :on-collision on-collision)
+        (make-physic-polygon
+         :pnt-list (loop for i from 0 below num-vertices
+                      collect (let ((angle (/ (* 2 PI i) num-vertices)))
+                                (make-point-2d :x (* r (cos angle))
+                                               :y (* r (sin angle)))))
+         :on-collision on-collision))))
 
 ;; TODO: Implement (not circle-p) case
 (defun.ps+ add-a-collider (generator)
@@ -106,12 +120,12 @@ exec ros -Q -- $0 "$@"
       (add-ecs-component-list
        entity
        point
-       (make-physic-circle :r r
-                           :target-tags (list target-tag)
-                           :on-collision (lambda (mine target)
-                                           (declare (ignore mine target))
-                                           (setf collide-p t)))
+       (make-a-test-physic generator r
+                           (lambda (mine target)
+                             (declare (ignore mine target))
+                             (setf collide-p t)))
        (make-script-2d :func (lambda (entity)
+                               (incf (point-2d-angle point) 0.01)
                                (with-slots (y) point
                                  (incf (point-2d-y point)
                                        (* speed-abs (if up-to-down-p -1 1)))
@@ -141,12 +155,21 @@ exec ros -Q -- $0 "$@"
 (defun.ps+ add-gui-panels ()
   (flet ((add (folder-name generator)
            (let ((folder (add-panel-folder folder-name)))
-             (with-slots (interval) generator
+             (with-slots (interval circle-p num-vertices) generator
                (add-panel-number "num per second" (/ 60.0 interval)
                                  :min 1 :max 60 :step 1
                                  :folder folder
                                  :on-change (lambda (value)
-                                              (setf interval (floor (/ 60.0 value)))))))))
+                                              (setf interval (floor (/ 60.0 value)))))
+               (add-panel-bool "is circle" t
+                               :folder folder
+                               :on-change (lambda (value)
+                                            (setf circle-p value)))
+               (add-panel-number "num of vertices" num-vertices
+                                 :min 3 :max 15 :step 1
+                                 :folder folder
+                                 :on-change (lambda (value)
+                                              (setf num-vertices value)))))))
     (add "From up" *generator-from-up*)
     (add "From down" *generator-from-down*))
   (add-panel-bool 'display-collider-model t
