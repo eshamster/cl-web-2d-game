@@ -100,6 +100,7 @@ exec ros -Q -- $0 "$@"
                       collect (let ((angle (/ (* 2 PI i) num-vertices)))
                                 (make-point-2d :x (* r (cos angle))
                                                :y (* r (sin angle)))))
+         :target-tags (list target-tag)
          :on-collision on-collision))))
 
 ;; TODO: Implement (not circle-p) case
