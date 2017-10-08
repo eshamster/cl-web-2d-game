@@ -161,7 +161,7 @@ exec ros -Q -- $0 "$@"
                                  :folder folder
                                  :on-change (lambda (value)
                                               (setf interval (floor (/ 60.0 value)))))
-               (add-panel-bool "is circle" t
+               (add-panel-bool "is circle" circle-p
                                :folder folder
                                :on-change (lambda (value)
                                             (setf circle-p value)))
