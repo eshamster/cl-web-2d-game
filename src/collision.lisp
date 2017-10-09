@@ -11,25 +11,28 @@
   (:export :collide-entities-p
            :collide-physics-p
 
+           :bounding-box-2d
+           :make-bounding-box-2d
+           :bounding-box-2d-left
+           :bounding-box-2d-right
+           :bounding-box-2d-bottom
+           :bounding-box-2d-top
+
            :physic-2d
            :make-physic-2d
            :physic-2d-offset
+           :physic-2d-bounding-box
 
            :physic-circle
            :make-physic-circle
            :physic-circle-r
 
-           :physic-triangle
-           :make-physic-triangle
-           :physic-triangle-pnt1
-           :physic-triangle-pnt2
-           :physic-triangle-pnt3
-
            :physic-polygon
            :make-physic-polygon
            :physic-polygon-pnt-list
 
-           :process-collision))
+           :update-bounding-box
+           :judge-collision-target-tags))
 (in-package :cl-web-2d-game.collision)
 
 #|
@@ -38,16 +41,19 @@ Note: col-xx-vec takes 'point' and 'offset' for each physic. The 'point' means a
 
 ;; --- components --- ;;
 
+(defstruct.ps+ bounding-box-2d
+    (left -100000) (right 100000)
+    (bottom -100000) (top 100000))
+
+;; Note: The bounding box is calculated in global coordinate.
 (defstruct.ps+ (physic-2d (:include ecs-component))
   kind
   (offset (make-point-2d))
   (target-tags '())
+  (bounding-box (make-bounding-box-2d))
   (on-collision (lambda (mine target) (declare (ignore mine target)) nil)))
 
 (defstruct.ps+ (physic-circle (:include physic-2d (kind :circle))) (r 0))
-
-(defstruct.ps+ (physic-triangle (:include physic-2d (kind :triangle)))
-    (pnt1 (make-vector-2d)) (pnt2 (make-vector-2d)) (pnt3 (make-vector-2d)))
 
 (defstruct.ps+ (physic-polygon (:include physic-2d (kind :polygon)))
   (pnt-list '()))
@@ -55,7 +61,6 @@ Note: col-xx-vec takes 'point' and 'offset' for each physic. The 'point' means a
 ;; --- basic funcions --- ;;
 
 ;; c: Circle
-;; t: Triangle
 ;; p: Polygon (Only convex polygon)
 ;; r: Rectangle
 
@@ -101,16 +106,8 @@ Note: The second condition can't check only the case where
     (when (< num-pnts 3)
       (error "Can't do collision with an point (length 1) or a line (length 2)."))
     ;; Check the center of the circle is in the polygon.
-    (dotimes (i (- num-pnts 2))
-      (when (is-pnt-in-triangle
-             cx cy
-             (vector-2d-x (nth 0 point-list-po))
-             (vector-2d-y (nth 0 point-list-po))
-             (vector-2d-x (nth (+ i 1) point-list-po))
-             (vector-2d-y (nth (+ i 1) point-list-po))
-             (vector-2d-x (nth (+ i 2) point-list-po))
-             (vector-2d-y (nth (+ i 2) point-list-po)))
-        (return-from col-cp t)))
+    (when (is-pnt-in-polygon cx cy point-list-po)
+      (return-from col-cp t))
     ;; Check a line of the polygon intersects to the circle.
     (dotimes (i num-pnts)
       (when (intersects-line-and-circle
@@ -125,13 +122,9 @@ Note: The second condition can't check only the case where
 (defun.ps+ col-cp-vec (point-c offset-c rc point-po offset-po vec-list-po)
   ;; TODO: Reduce memory allocations
   (let ((global-point-c (clone-point-2d offset-c))
-        (global-point-list-po '()))
+        (global-point-list-po (make-global-point-list
+                               point-po offset-po vec-list-po)))
     (transformf-point global-point-c point-c)
-    (dolist (vec vec-list-po)
-      (let ((point (clone-point-2d offset-po)))
-        (incf-vector point vec)
-        (transformf-point point point-po)
-        (push point global-point-list-po)))
     (col-cp (point-2d-x global-point-c)
             (point-2d-y global-point-c)
             rc
@@ -145,31 +138,43 @@ Note: The second condition can't check only the case where
     (col-cp-vec point-c offset-c r
                 point-po offset-po pnt-list)))
 
-;; - c to t - ;;
+;; - p (po) to p (po) - ;;
 
-(defun.ps+ col-ct-vec (point-c offset-c rc
-                               point-t offset-t vertex-t1 vertex-t2 vertex-t3)
-  ;; TODO: Reduce memory allocations
-  (let ((global-point-c (clone-point-2d offset-c))
-        (buffer-pnts '()))
-    (transformf-point global-point-c point-c)
-    (dolist (vertex (list vertex-t1 vertex-t2 vertex-t3))
-        (let ((pnt (make-point-2d :x (vector-2d-x vertex) :y (vector-2d-y vertex))))
-          (transformf-point pnt offset-t)
-          (transformf-point pnt point-t)
-          (push pnt buffer-pnts)))
-    (col-cp (point-2d-x global-point-c)
-            (point-2d-y global-point-c)
-            rc
-            buffer-pnts)))
+;; Algorithm: Two polygons collision under following conditions
+;; 1. Any of line of each intersects. <OR>
+;; 2. A point in a polygon is in the other polygon.
+(defun.ps+ col-pp (point-list1 point-list2)
+  "Do collision between two convec polygons."
+  (let ((len1 (length point-list1))
+        (len2 (length point-list2)))
+    ;; Check condition 1
+    (dotimes (i len1)
+      (let ((pnt1-1 (nth i point-list1))
+            (pnt1-2 (nth (mod (1+ i) len1) point-list1)))
+        (dotimes (j len2)
+          (let ((pnt2-1 (nth j point-list2))
+                (pnt2-2 (nth (mod (1+ j) len2) point-list2)))
+            (when (intersects-two-lines
+                   (vector-2d-x pnt1-1) (vector-2d-y pnt1-1)
+                   (vector-2d-x pnt1-2) (vector-2d-y pnt1-2)
+                   (vector-2d-x pnt2-1) (vector-2d-y pnt2-1)
+                   (vector-2d-x pnt2-2) (vector-2d-y pnt2-2))
+              (return-from  col-pp t))))))
+    ;; Check condition2
+    (let ((pnt1 (nth 0 point-list1))
+          (pnt2 (nth 0 point-list2)))
+      (or (is-pnt-in-polygon (vector-2d-x pnt1) (vector-2d-y pnt1) point-list2)
+          (is-pnt-in-polygon (vector-2d-x pnt2) (vector-2d-y pnt2) point-list1)))))
 
-(defun.ps+ col-ct-physic (circle point-c triangle point-t)
-  (check-type circle physic-circle)
-  (check-type triangle physic-triangle)
-  (with-slots-pair (((offset-c offset) r) circle
-                    ((offset-t offset) pnt1 pnt2 pnt3) triangle)
-    (col-ct-vec point-c offset-c r
-                point-t offset-t pnt1 pnt2 pnt3)))
+(defun.ps+ col-pp-vec (point1 offset1 point-list1 point2 offset2 point-list2)
+  (col-pp (make-global-point-list point1 offset1 point-list1)
+          (make-global-point-list point2 offset2 point-list2)))
+
+(defun.ps+ col-pp-physic (polygon1 point1 polygon2 point2)
+  (check-type polygon1 physic-polygon)
+  (check-type polygon2 physic-polygon)
+  (col-pp-vec point1 (physic-2d-offset polygon1) (physic-polygon-pnt-list polygon1)
+              point2 (physic-2d-offset polygon2) (physic-polygon-pnt-list polygon2)))
 
 ;; --- auxiliary functions --- ;;
 
@@ -180,6 +185,17 @@ Note: The second condition can't check only the case where
      (abs (calc-dist-to-line-seg (make-vector-2d :x cx :y cy)
                                  (make-vector-2d :x lx1 :y ly1)
                                  (make-vector-2d :x lx2 :y ly2)))))
+
+(defun.ps+ intersects-two-lines (l1x1 l1y1 l1x2 l1y2
+                                 l2x1 l2y1 l2x2 l2y2)
+  (flet ((calc-to-line1 (x y)
+           (- (* (- l1y2 l1y1) (- x l1x1))
+              (* (- l1x2 l1x1) (- y l1y1))))
+         (calc-to-line2 (x y)
+           (- (* (- l2y2 l2y1) (- x l2x1))
+              (* (- l2x2 l2x1) (- y l2y1)))))
+    (and (> 0 (* (calc-to-line1 l2x1 l2y1) (calc-to-line1 l2x2 l2y2)))
+         (> 0 (* (calc-to-line2 l1x1 l1y1) (calc-to-line2 l1x2 l1y2))))))
 
 (defun.ps+ is-pnt-in-triangle (target-x target-y x1 y1 x2 y2 x3 y3)
   "Judge if a target point is in triangle or not by calculating vector product"
@@ -193,38 +209,90 @@ Note: The second condition can't check only the case where
      (calc-vector-product (- x3 x2) (- y3 y2) (- target-x x2) (- target-y y2))
      (calc-vector-product (- x1 x3) (- y1 y3) (- target-x x3) (- target-y y3)))))
 
+(defun.ps+ is-pnt-in-polygon (target-x target-y point-list-po)
+  (dotimes (i (- (length point-list-po) 2))
+    (when (is-pnt-in-triangle
+           target-x target-y
+           (vector-2d-x (nth 0 point-list-po))
+           (vector-2d-y (nth 0 point-list-po))
+           (vector-2d-x (nth (+ i 1) point-list-po))
+           (vector-2d-y (nth (+ i 1) point-list-po))
+           (vector-2d-x (nth (+ i 2) point-list-po))
+           (vector-2d-y (nth (+ i 2) point-list-po)))
+      (return-from is-pnt-in-polygon t))))
+
+(defun.ps+ make-global-point-list (coordinate offset vec-list)
+  ;; TODO: Reduce memory allocations
+  (let ((global-point-list '()))
+    (dolist (vec vec-list)
+      (let ((point (clone-point-2d offset)))
+        (incf-vector point vec)
+        (transformf-point point coordinate)
+        (push point global-point-list)))
+    global-point-list))
+
+;; --- for bounding-box --- ;;
+
+(defun.ps+ update-bounding-box (physic global-coordinate)
+  "Update bounding box in the physic in global coordinate"
+  (with-slots (bounding-box offset) physic
+    (with-slots (left right bottom top) bounding-box
+      (let ((global-point (clone-point-2d offset)))
+        (transformf-point global-point global-coordinate)
+        (etypecase physic
+          (physic-circle
+           (with-slots-pair ((r) physic
+                             ((gx x) (gy y)) global-point)
+             (setf left   (- gx r) right (+ gx r)
+                   bottom (- gy r) top   (+ gy r))))
+          (physic-polygon
+           (let ((buffer-pnt (make-point-2d))
+                 (initialized-p nil))
+             (dolist (pnt (physic-polygon-pnt-list physic))
+               (copy-point-2d-to buffer-pnt pnt)
+               (transformf-point buffer-pnt global-point)
+               (with-slots (x y) buffer-pnt
+                 (when (or (not initialized-p) (< x left))
+                   (setf left x))
+                 (when (or (not initialized-p) (> x right))
+                   (setf right x))
+                 (when (or (not initialized-p) (< y bottom))
+                   (setf bottom y))
+                 (when (or (not initialized-p) (> y top))
+                   (setf top y)))
+               (setf initialized-p t))))))))
+  (physic-2d-bounding-box physic))
+
+(defun.ps+ col-two-bounding-box-p (box1 box2)
+  (with-slots-pair (((left1 left) (right1 right) (bottom1 bottom) (top1 top)) box1
+                    ((left2 left) (right2 right) (bottom2 bottom) (top2 top)) box2)
+    (not (or (> left1 right2) (> left2 right1)
+             (> bottom1 top2) (> bottom2 top1)))))
+
+;; --- main functions --- ;;
+
 (defun.ps+ collide-physics-p (ph1 pnt1 ph2 pnt2)
+  (unless (col-two-bounding-box-p
+           (physic-2d-bounding-box ph1)
+           (physic-2d-bounding-box ph2))
+    (return-from collide-physics-p nil))
   (labels ((is-kind-pair (physic1 physic2 kind1 kind2)
              (and (eq (physic-2d-kind physic1) kind1)
                   (eq (physic-2d-kind physic2) kind2))))
     (cond ((is-kind-pair ph1 ph2 :circle :circle)
            (col-cc-physic ph1 pnt1 ph2 pnt2))
-          ((is-kind-pair ph1 ph2 :circle :triangle)
-           (col-ct-physic ph1 pnt1 ph2 pnt2))
-          ((is-kind-pair ph1 ph2 :triangle :circle)
-           (col-ct-physic ph2 pnt2 ph1 pnt1))
           ((is-kind-pair ph1 ph2 :circle :polygon)
            (col-cp-physic ph1 pnt1 ph2 pnt2))
           ((is-kind-pair ph1 ph2 :polygon :circle)
            (col-cp-physic ph2 pnt2 ph1 pnt1))
-          ;;--- TODO: Implement the followings
-          ((is-kind-pair ph1 ph2 :triangle :polygon)
-           nil)
-          ((is-kind-pair ph1 ph2 :polygon :triangle)
-           nil)
           ((is-kind-pair ph1 ph2 :polygon :polygon)
-           nil)
-          ((is-kind-pair ph1 ph2 :triangle :triangle)
-           nil)
+           (col-pp-physic ph1 pnt1 ph2 pnt2))
           (t (error "not recognized physical type")))))
 
 (defun.ps+ collide-entities-with-physics-p (entity1 ph1 entity2 ph2)
-  (labels ((is-kind-pair (physic1 physic2 kind1 kind2)
-             (and (eq (physic-2d-kind physic1) kind1)
-                  (eq (physic-2d-kind physic2) kind2))))
-    (let ((pnt1 (calc-global-point entity1))
-          (pnt2 (calc-global-point entity2)))
-      (collide-physics-p ph1 pnt1 ph2 pnt2))))
+  (let ((pnt1 (calc-global-point entity1))
+        (pnt2 (calc-global-point entity2)))
+    (collide-physics-p ph1 pnt1 ph2 pnt2)))
 
 (defun.ps+ collide-entities-p (entity1 entity2)
   (with-ecs-components ((ph1 physic-2d)) entity1
@@ -245,13 +313,4 @@ Note: The second condition can't check only the case where
     (when (has-entity-tag entity1 tag)
       (return-from judge-collision-target-tags t)))
   nil)
-
-(defun.ps+ process-collision (entity1 ph1 entity2 ph2)
-  (when (not (judge-collision-target-tags entity1 ph1 entity2 ph2))
-    (return-from process-collision))
-  (when (collide-entities-with-physics-p entity1 ph1 entity2 ph2)
-    (with-slots-pair (((event1 on-collision)) ph1
-                      ((event2 on-collision)) ph2)
-      (funcall event1 entity1 entity2)
-      (funcall event2 entity2 entity1))))
 
