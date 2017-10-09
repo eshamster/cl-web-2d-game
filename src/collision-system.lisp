@@ -96,11 +96,14 @@
                     (with-slots ((entities target-entities)) system
                       (let ((info-list '()))
                         (dolist (entity entities)
-                          (push (make-collision-entity-info
-                                 :entity entity
-                                 :global-point (calc-global-point entity)
-                                 :physic (get-ecs-component 'physic-2d entity))
-                                info-list))
+                          (let ((physic (get-ecs-component 'physic-2d entity))
+                                (global-point (calc-global-point entity)))
+                            (update-bounding-box physic global-point)
+                            (push (make-collision-entity-info
+                                   :entity entity
+                                   :global-point global-point
+                                   :physic physic)
+                                  info-list)))
                         (let ((length (length info-list)))
                           (loop for outer-idx from 0 below (1- length) do
                                (with-slots ((entity1 entity)

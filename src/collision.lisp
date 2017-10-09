@@ -11,9 +11,17 @@
   (:export :collide-entities-p
            :collide-physics-p
 
+           :bounding-box-2d
+           :make-bounding-box-2d
+           :bounding-box-2d-left
+           :bounding-box-2d-right
+           :bounding-box-2d-bottom
+           :bounding-box-2d-top
+
            :physic-2d
            :make-physic-2d
            :physic-2d-offset
+           :physic-2d-bounding-box
 
            :physic-circle
            :make-physic-circle
@@ -23,6 +31,7 @@
            :make-physic-polygon
            :physic-polygon-pnt-list
 
+           :update-bounding-box
            :judge-collision-target-tags))
 (in-package :cl-web-2d-game.collision)
 
@@ -32,10 +41,16 @@ Note: col-xx-vec takes 'point' and 'offset' for each physic. The 'point' means a
 
 ;; --- components --- ;;
 
+(defstruct.ps+ bounding-box-2d
+    (left -100000) (right 100000)
+    (bottom -100000) (top 100000))
+
+;; Note: The bounding box is calculated in global coordinate.
 (defstruct.ps+ (physic-2d (:include ecs-component))
   kind
   (offset (make-point-2d))
   (target-tags '())
+  (bounding-box (make-bounding-box-2d))
   (on-collision (lambda (mine target) (declare (ignore mine target)) nil)))
 
 (defstruct.ps+ (physic-circle (:include physic-2d (kind :circle))) (r 0))
@@ -216,7 +231,51 @@ Note: The second condition can't check only the case where
         (push point global-point-list)))
     global-point-list))
 
+;; --- for bounding-box --- ;;
+
+(defun.ps+ update-bounding-box (physic global-coordinate)
+  "Update bounding box in the physic in global coordinate"
+  (with-slots (bounding-box offset) physic
+    (with-slots (left right bottom top) bounding-box
+      (let ((global-point (clone-point-2d offset)))
+        (transformf-point global-point global-coordinate)
+        (etypecase physic
+          (physic-circle
+           (with-slots-pair ((r) physic
+                             ((gx x) (gy y)) global-point)
+             (setf left   (- gx r) right (+ gx r)
+                   bottom (- gy r) top   (+ gy r))))
+          (physic-polygon
+           (let ((buffer-pnt (make-point-2d))
+                 (initialized-p nil))
+             (dolist (pnt (physic-polygon-pnt-list physic))
+               (copy-point-2d-to buffer-pnt pnt)
+               (transformf-point buffer-pnt global-point)
+               (with-slots (x y) buffer-pnt
+                 (when (or (not initialized-p) (< x left))
+                   (setf left x))
+                 (when (or (not initialized-p) (> x right))
+                   (setf right x))
+                 (when (or (not initialized-p) (< y bottom))
+                   (setf bottom y))
+                 (when (or (not initialized-p) (> y top))
+                   (setf top y)))
+               (setf initialized-p t))))))))
+  (physic-2d-bounding-box physic))
+
+(defun.ps+ col-two-bounding-box-p (box1 box2)
+  (with-slots-pair (((left1 left) (right1 right) (bottom1 bottom) (top1 top)) box1
+                    ((left2 left) (right2 right) (bottom2 bottom) (top2 top)) box2)
+    (not (or (> left1 right2) (> left2 right1)
+             (> bottom1 top2) (> bottom2 top1)))))
+
+;; --- main functions --- ;;
+
 (defun.ps+ collide-physics-p (ph1 pnt1 ph2 pnt2)
+  (unless (col-two-bounding-box-p
+           (physic-2d-bounding-box ph1)
+           (physic-2d-bounding-box ph2))
+    (return-from collide-physics-p nil))
   (labels ((is-kind-pair (physic1 physic2 kind1 kind2)
              (and (eq (physic-2d-kind physic1) kind1)
                   (eq (physic-2d-kind physic2) kind2))))

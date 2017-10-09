@@ -16,7 +16,7 @@
 
 ;; --- test --- ;;
 
-(plan 3)
+(plan 4)
 
 (defun.ps+ same-bool-p (a b)
   "This is required because 'false' and 'null' is not same in JavaScript."
@@ -103,5 +103,56 @@
         (ok (collide-physics-p
              (make-test-polygon 2) (make-point-2d)
              (make-test-polygon 2) (make-point-2d :y dist :angle (/ PI 6))))))))
+
+(import 'cl-web-2d-game.collision::col-two-bounding-box-p)
+
+(subtest "Test bounding-box-2d"
+  (subtest "Test col-two-bounding-box-p"
+    (with-prove-in-both ()
+      (let ((target-box (make-bounding-box-2d
+                         :left -1 :right 2 :bottom -3 :top 4)))
+        (flet ((test (left right bottom top expected)
+                 (is (col-two-bounding-box-p
+                      target-box (make-bounding-box-2d
+                                  :left left :right right :bottom bottom :top top))
+                     expected
+                     :test #'same-bool-p)))
+          (test -5 -1.1 -3 4 nil) ; too left
+          (test 2.1 5 -3 4 nil) ; too right
+          (test -1 2 -5 -3.1 nil) ; too bottom
+          (test -1 2 4.1 5 nil) ; too top
+          (test -2 3 -4 5 t) ; include
+          (test -0.5 2.5 -2.5 4.5 t) ; cross
+          ))))
+  (subtest "Test update-bounding-box"
+    (with-prove-in-both ()
+      (let ((coordinate (make-point-2d :x 1 :y 0 :angle (/ PI 4)))
+            (offset (make-point-2d :x (sqrt 2)
+                                   :y (sqrt 2)
+                                   :angle (/ PI 4))))
+        ;; The offset on the coordinate should be (x = 1, y = 2, angle = (/ PI 2))
+        (let ((global-point (transformf-point (clone-point-2d offset) coordinate))
+              (tolerance 0.001))
+          (within (point-2d-x global-point) 1 tolerance)
+          (within (point-2d-y global-point) 2 tolerance)
+          (within (point-2d-angle global-point) (/ PI 2) tolerance))
+        (flet ((test (physic left right bottom top)
+                 (update-bounding-box physic coordinate)
+                 (let ((tolerance 0.001)
+                       (box (physic-2d-bounding-box physic)))
+                   (within (bounding-box-2d-left box) left tolerance)
+                   (within (bounding-box-2d-right box) right tolerance)
+                   (within (bounding-box-2d-bottom box) bottom tolerance)
+                   (within (bounding-box-2d-top box) top tolerance))))
+          (test (make-physic-circle :r 1 :offset offset)
+                0 2 1 3)
+          ;; An isosceles triangle. The bottom line is on the x axis,
+          ;; and the center of the line is on the origin.
+          (test (make-physic-polygon
+                 :pnt-list (list (make-point-2d :x -1 :y 0)
+                                 (make-point-2d :x  1 :y 0)
+                                 (make-point-2d :x  0 :y 2))
+                 :offset offset)
+                -1 1 1 3))))))
 
 (finalize)
