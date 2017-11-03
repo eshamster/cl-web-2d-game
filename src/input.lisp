@@ -17,6 +17,8 @@
            :is-key-down-now
            :is-key-up
            :is-key-up-now
+           :key-down-count
+           :key-up-count
 
            :get-mouse-x
            :get-mouse-y
@@ -50,10 +52,28 @@ device-state = boolean-value"
         ((:up-now :up) :up)
         (t :up-now))))
 
+(defun.ps+ calc-next-input-count (current device-state)
+  (if device-state
+      (if (>= current 0) (1+ current) 1)
+      (if (<= current 0) (1- current) -1)))
+
+(defun.ps+ input-on-now-p (current)
+  (= current 1))
+(defun.ps+ input-on-p (current)
+  (> current 0))
+(defun.ps+ input-off-now-p (current)
+  (= current -1))
+(defun.ps+ input-off-p (current)
+  (< current 0))
+
+(defun.ps+ input-on-count (current)
+  (if (input-on-p current) current 0))
+(defun.ps+ input-off-count (current)
+  (if (input-off-p current) (* -1 current) 0))
+
 ;; ---- keyboard ---- ;;
 
 (defvar.ps keyboard (new (#j.THREEx.KeyboardState#)))
-(defvar.ps key-status (make-hash-table))
 
 (defvar.ps *button-to-keyboard*
     (create :a "z"
@@ -63,29 +83,37 @@ device-state = boolean-value"
             :right "right"
             :up    "up"
             :down  "down"))
+(defvar.ps+ key-status (make-hash-table))
 
-(defun.ps is-key-down (button)
+;; TODO: Rename function names according to Common Lisp tradition
+;; (Ex. is-key-down -> key-down-p)
+
+(defun.ps+ is-key-down (button)
   "Return if the button is down"
-  (let ((value (gethash button  key-status)))
-    (and (not (null value))
-         (or (eq value :down) (eq value :down-now)))))
+  (input-on-p (gethash button key-status)))
 
-(defun.ps is-key-down-now (button)
+(defun.ps+ is-key-down-now (button)
   "Return if the button is down just in this frame"
-  (let ((value (gethash button key-status)))
-    (and (not (null value))
-         (eq value :down-now))))
+  (input-on-now-p (gethash button key-status)))
 
-(defun.ps is-key-up-now (button)
-  "Return if the button is down just in this frame"
-  (let ((value (gethash button key-status)))
-    (and (not (null value))
-         (eq value :up-now))))
+(defun.ps+ is-key-up-now (button)
+  "Return if the button is up"
+  (input-off-p (gethash button key-status)))
+
+(defun.ps+ is-key-up-now (button)
+  "Return if the button is up just in this frame"
+  (input-off-now-p (gethash button key-status)))
+
+(defun.ps+ key-down-count (button)
+  (input-on-count (gethash button key-status)))
+(defun.ps+ key-up-count (button)
+  (input-off-count (gethash button key-status)))
 
 (defun.ps process-keyboard-input ()
   (maphash (lambda (button key)
              (setf (gethash button key-status)
-                   (calc-next-input-state (gethash button key-status)
+                   (calc-next-input-count (let ((value (gethash button key-status)))
+                                             (if value value 0))
                                           (keyboard.pressed key))))
            *button-to-keyboard*))
 
