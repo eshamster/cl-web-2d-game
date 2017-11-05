@@ -210,7 +210,8 @@ exec ros -Q -- $0 "$@"
                                nil))
                    :root *script-dir*)
           *app*)
-         :port port)))
+         :port port
+         :use-thread nil)))
 
 ;; --- Roswell script main --- ;;
 
