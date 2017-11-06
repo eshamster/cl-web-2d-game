@@ -61,7 +61,7 @@
                  (init-frame-promise
                   (lambda (resolve)
                     (if path
-                        (loader.load path
+                        (loader.load (if (path.starts-with "/") (+ "." path) path)
                                      (lambda (image-bitmap)
                                        (console-log :loader :debug
                                                     "Time to load texture ~A: ~F ms" path
