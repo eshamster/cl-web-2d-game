@@ -17,6 +17,7 @@
            :bounding-box-2d-right
            :bounding-box-2d-bottom
            :bounding-box-2d-top
+           :col-two-bounding-box-p
 
            :physic-2d
            :make-physic-2d
