@@ -21,6 +21,12 @@
            :point-2d-angle
            :angle
 
+           :make-speed-2d
+           :speed-2d
+           :speed-2d-p
+           :speed-2d-x
+           :speed-2d-y
+
            :make-rect-2d
            :rect-2d
            :rect-2d-p

@@ -21,6 +21,8 @@
            :transformf-point
            :calc-global-point
 
+           :diff-angle
+
            :calc-dist
            :calc-dist-p2
            :calc-dist-to-line
