@@ -27,6 +27,7 @@
                 :serial t
                 :components
                 ((:file "logger")
+                 (:file "dom-manager")
                  (:file "basic-components")
                  (:file "utils")
                  (:file "calc")

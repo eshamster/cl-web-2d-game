@@ -22,6 +22,7 @@
 
            :get-mouse-x
            :get-mouse-y
+           :get-left-mouse-state
 
            :mouse-event-x
            :mouse-event-y
@@ -30,7 +31,10 @@
            :touch-event-element-x
            :touch-event-element-y
 
-           :init-input))
+           :init-input
+           :process-input)
+  (:import-from :cl-web-2d-game.dom-manager
+                :get-rendered-dom))
 (in-package :cl-web-2d-game.input)
 
 (enable-ps-experiment-syntax)

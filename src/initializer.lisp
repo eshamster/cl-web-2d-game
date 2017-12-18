@@ -10,19 +10,16 @@
         :cl-web-2d-game.collision
         :cl-web-2d-game.collision-system
         :cl-web-2d-game.draw-model-system
+        :cl-web-2d-game.input
         :cl-web-2d-game.logger
         :cl-web-2d-game.utils)
   (:export :start-2d-game
-           :init-default-systems
-           :get-rendered-dom))
+           :init-default-systems)
+  (:import-from :cl-web-2d-game.dom-manager
+                :get-rendered-dom))
 (in-package :cl-web-2d-game.initializer)
 
 (enable-ps-experiment-syntax)
-
-(defvar.ps+ *rendered-dom* nil)
-
-(defun.ps+ get-rendered-dom ()
-  *rendered-dom*)
 
 (defvar.ps *stats* nil)
 
@@ -68,7 +65,7 @@
 We assume that the camera is initalized using cl-web-2d-game[.camera]:init-camera."
   (let* ((scene (new (#j.THREE.Scene#)))
          (renderer (new #j.THREE.WebGLRenderer#)))
-    (setf *rendered-dom* rendered-dom)
+    (setf (get-rendered-dom) rendered-dom)
     (when stats-dom
       (init-stats stats-dom))
     (init-monitoring-log monitoring-log-dom)
