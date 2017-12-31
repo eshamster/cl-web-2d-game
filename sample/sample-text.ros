@@ -40,33 +40,22 @@ exec ros -Q -- $0 "$@"
 (defvar *js-game-file*
   (merge-pathnames "sample.js" *downloaded-js-dir*))
 
-(defun.ps+ add-model-with-text (&key x y depth text
-                                     font-size font-height
-                                     rot-speed-ratio)
-  (let ((entity (make-ecs-entity)))
-    (add-ecs-component-list
-     entity
-     (make-point-2d :x x :y y)
-     (make-script-2d :func (lambda (entity)
-                             (with-ecs-components (point-2d) entity
-                               (incf (point-2d-angle point-2d)
-                                     (* rot-speed-ratio (/ PI 180)))))))
-    (frame-promise-then
-     (make-text-model-promise
-      text :size font-size :height font-height :color #xaaddff)
-     (lambda (model)
-       (add-ecs-component-list
-        entity
-        (make-model-2d :model model :depth depth))
-       (add-ecs-entity entity)))))
+(defun.ps+ add-sample-text-area (&key x y align)
+  (let ((text-area (make-text-area :font-size 25 :text-align align
+                                   :margin 10
+                                   :x x :y y)))
+    (add-ecs-entity text-area)
+    (dolist (text '("test" "abcd2"))
+      (add-text-to-area text-area
+                        :text text
+                        :color #xff00ff))))
 
 (defun.ps+ init-func (scene)
   (set-console-log-level :debug)
   (load-font *js-relative-dir*)
-  (add-model-with-text :x 10 :y 100 :depth 20
-                       :font-size 25
-                       :text "Ikaruga!!"
-                       :rot-speed-ratio 0)
+  (add-sample-text-area :x 50 :y 400 :align :left)
+  (add-sample-text-area :x 300 :y 400 :align :center)
+  (add-sample-text-area :x 550 :y 400 :align :right)
   (init-default-systems :scene scene))
 
 (defun.ps+ update-func ()

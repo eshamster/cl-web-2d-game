@@ -38,6 +38,7 @@
                  (:file "font")
                  (:file "2d-geometry")
                  (:file "draw-model-system")
+                 (:file "text-area")
                  (:file "animation")
                  (:file "animation-manager")
                  (:file "gui")
