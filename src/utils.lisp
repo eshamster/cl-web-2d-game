@@ -77,7 +77,8 @@ Example:
 
 (defparameter *js-pairs*
   '(("threex.keyboardstate.js" . "https://raw.githubusercontent.com/jeromeetienne/threex.keyboardstate/51fd77fdd87eeed064db643693d393cf21afa45d/threex.keyboardstate.js")
-    ("wtf-trace.js" . "https://raw.githubusercontent.com/google/tracing-framework/b08cb6e3bc7287fad4a70bc2fceda34d7077fc60/shims/wtf-trace.js")))
+    ("wtf-trace.js" . "https://raw.githubusercontent.com/google/tracing-framework/b08cb6e3bc7287fad4a70bc2fceda34d7077fc60/shims/wtf-trace.js")
+    ("helvetiker_regular.typeface.json" . "https://raw.githubusercontent.com/mrdoob/three.js/e6c0d10835a75952da6bd430c5269ce38740d102/examples/fonts/helvetiker_regular.typeface.json")))
 
 (defun ensure-js-files (dir)
   (ensure-directories-exist dir)
@@ -92,6 +93,8 @@ Example:
           (format *error-output* "Download: ~A" (car pair))
           (princ (dex:get url) file))))))
 
+;; TODO: Font files (*.typeface.json) are not required to load by script tag,
+;; but now they are loaded.
 (defun make-src-list-for-script-tag (relative-path)
   (append *cdns*
           (mapcar (lambda (pair)

@@ -35,6 +35,7 @@
                  (:file "collision")
                  (:file "input")
                  (:file "texture")
+                 (:file "font")
                  (:file "2d-geometry")
                  (:file "draw-model-system")
                  (:file "animation")

@@ -5,6 +5,7 @@
         :parenscript
         :ps-experiment
         :cl-ps-ecs
+        :cl-web-2d-game.font
         :cl-web-2d-game.texture
         :cl-web-2d-game.basic-components)
   (:export :make-line
@@ -19,6 +20,7 @@
            :make-solid-polygon
            :make-texture-model
            :make-texture-model-promise
+           :make-text-model-promise
            :change-model-color
            :change-geometry-uvs))
 (in-package :cl-web-2d-game.2d-geometry)
@@ -195,3 +197,21 @@
     (setf model.material.color (new (#j.THREE.Color# new-color-rgb)))
     (setf model.material.needs-update t))
   model-2d)
+
+;; --- text --- ;;
+
+(defun.ps make-text-model-promise (text &key size color
+                                        (curve-segments 3) (font-name "helvetiker"))
+  (frame-promise-then
+   (get-font-promise font-name "regular")
+   (lambda (font)
+     (let ((geometry (new (#j.THREE.TextGeometry#
+                           text
+                           (create "size" size "height" 0
+                                   "curveSegments" curve-segments "font" font))))
+           (material (new (#j.THREE.MeshBasicMaterial# (create "color" color)))))
+       (geometry.compute-bounding-box)
+       (geometry.compute-vertex-normals)
+       (geometry.compute-face-normals)
+       (let ((mesh (new (#j.THREE.Mesh# geometry material))))
+         mesh)))))
