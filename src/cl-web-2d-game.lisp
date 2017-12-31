@@ -19,10 +19,12 @@
         :cl-web-2d-game.collision-system
         :cl-web-2d-game.input
         :cl-web-2d-game.texture
+        :cl-web-2d-game.font
         :cl-web-2d-game.animation
         :cl-web-2d-game.animation-manager
         :cl-web-2d-game.2d-geometry
         :cl-web-2d-game.draw-model-system
+        :cl-web-2d-game.text-area
         :cl-web-2d-game.performance
         :cl-web-2d-game.gui
         :cl-web-2d-game.logger
@@ -39,10 +41,12 @@
 (cl-reexport:reexport-from :cl-web-2d-game.collision-system)
 (cl-reexport:reexport-from :cl-web-2d-game.input)
 (cl-reexport:reexport-from :cl-web-2d-game.texture)
+(cl-reexport:reexport-from :cl-web-2d-game.font)
 (cl-reexport:reexport-from :cl-web-2d-game.animation)
 (cl-reexport:reexport-from :cl-web-2d-game.animation-manager)
 (cl-reexport:reexport-from :cl-web-2d-game.2d-geometry)
 (cl-reexport:reexport-from :cl-web-2d-game.draw-model-system)
+(cl-reexport:reexport-from :cl-web-2d-game.text-area)
 (cl-reexport:reexport-from :cl-web-2d-game.performance)
 (cl-reexport:reexport-from :cl-web-2d-game.gui)
 (cl-reexport:reexport-from :cl-web-2d-game.logger)
