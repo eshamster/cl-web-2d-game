@@ -9,6 +9,7 @@
   (:export :add-mouse-down-callback
            :add-mouse-up-callback
            :add-mouse-move-callback
+           :add-mouse-wheel-callback
            :add-touch-start-callback
            :add-touch-end-callback
            :add-touch-move-callback
@@ -23,6 +24,7 @@
            :get-mouse-x
            :get-mouse-y
            :get-left-mouse-state
+           :get-mouse-wheel-delta-y
 
            :mouse-event-x
            :mouse-event-y
@@ -136,6 +138,9 @@ device-state = boolean-value"
 (defvar.ps+ +mouse-left-button-id+ 1)
 (defvar.ps+ +mouse-right-button-id+ 3)
 
+(defvar.ps+ *mouse-wheel-delta-y-buffer* 0)
+(defvar.ps+ *mouse-wheel-delta-y* 0)
+
 ;; main
 
 (defun.ps+ process-mouse-input ()
@@ -143,13 +148,16 @@ device-state = boolean-value"
   (setf _mouse-y *mouse-y-buffer*)
   (setf _mouse-left
         (calc-next-input-state _mouse-left
-                               *mouse-left-buffer*)))
+                               *mouse-left-buffer*))
+  (setf *mouse-wheel-delta-y* *mouse-wheel-delta-y-buffer*
+        *mouse-wheel-delta-y-buffer* 0))
 
 ;; interfaces
 
 (defun.ps+ get-mouse-x () _mouse-x)
 (defun.ps+ get-mouse-y () _mouse-y)
 (defun.ps+ get-left-mouse-state () _mouse-left)
+(defun.ps+ get-mouse-wheel-delta-y () *mouse-wheel-delta-y*)
 
 ;; (private)
 (defun.ps set-mouse-point (x y)
@@ -177,6 +185,8 @@ device-state = boolean-value"
 (def-input-callback mouse-up)
 (def-input-callback mouse-move)
 
+(def-input-callback mouse-wheel)
+
 (def-input-callback touch-start)
 (def-input-callback touch-end)
 (def-input-callback touch-move)
@@ -203,6 +213,12 @@ device-state = boolean-value"
   (when (= e.which *mouse-left-button-id*)
     (setf +mouse-left-buffer+ nil))
   (call-mouse-up-callbacks (init-mouse-event e)))
+
+;; mouse wheel
+
+(defun.ps on-wheel-event (e)
+  (setf *mouse-wheel-delta-y-buffer* e.delta-y)
+  (call-mouse-wheel-callbacks e))
 
 ;; touch
 
@@ -242,6 +258,7 @@ device-state = boolean-value"
   (window.add-event-listener "mousemove" on-mouse-move-event)
   (window.add-event-listener "mousedown" on-mouse-down-event)
   (window.add-event-listener "mouseup" on-mouse-up-event)
+  (window.add-event-listener "wheel" on-wheel-event)
   (window.add-event-listener "touchstart" on-touch-start)
   (window.add-event-listener "touchend" on-touch-end)
   (window.add-event-listener "touchmove" on-touch-move-event)
