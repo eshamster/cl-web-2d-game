@@ -80,22 +80,26 @@
                                              :component-type model-2d)
           (enable modelc)))))
 
-(defun.ps disable-model-2d (entity &key target-model-2d)
+(defun.ps disable-model-2d-if-required (target)
+  (with-slots (model enable) target
+    (when enable
+      (*scene-for-draw-system*.remove model)
+      (setf enable nil))))
+
+(defun.ps+ disable-model-2d (entity &key target-model-2d)
   ;; TODO: Check the entity has the target-model-2d if not nil
   (unless *scene-for-draw-system*
     (error "The scene for the draw system is not initialized"))
-  (flet ((disable (target)
-           (with-slots (model enable) target
-             (*scene-for-draw-system*.remove model)
-             (setf enable nil))))
-    (if target-model-2d
-        (disable target-model-2d)
-        (do-ecs-components-of-entity (modelc entity
-                                             :component-type 'model-2d)
-          (disable modelc)))))
+  (if target-model-2d
+      (disable-model-2d-if-required target-model-2d)
+      (do-ecs-components-of-entity (modelc entity
+                                           :component-type 'model-2d)
+        (disable-model-2d-if-required modelc))))
 
 (defun.ps+ init-draw-model-system (scene)
   (setf *scene-for-draw-system* scene)
+  (add-delete-component-hook (lambda (target)
+                               (disable-model-2d-if-required target)))
   (make-draw-model-system
    :add-entity-hook #'enable-model-2d
    :delete-entity-hook #'disable-model-2d))
