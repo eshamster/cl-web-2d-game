@@ -24,6 +24,7 @@
            :get-mouse-x
            :get-mouse-y
            :get-left-mouse-state
+           :get-right-mouse-state
            :get-mouse-wheel-delta-y
 
            :mouse-event-x
@@ -130,10 +131,12 @@ device-state = boolean-value"
 (defvar.ps+ _mouse-x -100)
 (defvar.ps+ _mouse-y -100)
 (defvar.ps+ _mouse-left :up)
+(defvar.ps+ _mouse-right :up)
 
 (defvar.ps+ *mouse-x-buffer* -100)
 (defvar.ps+ *mouse-y-buffer* -100)
 (defvar.ps+ *mouse-left-buffer* nil)
+(defvar.ps+ *mouse-right-buffer* nil)
 
 (defvar.ps+ +mouse-left-button-id+ 1)
 (defvar.ps+ +mouse-right-button-id+ 3)
@@ -149,6 +152,9 @@ device-state = boolean-value"
   (setf _mouse-left
         (calc-next-input-state _mouse-left
                                *mouse-left-buffer*))
+  (setf _mouse-right
+        (calc-next-input-state _mouse-right
+                               *mouse-right-buffer*))
   (setf *mouse-wheel-delta-y* *mouse-wheel-delta-y-buffer*
         *mouse-wheel-delta-y-buffer* 0))
 
@@ -157,6 +163,7 @@ device-state = boolean-value"
 (defun.ps+ get-mouse-x () _mouse-x)
 (defun.ps+ get-mouse-y () _mouse-y)
 (defun.ps+ get-left-mouse-state () _mouse-left)
+(defun.ps+ get-right-mouse-state () _mouse-right)
 (defun.ps+ get-mouse-wheel-delta-y () *mouse-wheel-delta-y*)
 
 ;; (private)
@@ -207,11 +214,15 @@ device-state = boolean-value"
 (defun.ps on-mouse-down-event (e)
   (when (= e.which +mouse-left-button-id+)
     (setf *mouse-left-buffer* t))
+  (when (= e.which +mouse-right-button-id+)
+    (setf *mouse-right-buffer* t))
   (call-mouse-down-callbacks (init-mouse-event e)))
 
 (defun.ps on-mouse-up-event (e)
   (when (= e.which *mouse-left-button-id*)
     (setf +mouse-left-buffer+ nil))
+  (when (= e.which *mouse-right-button-id*)
+    (setf +mouse-right-buffer+ nil))
   (call-mouse-up-callbacks (init-mouse-event e)))
 
 ;; mouse wheel
@@ -255,6 +266,7 @@ device-state = boolean-value"
 ;; register
 
 (defun.ps init-input ()
+  (window.add-event-listener "contextmenu" (lambda (e) (e.prevent-default)))
   (window.add-event-listener "mousemove" on-mouse-move-event)
   (window.add-event-listener "mousedown" on-mouse-down-event)
   (window.add-event-listener "mouseup" on-mouse-up-event)

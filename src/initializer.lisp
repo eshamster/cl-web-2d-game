@@ -53,6 +53,12 @@
   (when draw-system
     (register-ecs-system "draw2d" (init-draw-model-system scene))))
 
+;; Note: There is two parameteres related to width (height) of screen.
+;; One means width (height) of HTML canvas. It is specified by "screen-width"
+;; ("screen-height") in "start-2d-game".
+;; Another means width (height) of space in camera. It is specified by "width"
+;; ("height") in "cl-web-2d-game[.camera]:init-camera".
+;; The "cl-web-2d-game[.camera]:get-screen-width(height)" returns the latter.
 (defun.ps start-2d-game (&key screen-width screen-height
                               camera
                               rendered-dom

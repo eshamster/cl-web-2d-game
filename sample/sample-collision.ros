@@ -37,9 +37,6 @@ exec ros -Q -- $0 "$@"
 
 ;; --- Parenscript program --- ;;
 
-(defvar.ps+ *screen-width* 800)
-(defvar.ps+ *screen-height* 600)
-
 (defvar *js-game-file*
   (merge-pathnames "sample.js" *downloaded-js-dir*))
 
@@ -113,9 +110,9 @@ exec ros -Q -- $0 "$@"
            (model (make-model-2d :model (make-solid-circle :r r :color #x888888)
                                  :depth 0))
            (collide-p nil)
-           (point (make-point-2d :x (* *screen-width* (random1))
+           (point (make-point-2d :x (* (get-screen-width) (random1))
                                  :y (if up-to-down-p
-                                        (+ *screen-height* r)
+                                        (+ (get-screen-height) r)
                                         (* r -1))))
            (speed-abs *collider-speed*))
       (add-ecs-component-list
@@ -131,7 +128,7 @@ exec ros -Q -- $0 "$@"
                                  (incf (point-2d-y point)
                                        (* speed-abs (if up-to-down-p -1 1)))
                                  (when (or (< y (* r -1 5))
-                                           (> y (+ *screen-height* (* r 5))))
+                                           (> y (+ (get-screen-height) (* r 5))))
                                    (register-next-frame-func
                                     (lambda () (delete-ecs-entity entity)))))
                                (if collide-p
@@ -208,8 +205,8 @@ exec ros -Q -- $0 "$@"
                        :if-does-not-exist :create)
     (princ
      (pse:with-use-ps-pack (:this)
-       (let ((width *screen-width*)
-             (height *screen-height*))
+       (let ((width 800)
+             (height 600))
          (start-2d-game :screen-width width
                         :screen-height height
                         :camera (init-camera 0 0 width height)
