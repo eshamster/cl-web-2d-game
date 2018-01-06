@@ -85,6 +85,8 @@
 ;; TODO: Set log level for each log-kind
 
 (defvar.ps+ *current-console-log-level* +console-log-level-error+)
+(defun.ps+ get-console-log-level ()
+  *current-console-log-level*)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun.ps+ convert-to-console-log-level-symbol (log-level-keyward)
@@ -104,6 +106,6 @@
 
 ;; This is defined as macro in order not to affect to main processes
 (defmacro.ps+ console-log (log-kind log-level control-string &rest args)
-  `(when (<= *current-console-log-level*
+  `(when (<= (get-console-log-level)
              ,(convert-to-console-log-level-symbol log-level))
      (funcall *console-log-function* ,log-kind ,log-level ,control-string ,@args)))
