@@ -100,14 +100,18 @@ exec ros -Q -- $0 "$@"
          :target-tags (list target-tag)
          :on-collision on-collision))))
 
-;; TODO: Implement (not circle-p) case
 (defun.ps+ add-a-collider (generator)
   (with-slots (min-r max-r up-to-down-p
-                     tag target-tag)
+                     tag target-tag
+                     circle-p num-vertices)
       generator
     (let* ((entity (make-ecs-entity))
            (r (+ min-r (* max-r (random1))))
-           (model (make-model-2d :model (make-solid-circle :r r :color #x888888)
+           (color #x888888)
+           (mesh (if circle-p
+                     (make-solid-circle :r r :color color)
+                     (make-solid-regular-polygon :r r :n num-vertices :color color)))
+           (model (make-model-2d :model mesh
                                  :depth 0))
            (collide-p nil)
            (point (make-point-2d :x (* (get-screen-width) (random1))
