@@ -44,7 +44,7 @@
                          (:a :href "https://github.com/eshamster/cl-web-2d-game" "Cl-Web-2d-Game")
                          " / sample")
                         (:ul
-                         (dolist (name '("simple"))
+                         (dolist (name '("simple" "animation"))
                            (markup (:li (:a :href (format nil "/sample-~A" name) name)))))))))))
 
 (setf (ningle:route *app* "/sample-*" :method :GET)

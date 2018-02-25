@@ -23,6 +23,7 @@
                 :serial t
                 :components
                 ((:file "common")
+                 (:file "sample-animation")
                  (:file "sample-simple")
                  (:file "cl-web-2d-game-sample"))))
   :description "Sample for cl-web-2d-game")
