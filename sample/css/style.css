@@ -1,0 +1,9 @@
+#panel {
+    position: fixed;
+    background: #c3f3b7;
+    left: 0px;
+    width: 250px;
+    height: 100%;
+    border: 2px;
+    overflow: auto;
+}
