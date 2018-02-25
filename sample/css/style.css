@@ -7,3 +7,11 @@
     border: 2px;
     overflow: auto;
 }
+
+#viewer {
+    position: fixed;
+    border: 0px;
+    right: 0px;
+    width: calc(100% - 250px);
+    height: 100%;
+}

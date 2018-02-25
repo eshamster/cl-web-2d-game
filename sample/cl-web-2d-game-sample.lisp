@@ -45,7 +45,10 @@
                          " / sample")
                         (:ul
                          (dolist (name '("simple" "animation"))
-                           (markup (:li (:a :href (format nil "/sample-~A" name) name)))))))))))
+                           (markup (:li (:a :href (format nil "/sample-~A" name)
+                                            :target "viewer"
+                                            name))))))
+                  (:iframe :id "viewer" :name "viewer" nil))))))
 
 (setf (ningle:route *app* "/sample-*" :method :GET)
       (lambda (params)
