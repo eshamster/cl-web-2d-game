@@ -8,8 +8,7 @@
                 :use-this-package-as-sample))
 (in-package :cl-web-2d-game-sample.sample-animation)
 
-(use-this-package-as-sample :init-func init-func
-                            :update-func update-func)
+(use-this-package-as-sample)
 
 ;; --- Parenscript program --- ;;
 

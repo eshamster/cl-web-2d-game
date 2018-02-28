@@ -7,7 +7,9 @@
 
 (defvar *sample-package-table (make-hash-table))
 
-(defmacro use-this-package-as-sample (&key init-func update-func)
+(defmacro use-this-package-as-sample (&key
+                                        (init-func (intern "INIT-FUNC" *package*))
+                                        (update-func (intern "UPDATE-FUNC" *package*)))
   `(progn
      (defun ,(intern "OUTPUT-JS-CODE" *package*) (stream)
        (princ

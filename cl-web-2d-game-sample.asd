@@ -24,6 +24,10 @@
                 :components
                 ((:file "common")
                  (:file "sample-animation")
+                 (:file "sample-basic-models")
+                 (:file "sample-collision")
                  (:file "sample-simple")
+                 (:file "sample-text")
+                 (:file "sample-texture")
                  (:file "cl-web-2d-game-sample"))))
   :description "Sample for cl-web-2d-game")
