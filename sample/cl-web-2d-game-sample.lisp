@@ -52,7 +52,11 @@
                                          "collision"))
                            (markup (:li (:a :href (format nil "/sample-~A" name)
                                             :target "viewer"
-                                            name))))))
+                                            name)
+                                        " ("
+                                        (:a :href (format nil "https://github.com/eshamster/cl-web-2d-game/blob/master/sample/sample-~A.lisp" name)
+                                            "code")
+                                        ")")))))
                   (:iframe :id "viewer" :name "viewer" nil))))))
 
 (setf (ningle:route *app* "/sample-*" :method :GET)
