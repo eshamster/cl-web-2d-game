@@ -53,6 +53,42 @@
   (when draw-system
     (register-ecs-system "draw2d" (init-draw-model-system scene))))
 
+(defvar.ps+ *resize-to-screen-p* nil)
+
+;; TODO: Fix the following issue
+;; This is a temporal solution to avoid unintentional scroll bar
+;; when the height size eqauls to 100% of the screen height.
+;; In such case, 7px area is appeared both in top and bottom.
+;; But the cause is not revealed.
+(defvar.ps+ *window-height-adjust* 14)
+
+(defun.ps initialize-screen-size (rendered-dom renderer screen-width screen-height resize-to-screen-p)
+  (setf *resize-to-screen-p* resize-to-screen-p)
+  (labels ((calc-scale ()
+             (min (/ window.inner-width screen-width)
+                  (/ (- window.inner-height *window-height-adjust*) screen-height)))
+           (set-position-by-size (width height)
+             (setf rendered-dom.style.position "absolute"
+                   rendered-dom.style.left (+ (/ (- window.inner-width width) 2) "px")
+                   rendered-dom.style.top (+ (/ (- window.inner-height height) 2) "px")))
+           (set-size (width height)
+             (renderer.set-size width height)
+             (set-position-by-size width height))
+           (resize ()
+             (let ((scale (if *resize-to-screen-p* (calc-scale) 1)))
+               (set-size (* screen-width scale)
+                         (* screen-height scale)))))
+    (resize)
+    (let ((resize-timer nil))
+      (window.add-event-listener
+       "resize" (lambda (e)
+                  (declare (ignore e))
+                  (when resize-timer
+                    (clear-timeout resize-timer))
+                  (setf resize-timer
+                        (set-timeout (lambda () (resize))
+                                     100)))))))
+
 ;; Note: There is two parameteres related to width (height) of screen.
 ;; One means width (height) of HTML canvas. It is specified by "screen-width"
 ;; ("screen-height") in "start-2d-game".
@@ -65,6 +101,7 @@
                               stats-dom
                               monitoring-log-dom
                               event-log-dom
+                              (resize-to-screen-p nil)
                               (init-function (lambda (scene) nil))
                               (update-function (lambda () nil)))
   "Entry point for starting game.
@@ -76,7 +113,9 @@ We assume that the camera is initalized using cl-web-2d-game[.camera]:init-camer
       (init-stats stats-dom))
     (init-monitoring-log monitoring-log-dom)
     (init-event-log-area event-log-dom)
-    (renderer.set-size screen-width screen-height)
+    (initialize-screen-size rendered-dom renderer
+                            screen-width screen-height
+                            resize-to-screen-p)
     (chain rendered-dom
            (append-child renderer.dom-element))
     (let ((light (new (#j.THREE.DirectionalLight# 0xffffff))))

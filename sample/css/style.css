@@ -16,6 +16,7 @@
 #viewer {
     position: fixed;
     border: 0px;
+    top: 0px;
     right: 0px;
     width: calc(100% - 250px);
     height: 100%;

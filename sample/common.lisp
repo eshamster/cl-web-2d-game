@@ -19,6 +19,7 @@
             (cl-web-2d-game:start-2d-game
              :screen-width width
              :screen-height height
+             :resize-to-screen-p t
              :camera (cl-web-2d-game:init-camera 0 0 width height)
              :rendered-dom (document.query-selector "#renderer")
              :stats-dom (document.query-selector "#stats-output")
