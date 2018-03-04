@@ -1,0 +1,31 @@
+#panel {
+    position: fixed;
+    background: #c3f3b7;
+    top: 0px;
+    left: 0px;
+    width: 250px;
+    height: 100%;
+    border: 2px;
+    overflow: auto;
+}
+
+#panel-content {
+    margin: 10px;
+}
+
+#viewer {
+    position: fixed;
+    border: 0px;
+    top: 0px;
+    right: 0px;
+    width: calc(100% - 250px);
+    height: 100%;
+}
+
+#sample-list {
+    padding-left: 25px;
+}
+
+.sample-list-element {
+    list-style-type: circle;
+}

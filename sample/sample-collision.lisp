@@ -1,44 +1,16 @@
-#!/bin/sh
-#|-*- mode:lisp -*-|#
-#| <Put a one-line description here>
-exec ros -Q -- $0 "$@"
-|#
-;;; vim: set ft=lisp lisp:
-
-(progn ;;init forms
-  (ros:ensure-asdf)
-  #+quicklisp (ql:quickload '(:ps-experiment
-                              :cl-ps-ecs
-                              :cl-web-2d-game
-                              :ningle
-                              :cl-markup
-                              :clack)
-                            :silent t))
-
-(defpackage :ros.script.sample-collision
+(in-package :cl-user)
+(defpackage :cl-web-2d-game-sample.sample-collision
   (:use :cl
-        :cl-markup
-        :cl-ps-ecs
         :ps-experiment
-        :cl-web-2d-game))
-(in-package :ros.script.sample-collision)
+        :cl-ps-ecs
+        :cl-web-2d-game)
+  (:import-from :cl-web-2d-game-sample.common
+                :use-this-package-as-sample))
+(in-package :cl-web-2d-game-sample.sample-collision)
 
-;; --- Definitions about directories --- ;;
-
-(defvar *script-dir*
-  (merge-pathnames "sample/"
-                   (asdf:component-pathname
-                    (asdf:find-system :cl-web-2d-game))))
-
-(defvar *js-relative-dir* "js/")
-
-(defvar *downloaded-js-dir*
-  (merge-pathnames *js-relative-dir* *script-dir*))
+(use-this-package-as-sample)
 
 ;; --- Parenscript program --- ;;
-
-(defvar *js-game-file*
-  (merge-pathnames "sample.js" *downloaded-js-dir*))
 
 (defun.ps+ add-mouse-pointer ()
   (let ((pointer (make-ecs-entity))
@@ -100,14 +72,18 @@ exec ros -Q -- $0 "$@"
          :target-tags (list target-tag)
          :on-collision on-collision))))
 
-;; TODO: Implement (not circle-p) case
 (defun.ps+ add-a-collider (generator)
   (with-slots (min-r max-r up-to-down-p
-                     tag target-tag)
+                     tag target-tag
+                     circle-p num-vertices)
       generator
     (let* ((entity (make-ecs-entity))
            (r (+ min-r (* max-r (random1))))
-           (model (make-model-2d :model (make-solid-circle :r r :color #x888888)
+           (color #x888888)
+           (mesh (if circle-p
+                     (make-solid-circle :r r :color color)
+                     (make-solid-regular-polygon :r r :n num-vertices :color color)))
+           (model (make-model-2d :model mesh
                                  :depth 0))
            (collide-p nil)
            (point (make-point-2d :x (* (get-screen-width) (random1))
@@ -195,79 +171,3 @@ exec ros -Q -- $0 "$@"
 
 (defun.ps+ update-func ()
   (monitor-collider-count))
-
-;; --- Make js main file --- ;;
-
-(defun make-js-main-file ()
-  (with-open-file (out *js-game-file*
-                       :direction :output
-                       :if-exists :supersede
-                       :if-does-not-exist :create)
-    (princ
-     (pse:with-use-ps-pack (:this)
-       (let ((width 800)
-             (height 600))
-         (start-2d-game :screen-width width
-                        :screen-height height
-                        :camera (init-camera 0 0 width height)
-                        :rendered-dom (document.query-selector "#renderer")
-                        :stats-dom (document.query-selector "#stats-output")
-                        :monitoring-log-dom (document.query-selector "#monitor")
-                        :event-log-dom (document.query-selector "#eventlog")
-                        :init-function init-func
-                        :update-function update-func)))
-     out)))
-
-;; --- Server --- ;;
-
-(defvar *app* (make-instance 'ningle:<app>))
-
-(defvar *server* nil)
-
-(setf (ningle:route *app* "/" :method :GET)
-      (lambda (params)
-        (declare (ignorable params))
-        (make-js-main-file)
-        (with-output-to-string (str)
-          (let ((cl-markup:*output-stream* str))
-            (html5 (:head
-                    (:title "test")
-                    (dolist (js-src (make-src-list-for-script-tag *js-relative-dir*))
-                      (markup (:script :src js-src nil))))
-                   (:body
-                    (:div :id "stats-output")
-                    (:div :id "renderer" nil)
-                    (:div :id "monitor" "(for Monitoring Log)")
-                    (:div (:pre :id "eventlog" "(for Event Log)"))
-                    (:script :src "js/sample.js" nil)))))))
-
-(defun stop ()
-  (when *server*
-    (clack:stop *server*)
-    (setf *server* nil)))
-
-(defun run (&key (port 5000))
-  (ensure-js-files *downloaded-js-dir*)
-  (stop)
-  (setf *server*
-        (clack:clackup
-         (lack:builder
-          (:static :path (lambda (path)
-                           (print path)
-                           (if (ppcre:scan "^(?:/images/|/css/|/js/|/robot\\.txt$|/favicon\\.ico$)"
-                                           path)
-                               path
-                               nil))
-                   :root *script-dir*)
-          *app*)
-         :port port
-         :use-thread nil)))
-
-;; --- Roswell script main --- ;;
-
-(defun main (&rest argv)
-  (declare (ignorable argv))
-  (run :port 16896)
-  (princ "--- Press enter key to stop ---")
-  (peek-char)
-  (stop))
