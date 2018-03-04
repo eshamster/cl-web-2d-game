@@ -80,8 +80,17 @@
                    (:body
                     (:div :id "stats-output" nil)
                     (:div :id "renderer" nil)
-                    (:div :class "log-panel" :id "monitor" "(for Monitoring Log)")
-                    (:div :class "log-panel" :id "eventlog" "(for Event Log)")
+                    (dolist (id '("monitor" "eventlog"))
+                      (markup
+                       (:div
+                        :class "log-box"
+                        (:label :class "open-close-label"
+                                :id (format nil "open-close-label-~A" id)
+                                :for (format nil "open-close-~A" id) nil)
+                        (:input :class "open-close"
+                                :id (format nil "open-close-~A" id)
+                                :type "checkbox")
+                        (:div :class "log-panel" :id id "(Log Area)"))))
                     (:script :src
                              (format nil "~Asample-~A.js" *js-relative-dir* name)
                              nil)))))))
