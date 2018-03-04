@@ -1,0 +1,17 @@
+.log-panel {
+    position: fixed;
+    padding: 5px;
+    margin: 5px;
+    border-radius: 5px;
+    background-color: rgba(200,200,200,0.5);
+}
+
+#monitor {
+    top: 50px;
+    left: 0px;
+}
+
+#eventlog {
+    bottom: 0px;
+    left: 0px;
+}

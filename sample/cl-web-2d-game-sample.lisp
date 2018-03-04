@@ -41,22 +41,27 @@
                  (:body
                   (:div :id "panel"
                         (:div
-                         (:a :href "https://github.com/eshamster/cl-web-2d-game" "Cl-Web-2d-Game")
-                         " / sample")
-                        (:ul
-                         (dolist (name '("simple"
-                                         "basic-models"
-                                         "texture"
-                                         "animation"
-                                         "text"
-                                         "collision"))
-                           (markup (:li (:a :href (format nil "/sample-~A" name)
-                                            :target "viewer"
-                                            name)
-                                        " ("
-                                        (:a :href (format nil "https://github.com/eshamster/cl-web-2d-game/blob/master/sample/sample-~A.lisp" name)
-                                            "code")
-                                        ")")))))
+                         :id "panel-content"
+                         (:div
+                          (:a :href "https://github.com/eshamster/cl-web-2d-game" "Cl-Web-2d-Game")
+                          " / sample")
+                         (:ul
+                          :id "sample-list"
+                          (dolist (name '("simple"
+                                          "basic-models"
+                                          "texture"
+                                          "animation"
+                                          "text"
+                                          "collision"))
+                            (markup (:li :class "sample-list-element"
+                                         (:a :href (format nil "/sample-~A" name)
+                                             :target "viewer"
+                                             name)
+                                         " ("
+                                         (:a :href (format nil "https://github.com/eshamster/cl-web-2d-game/blob/master/sample/sample-~A.lisp" name)
+                                             :target "_blank"
+                                             "code")
+                                         ")"))))))
                   (:iframe :id "viewer" :name "viewer" nil))))))
 
 (setf (ningle:route *app* "/sample-*" :method :GET)
@@ -69,13 +74,14 @@
           (with-cl-markup
             (html5 (:head
                     (:title (format nil "Sample: ~A" name))
+                    (:link :rel "stylesheet" :type "text/css" :href "css/viewer.css" nil)
                     (dolist (js-src (make-src-list-for-script-tag *js-relative-dir*))
                       (markup (:script :src js-src nil))))
                    (:body
-                    (:div :id "stats-output")
+                    (:div :id "stats-output" nil)
                     (:div :id "renderer" nil)
-                    (:div :id "monitor" "(for Monitoring Log)")
-                    (:div (:pre :id "eventlog" "(for Event Log)"))
+                    (:div :class "log-panel" :id "monitor" "(for Monitoring Log)")
+                    (:div :class "log-panel" :id "eventlog" "(for Event Log)")
                     (:script :src
                              (format nil "~Asample-~A.js" *js-relative-dir* name)
                              nil)))))))
