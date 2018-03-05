@@ -29,6 +29,7 @@
       :width 80 :height 80
       :texture-name texture-name)
      (lambda (model)
+       (add-to-event-log (+ texture-name " has been loaded"))
        (add-ecs-component-list
         rect
         (make-model-2d :model model :depth depth))
@@ -67,6 +68,4 @@
                       :rot-speed-ratio -0.65)
   (init-default-systems :scene scene))
 
-(defun.ps update-func ()
-  (do-ecs-entities entity
-    (add-to-monitoring-log (ecs-entity-id entity))))
+(defun.ps update-func ())

@@ -59,6 +59,4 @@
   (add-sample-text-area :x 550 :y 400 :align :right)
   (init-default-systems :scene scene))
 
-(defun.ps+ update-func ()
-  (do-ecs-entities entity
-    (add-to-monitoring-log (ecs-entity-id entity))))
+(defun.ps+ update-func ())
