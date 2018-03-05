@@ -169,11 +169,13 @@ device-state = boolean-value"
 ;; (private)
 (defun.ps set-mouse-point (x y)
   (let* ((renderer (get-rendered-dom))
-         (canvas (renderer.query-selector "canvas")))
-    (setf *mouse-x-buffer* (- x renderer.offset-left
+         (canvas (renderer.query-selector "canvas"))
+         (scale (/ (* 1.0 renderer.client-height) (get-screen-height))))
+    (setf *mouse-x-buffer* (- (/ (- x renderer.offset-left)
+                                 scale)
                               (get-camera-offset-x)))
-    (setf *mouse-y-buffer* (- canvas.height
-                              (- y renderer.offset-top)
+    (setf *mouse-y-buffer* (- (/ (+ (- canvas.height y) renderer.offset-top)
+                                 scale)
                               (get-camera-offset-y)))))
 
 ;; --- self callbacks --- ;;
