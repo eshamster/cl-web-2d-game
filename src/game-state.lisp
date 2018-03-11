@@ -10,7 +10,9 @@
            :game-state-process
            :process
            :game-state-end-process
-           :end-process))
+           :end-process)
+  (:import-from :cl-ps-ecs
+                :process))
 (in-package :cl-web-2d-game.game-state)
 
 (defstruct.ps+ game-state

@@ -17,7 +17,6 @@
 
 ;; --- prepare --- ;;
 
-(shadowing-import 'cl-web-2d-game.game-state:process)
 (use-packages-for-test :game-state)
 
 ;; - buffer - ;;
