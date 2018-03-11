@@ -22,6 +22,7 @@
                 ((:file "test-utils")
                  (:test-file "utils")
                  (:test-file "logger")
+                 (:test-file "game-state")
                  (:test-file "basic-components")
                  (:test-file "calc")
                  (:test-file "collision"))))

@@ -78,7 +78,7 @@
      (make-script-2d
       :func (lambda (entity)
               (decf rest-interval)
-              (add-to-monitoring-log current-stage)
+              (add-to-monitoring-log (+ "Cycle: " current-stage))
               (when (<= rest-interval 0)
                 (setf rest-interval interval)
                 (incf current-stage)
@@ -92,19 +92,22 @@
                   (t (setf current-stage 0)))))))
     (add-ecs-entity entity)))
 
+(defvar.ps+ *current-color* #xffffff)
+
 (defun.ps+ init-gui-panel ()
   (init-gui)
   ;; for test change-model-color
   (let ((entity (add-a-model 200 200 20
                              (make-solid-rect :width 50 :height 50
-                                              :color #xffffff))))
+                                              :color *current-color*))))
     (add-panel-number "change color" 1 :min 0 :max 1 :step 0.01
                       :on-change (lambda (value)
                                    (with-ecs-components (model-2d) entity
-                                     (change-model-color model-2d
-                                                         (+ #xff0000
-                                                            (* #x100 #xff value)
-                                                            (* #xff value))))))))
+                                     (let ((color (+ #xff0000
+                                                     (* #x100 #xff value)
+                                                     (* #xff value))))
+                                       (change-model-color model-2d color)
+                                       (setf *current-color* color)))))))
 
 (defun.ps+ init-func (scene)
   (set-console-log-level :debug)
@@ -113,5 +116,6 @@
   (init-gui-panel))
 
 (defun.ps update-func ()
-  (do-ecs-entities entity
-    (add-to-monitoring-log (ecs-entity-id entity))))
+  (add-to-monitoring-log (+ "Color: 0x" (ps:chain (-math.floor *current-color*)
+                                                  (to-string 16)
+                                                  (to-upper-case)))))

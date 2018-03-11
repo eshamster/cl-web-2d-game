@@ -13,7 +13,9 @@
 ;; --- Parenscript program --- ;;
 
 (defun.ps add-explosion-model (&key x y depth texture-name)
-  (let ((rect (make-ecs-entity)))
+  (let* ((rect (make-ecs-entity))
+         (id-str ((ps:@ (+ "000" (ecs-entity-id rect)) slice) -4)))
+    (add-to-event-log (+ id-str ": Created"))
     (add-ecs-component-list
      rect
      (make-point-2d :x x :y y
@@ -33,9 +35,12 @@
                          :animation-end-callback
                          (lambda (anime)
                            (case (floor (* 3 (random)))
-                             (1 (reverse-animation anime))
-                             (2 (reset-animation anime :stop-p nil))
-                             (t (delete-ecs-entity rect)))))))
+                             (1 (reverse-animation anime)
+                                (add-to-event-log (+ id-str ": Reversed")))
+                             (2 (reset-animation anime :stop-p nil)
+                                (add-to-event-log (+ id-str ": Repeated")))
+                             (t (delete-ecs-entity rect)
+                                (add-to-event-log (+ id-str ": Deleted"))))))))
          (add-ecs-component-list rect model-2d anime-2d))
        (start-animation anime-2d)
        (add-ecs-entity-to-buffer rect)))))
@@ -107,7 +112,7 @@
     count))
 
 (defun.ps update-func ()
-  (add-to-monitoring-log (count-entity))
+  (add-to-monitoring-log (+ "Num of explosion: " (1- (count-entity))))
   (decf *creation-interval-rest*)
   (when (<= *creation-interval-rest* 0)
     (setf *creation-interval-rest*

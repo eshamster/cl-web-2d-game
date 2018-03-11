@@ -27,9 +27,9 @@
 (defvar.ps *counter* 0)
 
 (defun.ps update-func ()
+  (when (= (mod *counter* 60) 0)
+    (add-to-event-log (+ "Event per sec: " *counter*)))
+  (add-to-monitoring-log (+ "Frame counter: " *counter*))
   (incf *counter*)
-  (add-to-monitoring-log *counter*)
   (do-ecs-entities entity
-    (add-to-monitoring-log (ecs-entity-id entity)))
-  (when (= (mod *counter* 60) 1)
-    (add-to-event-log *counter*)))
+    (add-to-monitoring-log (+ "Entity ID: " (ecs-entity-id entity)))))
