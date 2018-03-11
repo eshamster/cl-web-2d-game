@@ -6,5 +6,5 @@
 *.x86f
 *~
 .#*
-_work/
+static/js/
 quicklisp/

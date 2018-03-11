@@ -3,7 +3,9 @@
 (IN-PACKAGE :ROSWELL.INIT.CL-WEB-2D-GAME)
 (DEFVAR *PARAMS*
   '(:FILES
-    ((:NAME "src/game/_name_-state.lisp" :METHOD "djula" :REWRITE
+    ((:NAME "static/css/viewer.css" :METHOD "copy" :REWRITE
+      "{{name}}/static/css/viewer.css")
+     (:NAME "src/game/_name_-state.lisp" :METHOD "djula" :REWRITE
       "{{name}}/src/game/{{name}}-state.lisp")
      (:NAME "_name_-test.asd" :METHOD "djula" :REWRITE
       "{{name}}/{{name}}-test.asd")

@@ -12,7 +12,7 @@
 ;; --- Definitions about directories --- ;;
 
 (defvar *script-dir*
-  (merge-pathnames "_work/"
+  (merge-pathnames "static/"
                    (asdf:component-pathname
                     (asdf:find-system :{{name}}))))
 
@@ -61,13 +61,23 @@
           (let ((cl-markup:*output-stream* str))
             (html5 (:head
                     (:title "{{name}}")
+                    (:link :rel "stylesheet" :type "text/css" :href "css/viewer.css" nil)
                     (dolist (js-src (make-src-list-for-script-tag *js-relative-dir*))
                       (markup (:script :src js-src nil))))
                    (:body
                     (:div :id "stats-output")
                     (:div :id "renderer" nil)
-                    (:div :id "monitor" "(for Monitoring Log)")
-                    (:div (:pre :id "eventlog" "(for Event Log)"))
+                    (dolist (id '("monitor" "eventlog"))
+                      (markup
+                       (:div
+                        :class "log-box"
+                        (:label :class "open-close-label"
+                                :id (format nil "open-close-label-~A" id)
+                                :for (format nil "open-close-~A" id) nil)
+                        (:input :class "open-close"
+                                :id (format nil "open-close-~A" id)
+                                :type "checkbox")
+                        (:div :class "log-panel" :id id "(Log Area)"))))
                     (:script :src "js/game.js" nil)))))))
 
 (defun stop ()
