@@ -27,6 +27,7 @@
                 :serial t
                 :components
                 ((:file "logger")
+                 (:file "game-state")
                  (:file "dom-manager")
                  (:file "basic-components")
                  (:file "utils")

@@ -28,6 +28,7 @@
         :cl-web-2d-game.performance
         :cl-web-2d-game.gui
         :cl-web-2d-game.logger
+        :cl-web-2d-game.game-state
         :cl-web-2d-game.debug-drawer
         :cl-web-2d-game.initializer))
 (in-package :cl-web-2d-game)
@@ -50,5 +51,6 @@
 (cl-reexport:reexport-from :cl-web-2d-game.performance)
 (cl-reexport:reexport-from :cl-web-2d-game.gui)
 (cl-reexport:reexport-from :cl-web-2d-game.logger)
+(cl-reexport:reexport-from :cl-web-2d-game.game-state)
 (cl-reexport:reexport-from :cl-web-2d-game.debug-drawer)
 (cl-reexport:reexport-from :cl-web-2d-game.initializer)
