@@ -1,0 +1,25 @@
+("quicklisp" .
+ (:class qlot.source.ql:source-ql-all
+  :initargs (:project-name "quicklisp" :%version :latest)
+  :version "2018-02-28"))
+("ps-experiment" .
+ (:class qlot.source.github:source-github
+  :initargs (:project-name "ps-experiment" :repos "eshamster/ps-experiment" :ref nil :branch nil :tag nil)
+  :version "github-2c6a1426dffdf85cf706d67f688ed7b5f2824e8a"
+  :repos "eshamster/ps-experiment"
+  :url "https://github.com/eshamster/ps-experiment/archive/2c6a1426dffdf85cf706d67f688ed7b5f2824e8a.tar.gz"
+  :ref "2c6a1426dffdf85cf706d67f688ed7b5f2824e8a"))
+("cl-ps-ecs" .
+ (:class qlot.source.github:source-github
+  :initargs (:project-name "cl-ps-ecs" :repos "eshamster/cl-ps-ecs" :ref nil :branch nil :tag nil)
+  :version "github-f6e3f95f6feb862674c2b079137d321b9e75b8cc"
+  :repos "eshamster/cl-ps-ecs"
+  :url "https://github.com/eshamster/cl-ps-ecs/archive/f6e3f95f6feb862674c2b079137d321b9e75b8cc.tar.gz"
+  :ref "f6e3f95f6feb862674c2b079137d321b9e75b8cc"))
+("cl-web-2d-game" .
+ (:class qlot.source.github:source-github
+  :initargs (:project-name "cl-web-2d-game" :repos "eshamster/cl-web-2d-game" :ref nil :branch nil :tag nil)
+  :version "github-84561dfbcb9f7250b2696f45244c1914c4176841"
+  :repos "eshamster/cl-web-2d-game"
+  :url "https://github.com/eshamster/cl-web-2d-game/archive/84561dfbcb9f7250b2696f45244c1914c4176841.tar.gz"
+  :ref "84561dfbcb9f7250b2696f45244c1914c4176841"))
