@@ -46,7 +46,12 @@
         (test-vector-angle  10  10 (* 1 (/ PI 4)))
         (test-vector-angle -10  10 (* 3 (/ PI 4)))
         (test-vector-angle -10 -10 (* -3 (/ PI 4)))
-        (test-vector-angle  10 -10 (* -1 (/ PI 4)))))))
+        (test-vector-angle  10 -10 (* -1 (/ PI 4))))))
+  (subtest "calc-inner-product"
+    (with-prove-in-both ()
+      (is (calc-inner-product (make-vector-2d :x 1 :y 2)
+                              (make-vector-2d :x -3 :y 4))
+          5))))
 
 (subtest "Test vector modifications"
   (subtest "Test incf-vector and dicf-vector"

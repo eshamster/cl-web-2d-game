@@ -13,6 +13,7 @@
            :setf-vector-angle
            :incf-vector
            :decf-vector
+           :calc-inner-product
            :incf-rotate-diff
            :decf-rotate-diff
            :rotatef-point-by
@@ -73,6 +74,10 @@ The angle of the vector (1, 0) is 0 and the rotation is counterclockwize."
   (decf (vector-2d-x target-vec) (vector-2d-x diff-vec))
   (decf (vector-2d-y target-vec) (vector-2d-y diff-vec))
   target-vec)
+
+(defun.ps+ calc-inner-product (vec1 vec2)
+  (+ (* (vector-2d-x vec1) (vector-2d-x vec2))
+     (* (vector-2d-y vec1) (vector-2d-y vec2))))
 
 (defun.ps+ incf-rotate-diff (target-vector radious now-angle diff-angle)
   "Rotate the target-vector.
