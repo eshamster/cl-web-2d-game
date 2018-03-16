@@ -14,6 +14,7 @@
            :incf-vector
            :decf-vector
            :calc-inner-product
+           :calc-outer-product-z
            :incf-rotate-diff
            :decf-rotate-diff
            :rotatef-point-by
@@ -78,6 +79,12 @@ The angle of the vector (1, 0) is 0 and the rotation is counterclockwize."
 (defun.ps+ calc-inner-product (vec1 vec2)
   (+ (* (vector-2d-x vec1) (vector-2d-x vec2))
      (* (vector-2d-y vec1) (vector-2d-y vec2))))
+
+(defun.ps+ calc-outer-product-z (vec1 vec2)
+  "Calculate z component of outer-product.
+It is useful to judge which side a point is from a vector."
+  (- (* (vector-2d-x vec1) (vector-2d-y vec2))
+     (* (vector-2d-y vec1) (vector-2d-x vec2))))
 
 (defun.ps+ incf-rotate-diff (target-vector radious now-angle diff-angle)
   "Rotate the target-vector.

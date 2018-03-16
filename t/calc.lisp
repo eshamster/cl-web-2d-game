@@ -51,7 +51,15 @@
     (with-prove-in-both ()
       (is (calc-inner-product (make-vector-2d :x 1 :y 2)
                               (make-vector-2d :x -3 :y 4))
-          5))))
+          5)))
+  (subtest "calc-outer-product-z"
+    (with-prove-in-both ()
+      (is (calc-outer-product-z (make-vector-2d :x 1 :y 2)
+                                (make-vector-2d :x 3 :y 9))
+          3)
+      (is (calc-outer-product-z (make-vector-2d :x 1 :y 2)
+                                (make-vector-2d :x 3 :y -9))
+          -15))))
 
 (subtest "Test vector modifications"
   (subtest "Test incf-vector and dicf-vector"
