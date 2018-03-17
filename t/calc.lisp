@@ -157,7 +157,7 @@
         (is-point target 2 0 (* PI -1/4))
         ;; check the base is not changed
         (is-point base 1 (sqrt 3) (* PI -1/2)))))
-  (subtest "calc-global-point"
+  (subtest "calc-global-point and calc-local-point"
     (with-prove-in-both ()
       (let ((grand-parent (make-ecs-entity))
             (parent (make-ecs-entity))
@@ -172,7 +172,9 @@
         (setf (ecs-entity-parent child) stranger)
         (setf (ecs-entity-parent stranger) parent)
         (setf (ecs-entity-parent parent) grand-parent)
-        (is-point (calc-global-point child) 1 0 (* PI -3/2))
+        (let ((global-pnt (calc-global-point child)))
+          (is-point global-pnt 1 0 (* PI -3/2))
+          (is-point (calc-local-point child global-pnt) 0 1 (* PI -1/2)))
         (let* ((offset (make-point-2d :x 0 :y 1 :angle (* PI -1/2)))
                (result (calc-global-point child offset)))
           (is-point result 0 0 (* PI -2))
