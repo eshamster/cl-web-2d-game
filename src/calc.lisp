@@ -22,6 +22,7 @@
 
            :transformf-point
            :calc-global-point
+           :calc-local-point
 
            :diff-angle
 
@@ -140,24 +141,50 @@ rotation."
                        (+ (* before-x sin-value) (* before-y cos-value))))))
   target)
 
+(defun.ps+ transformf-point-inverse (target base)
+  "Rever the transform of the \"transformf-point\"."
+  (decf (point-2d-angle target) (point-2d-angle base))
+  (with-slots-pair (((place-x x) (place-y y)) target
+                    (x y angle) base)
+    (let ((cos-value (cos (* -1 angle)))
+          (sin-value (sin (* -1 angle)))
+          (before-x place-x)
+          (before-y place-y))
+      (setf place-x (- (* (- before-x x) cos-value) (* (- before-y y) sin-value)))
+      (setf place-y (+ (* (- before-x x) sin-value) (* (- before-y y) cos-value)))))
+  target)
+
+(defun.ps+ transformf-point-rec (base-pnt parent)
+  (if parent
+      (let ((pos (get-ecs-component 'point-2d parent)))
+        (when pos
+          (transformf-point base-pnt pos))
+        (transformf-point-rec base-pnt (ecs-entity-parent parent)))
+      base-pnt))
+
 (defun.ps+ calc-global-point (entity &optional offset)
   "Return global position and roration of the entity (type: point-2d).
 Note that an entity has only local position and rotation on coordinate of its parent.
 The 'offset' is useful if you want to calculate global position and rotation on
 coordinate of the 'entity'"
-  (labels ((rec (result parent)
-             (if parent
-                 (let ((pos (get-ecs-component 'point-2d parent)))
-                   (when pos
-                     (transformf-point result pos))
-                   (rec result (ecs-entity-parent parent)))
-                 result)))
-    (unless (get-ecs-component 'point-2d entity)
-      (error "The entity ~A doesn't have point-2d" entity))
-    (rec (if offset
-             (clone-point-2d offset)
-             (make-point-2d :x 0 :y 0 :angle 0))
-         entity)))
+  (unless (get-ecs-component 'point-2d entity)
+    (error "The entity ~A doesn't have point-2d" entity))
+  (transformf-point-rec
+   (if offset
+       (clone-point-2d offset)
+       (make-point-2d :x 0 :y 0 :angle 0))
+   entity))
+
+(defun.ps+ calc-local-point (entity global-pnt)
+  "Calculate local position and rotation of the entity from a global point."
+  (unless (get-ecs-component 'point-2d entity)
+    (error "The entity ~A doesn't have point-2d" entity))
+  (let ((base-pnt
+         (transformf-point-rec
+          (make-point-2d :x 0 :y 0 :angle 0) (ecs-entity-parent entity)))
+        (result (clone-point-2d global-pnt)))
+    (transformf-point-inverse result base-pnt)
+    result))
 
 ;; --- angle calculation functions --- ;;
 
