@@ -32,7 +32,8 @@
            :calc-dist-to-line-seg
 
            :adjust-to-target
-           :lerp-scalar))
+           :lerp-scalar
+           :lerp-vector-2d))
 (in-package :cl-web-2d-game.calc)
 
 (enable-ps-experiment-syntax)
@@ -272,3 +273,13 @@ line-pnt1 and line-pnt2."
   "Linear interpolation function for scalars. alpha = 0 -> min-value, alpha = 1 -> max-value"
   (+ min-value
      (* alpha (- max-value min-value))))
+
+(defun.ps+ lerp-vector-2d (min-vector max-vector alpha &optional (place (make-vector-2d)))
+  "Linear interpolation function for vector-2d. alpha = 0 -> min-value, alpha = 1 -> max-value"
+  (setf (vector-2d-x place) (lerp-scalar (vector-2d-x min-vector)
+                                         (vector-2d-x max-vector)
+                                         alpha)
+        (vector-2d-y place) (lerp-scalar (vector-2d-y min-vector)
+                                         (vector-2d-y max-vector)
+                                         alpha))
+  place)
