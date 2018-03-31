@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.utils
+(defpackage cl-web-2d-game/utils/utils
   (:use :cl
         :parenscript
         :ps-experiment
@@ -8,7 +8,7 @@
            :get-layered-hash
            :ensure-js-files
            :make-src-list-for-script-tag))
-(in-package :cl-web-2d-game.utils)
+(in-package :cl-web-2d-game/utils/utils)
 
 (enable-ps-experiment-syntax)
 

@@ -1,14 +1,13 @@
-(in-package :cl-user)
-(defpackage cl-web-2d-game.animation
+(defpackage cl-web-2d-game/graphics/animation
   (:use :cl
         :parenscript
         :ps-experiment
         :cl-ps-ecs
-        :cl-web-2d-game.2d-geometry
-        :cl-web-2d-game.basic-components
-        :cl-web-2d-game.texture
-        :cl-web-2d-game.draw-model-system
-        :cl-web-2d-game.logger)
+        :cl-web-2d-game/core/basic-components
+        :cl-web-2d-game/graphics/2d-geometry
+        :cl-web-2d-game/graphics/texture
+        :cl-web-2d-game/graphics/draw-model-system
+        :cl-web-2d-game/utils/debug/logger)
   (:export :animation-2d
            :init-animation-2d
            :start-animation
@@ -19,7 +18,7 @@
            :enable-animation
            :disable-animation
            :run-animation-process))
-(in-package :cl-web-2d-game.animation)
+(in-package :cl-web-2d-game/graphics/animation)
 
 (enable-ps-experiment-syntax)
 

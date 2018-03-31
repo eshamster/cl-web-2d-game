@@ -1,10 +1,10 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.calc
+(defpackage cl-web-2d-game/utils/calc
   (:use :cl
         :parenscript
         :ps-experiment
         :cl-ps-ecs
-        :cl-web-2d-game.basic-components)
+        :cl-web-2d-game/core/basic-components)
   (:import-from :ps-experiment.common-macros
                 :with-slots-pair)
   (:export :vector-abs
@@ -34,7 +34,7 @@
            :adjust-to-target
            :lerp-scalar
            :lerp-vector-2d))
-(in-package :cl-web-2d-game.calc)
+(in-package :cl-web-2d-game/utils/calc)
 
 (enable-ps-experiment-syntax)
 

@@ -1,4 +1,4 @@
-(defpackage cl-web-2d-game.game-state
+(defpackage cl-web-2d-game/core/game-state
   (:use :cl
         :ps-experiment)
   (:export :process-game-state
@@ -13,7 +13,7 @@
            :end-process)
   (:import-from :cl-ps-ecs
                 :process))
-(in-package :cl-web-2d-game.game-state)
+(in-package :cl-web-2d-game/core/game-state)
 
 (defstruct.ps+ game-state
   (start-process (lambda (_this) (declare (ignore _this)) t))

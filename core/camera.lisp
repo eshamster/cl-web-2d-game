@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.camera
+(defpackage cl-web-2d-game/core/camera
   (:use :cl
         :parenscript
         :ps-experiment
@@ -11,7 +11,7 @@
            :get-screen-width
            :get-screen-height
            :init-camera))
-(in-package :cl-web-2d-game.camera)
+(in-package :cl-web-2d-game/core/camera)
 
 (enable-ps-experiment-syntax)
 

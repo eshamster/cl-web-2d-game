@@ -1,13 +1,13 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.2d-geometry
+(defpackage cl-web-2d-game/graphics/2d-geometry
   (:use :cl
         :cl-ppcre
         :parenscript
         :ps-experiment
         :cl-ps-ecs
-        :cl-web-2d-game.font
-        :cl-web-2d-game.texture
-        :cl-web-2d-game.basic-components)
+        :cl-web-2d-game/core/basic-components
+        :cl-web-2d-game/graphics/font
+        :cl-web-2d-game/graphics/texture)
   (:export :make-line
            :make-lines
            :make-solid-rect
@@ -23,7 +23,7 @@
            :make-text-model-promise
            :change-model-color
            :change-geometry-uvs))
-(in-package :cl-web-2d-game.2d-geometry)
+(in-package :cl-web-2d-game/graphics/2d-geometry)
 
 (enable-ps-experiment-syntax)
 

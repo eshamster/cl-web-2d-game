@@ -1,12 +1,12 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.debug-drawer
+(defpackage cl-web-2d-game/utils/debug/debug-drawer
   (:use :cl
         :cl-ppcre
         :ps-experiment
         :cl-ps-ecs
-        :cl-web-2d-game.basic-components
-        :cl-web-2d-game.2d-geometry
-        :cl-web-2d-game.draw-model-system
+        :cl-web-2d-game/core/basic-components
+        :cl-web-2d-game/graphics/2d-geometry
+        :cl-web-2d-game/graphics/draw-model-system
         :parenscript)
   (:export :draw-debug-point
            :draw-debug-point-by-time
@@ -15,7 +15,7 @@
            :*standard-debug-point-r*
            :*standard-debug-color*
            :*standard-debug-depth*))
-(in-package :cl-web-2d-game.debug-drawer)
+(in-package :cl-web-2d-game/utils/debug/debug-drawer)
 
 (enable-ps-experiment-syntax)
 

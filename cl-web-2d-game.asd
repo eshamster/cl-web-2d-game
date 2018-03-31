@@ -14,41 +14,19 @@
   (:use :cl :asdf))
 (in-package :cl-web-2d-game-asd)
 
+(asdf:register-system-packages :ps-experiment '(:ps-experiment.common-macros))
+
 (defsystem cl-web-2d-game
   :version "0.1"
+  :class :package-inferred-system
+  :defsystem-depends-on (:asdf-package-system)
   :author "eshamster"
   :license "LLGPL"
   :depends-on (:parenscript
                :ps-experiment
                :dexador
                :cl-ps-ecs
-               :cl-reexport)
-  :components ((:module "src"
-                :serial t
-                :components
-                ((:file "logger")
-                 (:file "game-state")
-                 (:file "dom-manager")
-                 (:file "basic-components")
-                 (:file "utils")
-                 (:file "calc")
-                 (:file "camera")
-                 (:file "collision")
-                 (:file "input")
-                 (:file "texture")
-                 (:file "font")
-                 (:file "2d-geometry")
-                 (:file "draw-model-system")
-                 (:file "text-area")
-                 (:file "animation")
-                 (:file "animation-manager")
-                 (:file "gui")
-                 (:file "debug-drawer")
-                 (:file "performance")
-                 (:file "collision-system")
-                 (:file "basic-systems")
-                 (:file "initializer")
-                 (:file "cl-web-2d-game"))))
+               :cl-web-2d-game/main) 
   :description "A library to create 2d game using Parenscript and three.js"
   :long-description
   #.(with-open-file (stream (merge-pathnames
