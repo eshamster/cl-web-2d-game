@@ -11,7 +11,7 @@
         :cl-web-2d-game/graphics/draw-model-system
         :cl-web-2d-game/utils/calc
         :cl-web-2d-game/utils/debug/performance)
-  (:import-from :ps-experiment.common-macros
+  (:import-from :ps-experiment/common-macros
                 :with-slots-pair)
   (:export :collision-system
            :make-collision-system

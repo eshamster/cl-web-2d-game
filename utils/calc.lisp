@@ -5,7 +5,7 @@
         :ps-experiment
         :cl-ps-ecs
         :cl-web-2d-game/core/basic-components)
-  (:import-from :ps-experiment.common-macros
+  (:import-from :ps-experiment/common-macros
                 :with-slots-pair)
   (:export :vector-abs
            :vector-angle

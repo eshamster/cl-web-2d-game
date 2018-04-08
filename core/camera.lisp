@@ -4,7 +4,7 @@
         :parenscript
         :ps-experiment
         :cl-ps-ecs)
-  (:import-from :ps-experiment.common-macros
+  (:import-from :ps-experiment/common-macros
                 :with-slots-pair)
   (:export :get-camera-offset-x
            :get-camera-offset-y

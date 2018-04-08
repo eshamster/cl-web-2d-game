@@ -6,7 +6,7 @@
         :ps-experiment
         :cl-web-2d-game/core/basic-components
         :cl-web-2d-game/utils/calc)
-  (:import-from :ps-experiment.common-macros
+  (:import-from :ps-experiment/common-macros
                 :with-slots-pair)
   (:export :collide-entities-p
            :collide-physics-p
