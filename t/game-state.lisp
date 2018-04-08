@@ -1,23 +1,18 @@
-(in-package :cl-user)
-(defpackage cl-web-2d-game-test.game-state
+(defpackage cl-web-2d-game/t/game-state
   (:use :cl
-        :prove
+        :rove
         :cl-ps-ecs
-        :cl-web-2d-game-test.test-utils)
+        :ps-experiment/t/test-utils
+        :cl-web-2d-game/core/game-state
+        :cl-web-2d-game/t/test-utils)
   (:import-from :ps-experiment
                 :defvar.ps+
                 :defun.ps+
                 :defmacro.ps+
-                :defstruct.ps+)
-  (:import-from :ps-experiment-test.test-utils
-                :with-prove-in-both)
+                :defstruct.ps+) 
   (:import-from :alexandria
                 :with-gensyms))
-(in-package :cl-web-2d-game-test.game-state)
-
-;; --- prepare --- ;;
-
-(use-packages-for-test :game-state)
+(in-package :cl-web-2d-game/t/game-state)
 
 ;; - buffer - ;;
 
@@ -79,28 +74,23 @@
 
 ;; --- test --- ;;
 
-(plan 1)
-
-(subtest "Main"
-  (with-prove-in-both ()
-    (init-game-state (make-test-state1))
-    (process-game-state)
-    (is *buffer* "state1 start-process 0")
-    (process-game-state)
-    (is *buffer* "state1 start-process 1")
-    (process-game-state)
-    (is *buffer* "state1 process 0")
-    (process-game-state)
-    (is *buffer* "state1 process 1")
-    (process-game-state)
-    (is *buffer* "state1 end-process 0")
-    (process-game-state)
-    (is *buffer* "state1 end-process 1")
-    (process-game-state)
-    (is *buffer* "state2 start-process")
-    ;; reset
-    (init-game-state (make-test-state1))
-    (process-game-state)
-    (is *buffer* "state1 start-process 0")))
-
-(finalize)
+(deftest.ps+ main
+  (init-game-state (make-test-state1))
+  (process-game-state)
+  (ok (string= *buffer* "state1 start-process 0"))
+  (process-game-state)
+  (ok (string= *buffer* "state1 start-process 1"))
+  (process-game-state)
+  (ok (string= *buffer* "state1 process 0"))
+  (process-game-state)
+  (ok (string= *buffer* "state1 process 1"))
+  (process-game-state)
+  (ok (string= *buffer* "state1 end-process 0"))
+  (process-game-state)
+  (ok (string= *buffer* "state1 end-process 1"))
+  (process-game-state)
+  (ok (string= *buffer* "state2 start-process"))
+  ;; reset
+  (init-game-state (make-test-state1))
+  (process-game-state)
+  (ok (string= *buffer* "state1 start-process 0")))
