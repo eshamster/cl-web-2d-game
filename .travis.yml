@@ -8,7 +8,7 @@ env:
     - COVERAGE_EXCLUDE=t
   matrix:
     - LISP=sbcl-bin COVERALLS=true SKIP_JS=true
-    - LISP=ccl-bin
+    - LISP=ccl-bin/1.11.5
 
 install:
   - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
