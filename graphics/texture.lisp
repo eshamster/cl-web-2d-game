@@ -1,11 +1,11 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.texture
+(defpackage cl-web-2d-game/graphics/texture
   (:use :cl
         :parenscript
         :ps-experiment
         :cl-ps-ecs
-        :cl-web-2d-game.basic-components
-        :cl-web-2d-game.logger)
+        :cl-web-2d-game/core/basic-components
+        :cl-web-2d-game/utils/debug/logger)
   (:export :texture-2d
            :texture-2d-p
            :texture-2d-material
@@ -13,7 +13,7 @@
            :load-texture
            :unload-texture
            :get-texture-promise))
-(in-package :cl-web-2d-game.texture)
+(in-package :cl-web-2d-game/graphics/texture)
 
 (enable-ps-experiment-syntax)
 

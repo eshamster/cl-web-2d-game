@@ -1,17 +1,20 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.text-area
+(defpackage cl-web-2d-game/graphics/text-area
   (:use :cl
         :parenscript
         :ps-experiment
         :cl-ps-ecs
-        :cl-web-2d-game.basic-components
-        :cl-web-2d-game.font
-        :cl-web-2d-game.2d-geometry
-        :cl-web-2d-game.draw-model-system)
+        :cl-web-2d-game/core/basic-components
+        :cl-web-2d-game/graphics/font
+        :cl-web-2d-game/graphics/2d-geometry
+        :cl-web-2d-game/graphics/draw-model-system)
   (:export :make-text-area
            :add-text-to-area
-           :clear-text-area))
-(in-package :cl-web-2d-game.text-area)
+           :clear-text-area
+           
+           :text-area-component
+           :make-text-area-component))
+(in-package :cl-web-2d-game/graphics/text-area)
 
 (enable-ps-experiment-syntax)
 

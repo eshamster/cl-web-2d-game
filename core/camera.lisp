@@ -1,17 +1,17 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.camera
+(defpackage cl-web-2d-game/core/camera
   (:use :cl
         :parenscript
         :ps-experiment
         :cl-ps-ecs)
-  (:import-from :ps-experiment.common-macros
+  (:import-from :ps-experiment/common-macros
                 :with-slots-pair)
   (:export :get-camera-offset-x
            :get-camera-offset-y
            :get-screen-width
            :get-screen-height
            :init-camera))
-(in-package :cl-web-2d-game.camera)
+(in-package :cl-web-2d-game/core/camera)
 
 (enable-ps-experiment-syntax)
 

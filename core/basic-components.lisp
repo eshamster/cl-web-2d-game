@@ -1,5 +1,4 @@
-(in-package :cl-user)
-(defpackage cl-web-2d-game.basic-components
+(defpackage cl-web-2d-game/core/basic-components
   (:use :cl
         :cl-ppcre
         :ps-experiment
@@ -58,7 +57,7 @@
            :clone-vector-2d
            :copy-point-2d-to
            :clone-point-2d))
-(in-package :cl-web-2d-game.basic-components)
+(in-package :cl-web-2d-game/core/basic-components)
 
 (enable-ps-experiment-syntax)
 

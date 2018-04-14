@@ -1,22 +1,22 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.collision-system
+(defpackage cl-web-2d-game/physics/collision-system
   (:use :cl
         :cl-ppcre
         :ps-experiment
         :cl-ps-ecs
         :parenscript
-        :cl-web-2d-game.basic-components
-        :cl-web-2d-game.calc
-        :cl-web-2d-game.collision
-        :cl-web-2d-game.2d-geometry
-        :cl-web-2d-game.draw-model-system
-        :cl-web-2d-game.performance)
-  (:import-from :ps-experiment.common-macros
+        :cl-web-2d-game/physics/collision
+        :cl-web-2d-game/core/basic-components
+        :cl-web-2d-game/graphics/2d-geometry
+        :cl-web-2d-game/graphics/draw-model-system
+        :cl-web-2d-game/utils/calc
+        :cl-web-2d-game/utils/debug/performance)
+  (:import-from :ps-experiment/common-macros
                 :with-slots-pair)
   (:export :collision-system
            :make-collision-system
            :setf-collider-model-enable))
-(in-package :cl-web-2d-game.collision-system)
+(in-package :cl-web-2d-game/physics/collision-system)
 
 (enable-ps-experiment-syntax)
 

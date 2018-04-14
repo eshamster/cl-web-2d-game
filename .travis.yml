@@ -8,15 +8,19 @@ env:
     - COVERAGE_EXCLUDE=t
   matrix:
     - LISP=sbcl-bin COVERALLS=true SKIP_JS=true
-    - LISP=ccl-bin
+    - LISP=ccl-bin/1.11.5
 
 install:
   - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
-  - (cd ${ROSWELL_INSTALL_DIR}/local-projects ; git clone https://github.com/eshamster/ps-experiment.git)
-  - (cd ${ROSWELL_INSTALL_DIR}/local-projects ; git clone https://github.com/eshamster/cl-ps-ecs.git)
+  - ros install eshamster/ps-experiment
+  - ros install eshamster/cl-ps-ecs
+  # Temporal solution until the following PR is merged or rejected.
+  # https://github.com/fukamachi/rove/pull/3
+  # - ros install fukamachi/rove
+  - ros install eshamster/rove
+  - (cd ~/.roswell/local-projects/eshamster/rove/ ; git merge --no-ff origin/fix/lexical-func-and-macro -m "Temporally merge")
   - ros -e '(ql:register-local-projects)' -q
-  - ros install ps-experiment
 
 script:
-  - run-prove-for-ps *-test.asd
+  - rove cl-web-2d-game.asd
 

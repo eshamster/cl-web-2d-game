@@ -1,10 +1,10 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.input
+(defpackage cl-web-2d-game/inputs/input
   (:use :cl
         :cl-ppcre
         :ps-experiment
         :cl-ps-ecs
-        :cl-web-2d-game.camera
+        :cl-web-2d-game/core/camera
         :parenscript)
   (:export :add-mouse-down-callback
            :add-mouse-up-callback
@@ -36,9 +36,9 @@
 
            :init-input
            :process-input)
-  (:import-from :cl-web-2d-game.dom-manager
+  (:import-from :cl-web-2d-game/utils/dom-manager
                 :get-rendered-dom))
-(in-package :cl-web-2d-game.input)
+(in-package :cl-web-2d-game/inputs/input)
 
 (enable-ps-experiment-syntax)
 

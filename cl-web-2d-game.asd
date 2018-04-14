@@ -9,46 +9,17 @@
   Author: eshamster
 |#
 
-(in-package :cl-user)
-(defpackage cl-web-2d-game-asd
-  (:use :cl :asdf))
-(in-package :cl-web-2d-game-asd)
-
 (defsystem cl-web-2d-game
   :version "0.1"
+  :class :package-inferred-system
+  :defsystem-depends-on (:asdf-package-system)
   :author "eshamster"
   :license "LLGPL"
   :depends-on (:parenscript
                :ps-experiment
                :dexador
                :cl-ps-ecs
-               :cl-reexport)
-  :components ((:module "src"
-                :serial t
-                :components
-                ((:file "logger")
-                 (:file "game-state")
-                 (:file "dom-manager")
-                 (:file "basic-components")
-                 (:file "utils")
-                 (:file "calc")
-                 (:file "camera")
-                 (:file "collision")
-                 (:file "input")
-                 (:file "texture")
-                 (:file "font")
-                 (:file "2d-geometry")
-                 (:file "draw-model-system")
-                 (:file "text-area")
-                 (:file "animation")
-                 (:file "animation-manager")
-                 (:file "gui")
-                 (:file "debug-drawer")
-                 (:file "performance")
-                 (:file "collision-system")
-                 (:file "basic-systems")
-                 (:file "initializer")
-                 (:file "cl-web-2d-game"))))
+               :cl-web-2d-game/main) 
   :description "A library to create 2d game using Parenscript and three.js"
   :long-description
   #.(with-open-file (stream (merge-pathnames
@@ -62,4 +33,21 @@
                                :fill-pointer t)))
           (setf (fill-pointer seq) (read-sequence seq stream))
           seq)))
-  :in-order-to ((test-op (test-op cl-web-2d-game-test))))
+  :in-order-to ((test-op (test-op cl-web-2d-game/t))))
+
+(defsystem cl-web-2d-game/t
+  :class :package-inferred-system
+  :depends-on (:cl-web-2d-game
+               :ps-experiment/t
+               :cl-ppcre
+               :rove
+               :alexandria
+               "ps-experiment/t/test-utils"
+               "cl-web-2d-game/t/test-utils"
+               "cl-web-2d-game/t/utils"
+               "cl-web-2d-game/t/logger"
+               "cl-web-2d-game/t/game-state"
+               "cl-web-2d-game/t/basic-components"
+               "cl-web-2d-game/t/calc"
+               "cl-web-2d-game/t/collision")
+  :perform (test-op (o c) (symbol-call :rove '#:run c)))

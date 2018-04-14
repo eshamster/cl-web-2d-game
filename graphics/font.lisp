@@ -1,12 +1,12 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.font
+(defpackage cl-web-2d-game/graphics/font
   (:use :cl
         :parenscript
         :ps-experiment
         :cl-ps-ecs)
   (:export :load-font
            :get-font-promise))
-(in-package :cl-web-2d-game.font)
+(in-package :cl-web-2d-game/graphics/font)
 
 (enable-ps-experiment-syntax)
 

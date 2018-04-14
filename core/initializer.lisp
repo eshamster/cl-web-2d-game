@@ -1,23 +1,23 @@
 (in-package :cl-user)
-(defpackage cl-web-2d-game.initializer
+(defpackage cl-web-2d-game/core/initializer
   (:use :cl
         :parenscript
         :ps-experiment
         :cl-ps-ecs
-        :cl-web-2d-game.basic-components
-        :cl-web-2d-game.basic-systems
-        :cl-web-2d-game.performance
-        :cl-web-2d-game.collision
-        :cl-web-2d-game.collision-system
-        :cl-web-2d-game.draw-model-system
-        :cl-web-2d-game.input
-        :cl-web-2d-game.logger
-        :cl-web-2d-game.utils)
+        :cl-web-2d-game/core/basic-components
+        :cl-web-2d-game/core/basic-systems
+        :cl-web-2d-game/graphics/draw-model-system
+        :cl-web-2d-game/physics/collision
+        :cl-web-2d-game/physics/collision-system
+        :cl-web-2d-game/inputs/input
+        :cl-web-2d-game/utils/utils
+        :cl-web-2d-game/utils/debug/logger
+        :cl-web-2d-game/utils/debug/performance)
   (:export :start-2d-game
            :init-default-systems)
-  (:import-from :cl-web-2d-game.dom-manager
+  (:import-from :cl-web-2d-game/utils/dom-manager
                 :get-rendered-dom))
-(in-package :cl-web-2d-game.initializer)
+(in-package :cl-web-2d-game/core/initializer)
 
 (enable-ps-experiment-syntax)
 
