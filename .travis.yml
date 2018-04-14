@@ -14,7 +14,11 @@ install:
   - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
   - ros install eshamster/ps-experiment
   - ros install eshamster/cl-ps-ecs
-  - ros install fukamachi/rove
+  # Temporal solution until the following PR is merged or rejected.
+  # https://github.com/fukamachi/rove/pull/3
+  # - ros install fukamachi/rove
+  - ros install eshamster/rove
+  - (cd ~/.roswell/local-projects/eshamster/rove/ ; git merge --no-ff origin/fix/lexical-func-and-macro -m "Temporally merge")
   - ros -e '(ql:register-local-projects)' -q
 
 script:
