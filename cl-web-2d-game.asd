@@ -38,7 +38,7 @@
 (defsystem cl-web-2d-game/t
   :class :package-inferred-system
   :depends-on (:cl-web-2d-game
-               :ps-experiment-test
+               :ps-experiment/t
                :cl-ppcre
                :rove
                :alexandria
