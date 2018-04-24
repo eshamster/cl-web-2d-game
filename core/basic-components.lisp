@@ -51,6 +51,7 @@
            :params-table
            :get-entity-param
            :set-entity-param
+           :aset-entity-param
            :init-entity-params
 
            :copy-vector-2d-to
@@ -109,6 +110,11 @@
   (with-ecs-components (params) entity
     (setf (gethash key (params-table params))
           new-value)))
+
+(defmacro.ps+ aset-entity-param (entity key new-value)
+  "Anapholic set-entity-param"
+  `(let ((,(intern "IT" *package*) (get-entity-param ,entity ,key)))
+     (set-entity-param ,entity ,key ,new-value)))
 
 (defun.ps+ init-entity-params (&rest key-value-pairs)
   (unless (evenp (length key-value-pairs))
