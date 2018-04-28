@@ -52,7 +52,8 @@
                                           "texture"
                                           "animation"
                                           "text"
-                                          "collision"))
+                                          "collision"
+                                          "storage"))
                             (markup (:li :class "sample-list-element"
                                          (:a :href (format nil "/sample-~A" name)
                                              :target "viewer"
