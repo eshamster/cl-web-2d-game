@@ -41,4 +41,4 @@
                  min max step))
 
 (defun.ps add-panel-button (name &key (on-change nil) (folder nil))
-  (add-to-global name on-change folder nil))
+  (add-to-global name on-change nil folder nil))

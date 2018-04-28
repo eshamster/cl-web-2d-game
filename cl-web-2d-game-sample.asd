@@ -26,6 +26,7 @@
                  (:file "sample-animation")
                  (:file "sample-basic-models")
                  (:file "sample-collision")
+                 (:file "sample-storage")
                  (:file "sample-simple")
                  (:file "sample-text")
                  (:file "sample-texture")
