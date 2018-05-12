@@ -64,10 +64,7 @@
    :model (make-model-2d :model (make-wired-regular-polygon
                                  :n 60 :r r
                                  :color *standard-debug-color*)
-                         :depth *standard-debug-depth*
-                         :offset (make-point-2d
-                                  :x (* -1 r)
-                                  :y (* -1 r)))
+                         :depth *standard-debug-depth*)
    :point point
    :tag-list tag-list
    :parent parent
