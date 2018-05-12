@@ -11,6 +11,7 @@
   (:export :make-text-area
            :add-text-to-area
            :clear-text-area
+           :get-text-area-size
            
            :text-area-component
            :make-text-area-component))
@@ -43,6 +44,20 @@ Note: \"y\" is top of the text. \"x\" depends on \"text-align\""
 
 (defun.ps get-mesh-width (mesh)
   mesh.geometry.bounding-box.max.x)
+
+(defun.ps+ get-text-area-size (area-entity)
+  "Get area size as such plist as (:width xxx :height yyy)."
+  (with-ecs-components ((area text-area-component)) area-entity
+    (with-slots (font-size text-model-list margin) area
+      (let ((max-width 0))
+        (dolist (model text-model-list)
+          (let ((width (get-mesh-width (model-2d-model model))))
+            (when (> width max-width)
+              (setf max-width width))))
+        (list :width (+ max-width (* 2 margin))
+              :height (+ margin
+                         (* (+ font-size margin)
+                            (length text-model-list))))))))
 
 (defun.ps+ calc-aligned-offset-x (text-mesh align margin)
   (ecase align
