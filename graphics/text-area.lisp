@@ -42,9 +42,6 @@ Note: \"y\" is top of the text. \"x\" depends on \"text-align\""
       :margin margin))
     area))
 
-(defun.ps get-mesh-width (mesh)
-  mesh.geometry.bounding-box.max.x)
-
 (defun.ps+ get-text-area-size (area-entity)
   "Get area size as such plist as (:width xxx :height yyy)."
   (with-ecs-components ((area text-area-component)) area-entity
