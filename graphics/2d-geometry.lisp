@@ -22,7 +22,11 @@
            :make-texture-model-promise
            :make-text-model-promise
            :change-model-color
-           :change-geometry-uvs))
+           :change-geometry-uvs
+
+           :get-mesh-width
+           :get-mesh-height
+           :get-mesh-size))
 (in-package :cl-web-2d-game/graphics/2d-geometry)
 
 (enable-ps-experiment-syntax)
@@ -73,6 +77,20 @@
                   (push-faces-to ,geometry rest)))
            ,@body)
          (make-solid-model ,geometry color)))))
+
+;; --- utils --- ;;
+
+(defun.ps get-mesh-width (mesh)
+  (- mesh.geometry.bounding-box.max.x
+     mesh.geometry.bounding-box.min.x))
+
+(defun.ps get-mesh-height (mesh)
+  (- mesh.geometry.bounding-box.max.y
+     mesh.geometry.bounding-box.min.y))
+
+(defun.ps+ get-mesh-size (mesh)
+  (list :width (get-mesh-width mesh)
+        :height (get-mesh-height mesh)))
 
 ;; --- line --- ;;
 
