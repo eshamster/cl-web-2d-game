@@ -3,10 +3,13 @@
         :parenscript
         :ps-experiment)
   (:export :set-kvs-prefix
+           :with-kvs-prefix
            :store-kvs
            :read-kvs
            :remove-kvs
-           :clear-kvs-all))
+           :clear-kvs-all)
+  (:import-from :alexandria
+                :with-gensyms))
 (in-package :cl-web-2d-game/utils/storage)
 
 #|
@@ -19,6 +22,14 @@ Experimental key-value storage using Web Storage (localStorage)
 
 (defun.ps set-kvs-prefix (prefix)
   (setf *storage-prefix* prefix))
+
+(defmacro.ps+ with-kvs-prefix ((key) &body body)
+  (with-gensyms (org-prefix)
+    `(let ((,org-prefix *storage-prefix*))
+       (unwind-protect
+            (progn (set-kvs-prefix ,key)
+                   ,@body)
+         (set-kvs-prefix ,org-prefix)))))
 
 (defun.ps add-prefix (key)
   (+ *storage-prefix* key))
