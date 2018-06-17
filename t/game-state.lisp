@@ -94,3 +94,43 @@
   (init-game-state (make-test-state1))
   (process-game-state)
   (ok (string= *buffer* "state1 start-process 0")))
+
+
+;; --------------------------- ;;
+;; --- test def-game-state --- ;;
+;; --------------------------- ;;
+
+(def-game-state test-def-state1 (test-param1 (test-param2 100))
+  :start-process
+  (lambda (_this)
+    (incf (slot-value _this 'test-param1))
+    (write-buffer-with-clear "start test-def-state1")
+    t)
+  :process
+  (lambda (_this)
+    (write-buffer-with-clear
+     (+ (slot-value _this 'test-param1) (slot-value _this 'test-param2)))
+    (make-state :test-def-state2))
+  :end-process
+  (lambda (_this)
+    (declare (ignore _this))
+    (write-buffer-with-clear "end test-def-state1")
+    t))
+
+(def-game-state test-def-state2 ()
+  :start-process
+  (lambda (_this)
+    (declare (ignore _this))
+    (write-buffer-with-clear "start test-def-state2")))
+
+(deftest.ps+ for-def-game-state
+  (init-game-state (make-state :test-def-state1
+                               :test-param1 1000))
+  (process-game-state)
+  (ok (string= *buffer* "start test-def-state1"))
+  (process-game-state)
+  (ok (= *buffer* 1101))
+  (process-game-state)
+  (ok (string= *buffer* "end test-def-state1"))
+  (process-game-state)
+  (ok (string= *buffer* "start test-def-state2")))
