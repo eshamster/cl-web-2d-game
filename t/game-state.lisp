@@ -113,13 +113,14 @@
     (make-state :test-def-state2))
   :end-process
   (lambda (_this)
+    (declare (ignore _this))
     (write-buffer-with-clear "end test-def-state1")
     t))
 
 (def-game-state test-def-state2 ()
   :start-process
   (lambda (_this)
-    (declare (ignore (_this)))
+    (declare (ignore _this))
     (write-buffer-with-clear "start test-def-state2")))
 
 (deftest.ps+ for-def-game-state
