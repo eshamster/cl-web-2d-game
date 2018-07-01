@@ -8,10 +8,13 @@
         :cl-web-2d-game/graphics/animation
         :cl-web-2d-game/physics/collision
         :cl-web-2d-game/utils/debug/performance)
+  (:import-from :cl-web-2d-game/utils/calc
+                :incf-vector)
   (:export :script-system
            :make-script-system
            :animation-system
-           :make-animation-system))
+           :make-animation-system
+           :make-simple-move-system))
 (in-package :cl-web-2d-game/core/basic-systems)
 
 (enable-ps-experiment-syntax)
@@ -32,3 +35,11 @@
                           (do-ecs-components-of-entity (anime entity
                                                               :component-type 'animation-2d)
                             (run-animation-process anime)))))))
+
+(defstruct.ps+
+    (simple-move-system
+     (:include ecs-system
+               (target-component-types '(point-2d speed-2d))
+               (process (lambda (entity)
+                          (with-ecs-components (point-2d speed-2d) entity
+                            (incf-vector point-2d speed-2d)))))))

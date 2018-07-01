@@ -43,7 +43,8 @@
                                       (script-system t)
                                       (draw-system t)
                                       (animation-system t)
-                                      (collision-system t))
+                                      (collision-system t)
+                                      (simple-move-system t))
   (when script-system
     (register-ecs-system "script2d" (make-script-system)))
   (when collision-system
@@ -51,7 +52,9 @@
   (when animation-system
     (register-ecs-system "animation" (make-animation-system)))
   (when draw-system
-    (register-ecs-system "draw2d" (init-draw-model-system scene))))
+    (register-ecs-system "draw2d" (init-draw-model-system scene)))
+  (when simple-move-system
+    (register-ecs-system "simple-move" (make-simple-move-system))))
 
 (defvar.ps+ *resize-to-screen-p* nil)
 
