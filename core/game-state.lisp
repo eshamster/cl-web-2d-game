@@ -12,6 +12,9 @@
            :game-state-end-process
            :end-process
 
+           :game-state-manager
+           :init-game-state-manager
+
            :make-state
            :def-game-state)
   (:import-from :cl-ps-ecs
@@ -23,34 +26,46 @@
   (process (lambda (_this) (declare (ignore _this)) nil))
   (end-process (lambda (_this) (declare (ignore _this)) t)))
 
+(defstruct.ps+ game-state-manager
+  (current-state (make-empty-game-state))
+  next-state
+  (sub-state :start) ; :start, :run, :end
+  )
+
+(defun.ps+ init-game-state-manager (initial-state)
+  (check-type initial-state game-state)
+  (make-game-state-manager :current-state initial-state))
+
 (defun.ps+ make-empty-game-state ()
   (make-game-state))
 
-(defvar.ps+ *current-game-state* (make-empty-game-state))
-(defvar.ps+ *next-game-state* nil)
-(defvar.ps+ *current-sub-game-state* :start) ; :start, :run, :end
+(defvar.ps+ *global-game-state-manager* (make-game-state-manager))
 
-(defun.ps+ process-game-state ()
-  (ecase *current-sub-game-state*
-    (:start (when (funcall (game-state-start-process *current-game-state*)
-                           *current-game-state*)
-              (setf *current-sub-game-state* :run)))
-    (:run (let ((result (funcall (game-state-process *current-game-state*)
-                                 *current-game-state*)))
-            (when result
-              (setf *current-sub-game-state* :end)
-              (setf *next-game-state* result))))
-    (:end (when (funcall (game-state-end-process *current-game-state*)
-                         *current-game-state*)
-            (assert *next-game-state*)
-            (setf *current-game-state* *next-game-state*)
-            (setf *next-game-state* nil)
-            (setf *current-sub-game-state* :start)))))
+(defun.ps+ process-game-state (&optional (manager *global-game-state-manager*))
+  (with-slots (current-state next-state sub-state) manager
+    (ecase sub-state
+      (:start (when (funcall (game-state-start-process current-state)
+                             current-state)
+                (setf sub-state :run)))
+      (:run (let ((result (funcall (game-state-process current-state)
+                                   current-state)))
+              (when result
+                (check-type result game-state)
+                (setf sub-state :end)
+                (setf next-state result))))
+      (:end (when (funcall (game-state-end-process current-state)
+                           current-state)
+              (assert next-state)
+              (setf current-state next-state)
+              (setf next-state nil)
+              (setf sub-state :start))))))
 
-(defun.ps+ init-game-state (state)
+(defun.ps+ init-game-state (state &optional (manager *global-game-state-manager*))
   (check-type state game-state)
-  (setf *current-game-state* state
-        *current-sub-game-state* :start))
+  (with-slots (current-state next-state sub-state) manager
+    (setf current-state state
+          next-state nil
+          sub-state :start)))
 
 ;; --- experimental definition macro --- ;
 
