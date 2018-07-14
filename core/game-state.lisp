@@ -3,6 +3,7 @@
         :ps-experiment)
   (:export :process-game-state
            :init-game-state
+           :interrupt-game-state
 
            :game-state
            :start-process
@@ -41,6 +42,11 @@
 
 (defvar.ps+ *global-game-state-manager* (make-game-state-manager))
 
+(defun.ps+ interrupt-game-state (next-state &optional (manager *global-game-state-manager*))
+  (check-type next-state game-state)
+  (setf (game-state-manager-next-state manager)
+        next-state))
+
 (defun.ps+ process-game-state (&optional (manager *global-game-state-manager*))
   (with-slots (current-state next-state sub-state) manager
     (ecase sub-state
@@ -49,10 +55,13 @@
                 (setf sub-state :run)))
       (:run (let ((result (funcall (game-state-process current-state)
                                    current-state)))
-              (when result
-                (check-type result game-state)
-                (setf sub-state :end)
-                (setf next-state result))))
+              (cond
+                (next-state ; interrupt case
+                 (setf sub-state :end))
+                (result
+                 (check-type result game-state)
+                 (setf sub-state :end)
+                 (setf next-state result)))))
       (:end (when (funcall (game-state-end-process current-state)
                            current-state)
               (assert next-state)
