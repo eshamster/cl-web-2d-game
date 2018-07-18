@@ -14,6 +14,8 @@
            :end-process
 
            :game-state-manager
+           :game-state-manager-current-state
+           :game-state-manager-next-state
            :init-game-state-manager
 
            :make-state
