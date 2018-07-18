@@ -36,15 +36,6 @@
                 ,@body)))))
 
 (defstruct.ps+
-    (test-state2
-     (:include test-state
-               (start-process
-                (lambda (_this)
-                  (declare (ignore _this))
-                  (write-buffer-with-clear "state2 start-process")
-                  t)))))
-
-(defstruct.ps+
     (test-state1
      (:include test-state
                (start-process
@@ -72,6 +63,24 @@
                        (reset-count _this)
                        t)))))))
 
+(defstruct.ps+
+    (test-state2
+     (:include test-state
+               (start-process
+                (lambda (_this)
+                  (declare (ignore _this))
+                  (write-buffer-with-clear "state2 start-process")
+                  t)))))
+
+(defstruct.ps+
+    (test-state-interrupt
+     (:include test-state
+               (start-process
+                (lambda (_this)
+                  (with-test-count _this
+                    (0 (write-buffer-with-clear "interrupt state start-process 0")
+                       nil)))))))
+
 ;; --- test --- ;;
 
 (deftest.ps+ main
@@ -90,10 +99,25 @@
   (ok (string= *buffer* "state1 end-process 1"))
   (process-game-state)
   (ok (string= *buffer* "state2 start-process"))
-  ;; reset
-  (init-game-state (make-test-state1))
-  (process-game-state)
-  (ok (string= *buffer* "state1 start-process 0")))
+  (testing "rest"
+    (init-game-state (make-test-state1))
+    (process-game-state)
+    (ok (string= *buffer* "state1 start-process 0")))
+  (testing "interrupt"
+    (init-game-state (make-test-state1))
+    (process-game-state)
+    (ok (string= *buffer* "state1 start-process 0"))
+    (process-game-state)
+    (ok (string= *buffer* "state1 start-process 1"))
+    ;; interrupt
+    (interrupt-game-state (make-test-state-interrupt))
+    (process-game-state)
+    (ok (string= *buffer* "state1 process 0"))
+    (process-game-state)
+    ;; Should cancel "state1 process 1" and start end-process
+    (ok (string= *buffer* "state1 end-process 1"))
+    (process-game-state)
+    (ok (string= *buffer* "interrupt state start-process 0"))))
 
 
 ;; --------------------------- ;;
