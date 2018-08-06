@@ -103,7 +103,7 @@ device-state = boolean-value"
   "Return if the button is down just in this frame"
   (input-on-now-p (gethash button key-status)))
 
-(defun.ps+ is-key-up-now (button)
+(defun.ps+ is-key-up (button)
   "Return if the button is up"
   (input-off-p (gethash button key-status)))
 
