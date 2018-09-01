@@ -90,36 +90,36 @@ device-state = boolean-value"
             :right "right"
             :up    "up"
             :down  "down"))
-(defvar.ps+ key-status (make-hash-table))
+(defvar.ps+ *key-status* (make-hash-table))
 
 ;; TODO: Rename function names according to Common Lisp tradition
 ;; (Ex. is-key-down -> key-down-p)
 
 (defun.ps+ is-key-down (button)
   "Return if the button is down"
-  (input-on-p (gethash button key-status)))
+  (input-on-p (gethash button *key-status*)))
 
 (defun.ps+ is-key-down-now (button)
   "Return if the button is down just in this frame"
-  (input-on-now-p (gethash button key-status)))
+  (input-on-now-p (gethash button *key-status*)))
 
 (defun.ps+ is-key-up (button)
   "Return if the button is up"
-  (input-off-p (gethash button key-status)))
+  (input-off-p (gethash button *key-status*)))
 
 (defun.ps+ is-key-up-now (button)
   "Return if the button is up just in this frame"
-  (input-off-now-p (gethash button key-status)))
+  (input-off-now-p (gethash button *key-status*)))
 
 (defun.ps+ key-down-count (button)
-  (input-on-count (gethash button key-status)))
+  (input-on-count (gethash button *key-status*)))
 (defun.ps+ key-up-count (button)
-  (input-off-count (gethash button key-status)))
+  (input-off-count (gethash button *key-status*)))
 
 (defun.ps process-keyboard-input ()
   (maphash (lambda (button key)
-             (setf (gethash button key-status)
-                   (calc-next-input-count (let ((value (gethash button key-status)))
+             (setf (gethash button *key-status*)
+                   (calc-next-input-count (let ((value (gethash button *key-status*)))
                                              (if value value 0))
                                           (keyboard.pressed key))))
            *button-to-keyboard*))
