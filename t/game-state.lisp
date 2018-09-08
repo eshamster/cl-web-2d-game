@@ -117,6 +117,13 @@
     ;; Should cancel "state1 process 1" and start end-process
     (ok (string= *buffer* "state1 end-process 1"))
     (process-game-state)
+    (ok (string= *buffer* "interrupt state start-process 0")))
+  (testing "interrupt before start"
+    (init-game-state (make-test-state1))
+    ;; interrupt
+    (interrupt-game-state (make-test-state-interrupt))
+    ;; Should cancel start process of state-1
+    (process-game-state)
     (ok (string= *buffer* "interrupt state start-process 0"))))
 
 

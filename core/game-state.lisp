@@ -51,6 +51,11 @@
 
 (defun.ps+ process-game-state (&optional (manager *global-game-state-manager*))
   (with-slots (current-state next-state sub-state) manager
+    (when (and (eq sub-state :start)
+               next-state)
+      ;; interrupted case
+      (setf current-state next-state)
+      (setf next-state nil))
     (ecase sub-state
       (:start (when (funcall (game-state-start-process current-state)
                              current-state)
