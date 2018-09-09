@@ -32,7 +32,7 @@
 (defstruct.ps+ game-state-manager
   (current-state (make-empty-game-state))
   next-state
-  (sub-state :start) ; :start, :run, :end
+  (sub-state :before-start) ; :before-start, :start, :run, :end
   )
 
 (defun.ps+ init-game-state-manager (initial-state)
@@ -51,19 +51,22 @@
 
 (defun.ps+ process-game-state (&optional (manager *global-game-state-manager*))
   (with-slots (current-state next-state sub-state) manager
-    (when (and (eq sub-state :start)
+    (when (and (eq sub-state :before-start)
                next-state)
       ;; interrupted case
       (setf current-state next-state)
       (setf next-state nil))
     (ecase sub-state
-      (:start (when (funcall (game-state-start-process current-state)
-                             current-state)
-                (setf sub-state :run)))
+      ((:before-start :start)
+       (when (eq sub-state :before-start)
+         (setf sub-state :start))
+       (when (funcall (game-state-start-process current-state)
+                      current-state)
+         (setf sub-state :run)))
       (:run (let ((result (funcall (game-state-process current-state)
                                    current-state)))
               (cond
-                (next-state ; interrupt case
+                (next-state ; interrupted case
                  (setf sub-state :end))
                 (result
                  (check-type result game-state)
@@ -74,14 +77,14 @@
               (assert next-state)
               (setf current-state next-state)
               (setf next-state nil)
-              (setf sub-state :start))))))
+              (setf sub-state :before-start))))))
 
 (defun.ps+ init-game-state (state &optional (manager *global-game-state-manager*))
   (check-type state game-state)
   (with-slots (current-state next-state sub-state) manager
     (setf current-state state
           next-state nil
-          sub-state :start)))
+          sub-state :before-start)))
 
 ;; --- experimental definition macro --- ;
 
