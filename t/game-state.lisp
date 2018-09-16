@@ -180,3 +180,19 @@
   (ok (string= *buffer* "end test-def-state1"))
   (process-game-state)
   (ok (string= *buffer* "start test-def-state2")))
+
+
+;; ------------------- ;;
+;; --- test others --- ;;
+;; ------------------- ;;
+
+(defstruct.ps+ st-for-state-lambda
+    a (b 10))
+
+(deftest.ps+ for-state-lambda
+  (let ((st (make-st-for-state-lambda)))
+    (funcall (state-lambda (a (new-b b))
+               (setf a 10)
+               (= new-b 10))
+             st)
+    (ok (= (st-for-state-lambda-a st) 10))))
