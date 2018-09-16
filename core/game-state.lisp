@@ -19,9 +19,13 @@
            :init-game-state-manager
 
            :make-state
-           :def-game-state)
+           :def-game-state
+
+           :state-lambda)
   (:import-from :cl-ps-ecs
-                :process))
+                :process)
+  (:import-from :alexandria
+                :with-gensyms))
 (in-package :cl-web-2d-game/core/game-state)
 
 (defstruct.ps+ game-state
@@ -103,7 +107,8 @@ Please see also the document of the def-game-state for detail."
 You can create an instance by (make-state :name).
 The \"params\" is same to the slot definition of defstruct.
 Ex. (def-game-state name (param1 (param2 100))) -> (make-state :name :param1 999)
-And you can access to the parameter by, for example, (slot-value <instance> 'param1)."
+And you can access to the parameter by, for example, (slot-value <instance> 'param1),
+or please see the document of state-lambda for the same purpose."
   `(progn
      (defstruct.ps+
          (,(intern (format nil "GAME-~A-STATE" name))
@@ -119,3 +124,16 @@ And you can access to the parameter by, for example, (slot-value <instance> 'par
        (register-state-maker
         ,(intern (symbol-name name) (find-package "KEYWORD"))
         (function ,(intern (format nil "MAKE-GAME-~A-STATE" name)))))))
+
+;; --- --- ;;
+
+(defmacro.ps+ state-lambda (slot-entries &body body)
+  "state-lambda returns a lambda form that can be used for game-state definition.
+It provides bindings by with-slots style slot-entiries."
+  (with-gensyms (state)
+    `(lambda (,state)
+       (declare (ignorable ,state))
+       ,(if slot-entries
+            `(with-slots ,slot-entries ,state
+               ,@body)
+            `(progn ,@body)))))
