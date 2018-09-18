@@ -146,12 +146,34 @@
         (incf count-outer)))
     (setf geometry.uvs-need-update t)))
 
-(defun.ps make-texture-model (&key width height texture)
+(defun.ps+ calc-texture-size (width height size-type texture)
+  (let ((texture-width (get-texture-2d-width texture))
+        (texture-height (get-texture-2d-height texture)))
+    (flet ((calc-scale (target base-len)
+             (ecase size-type
+               (:absolute (when target (/ target base-len)))
+               (:relative target))))
+      (let ((width-scale (calc-scale width texture-width))
+            (height-scale (calc-scale height texture-height)))
+        (cond ((and (not width-scale) (not height-scale))
+               (setf width-scale 1 height-scale 1))
+              ((not width-scale)
+               (setf width-scale height-scale))
+              ((not height-scale)
+               (setf height-scale width-scale)))
+        (assert (and width-scale height-scale))
+        (list (* texture-width width-scale)
+              (* texture-height height-scale))))))
+
+(defun.ps make-texture-model (&key width height (size-type :absolute) texture)
   (check-type texture texture-2d)
-  (let* ((geometry (new (#j.THREE.Geometry#))))
+  (let* ((geometry (new (#j.THREE.Geometry#)))
+         (texture-size (calc-texture-size width height size-type texture))
+         (w (car texture-size))
+         (h (cadr texture-size)))
     (push-vertices-to geometry
-                      (list (list 0 0) (list width 0)
-                            (list width height) (list 0 height)))
+                      (list (list 0 0) (list w 0)
+                            (list w h) (list 0 h)))
     (push-faces-to geometry (list '(0 1 2) '(2 3 0)))
     (change-geometry-uvs texture geometry 0 0 1 1)
     (geometry.compute-face-normals)
@@ -159,11 +181,18 @@
     (new (#j.THREE.Mesh# geometry
                          (texture-2d-material texture)))))
 
-(defun.ps+ make-texture-model-promise (&key width height texture-name)
+(defun.ps+ make-texture-model-promise (&key width height (size-type :absolute) texture-name)
+  "Return a frame-promise that passes mesh that has specified texture as its material.
+If size-type is :absolute, the passed width and height are used as-is.
+If size-type is :relative, the passed width and height means how scale up the texture.
+If only either width or height is passed, the image keeps its aspect ratio.
+If neither width nor height is passed, the image keeps its size
+ (This is equals to (:width 1 :height 1 :size-type :relative)."
   (frame-promise-then
    (get-texture-promise texture-name)
    (lambda (texture)
      (make-texture-model :width width :height height
+                         :size-type size-type
                          :texture texture))))
 
 ;; --- regular polygon --- ;;
