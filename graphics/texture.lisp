@@ -12,7 +12,10 @@
            :texture-2d-rect-uv
            :load-texture
            :unload-texture
-           :get-texture-promise))
+           :get-texture-promise
+
+           :get-texture-2d-width
+           :get-texture-2d-height))
 (in-package :cl-web-2d-game/graphics/texture)
 
 (enable-ps-experiment-syntax)
@@ -136,3 +139,14 @@
       (error "The texture \"~A\" is not loaded." name))
     tex-promise))
 
+;; --- utils --- ;;
+
+(defun.ps get-texture-2d-width (texture-2d)
+  (with-slots (material rect-uv) texture-2d
+    (* material.map.image.width
+       (rect-2d-width rect-uv))))
+
+(defun.ps get-texture-2d-height (texture-2d)
+  (with-slots (material rect-uv) texture-2d
+    (* material.map.image.height
+       (rect-2d-height rect-uv))))

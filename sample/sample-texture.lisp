@@ -35,6 +35,45 @@
         (make-model-2d :model model :depth depth))
        (add-ecs-entity rect)))))
 
+(defun.ps+ add-textured-model-for-size-testing (&key x y width height size-type)
+  (let ((rect (make-ecs-entity)))
+    (add-ecs-component-list
+     rect
+     (make-point-2d :x x :y y))
+    (frame-promise-then
+     (make-texture-model-promise
+      :width width :height height :size-type size-type
+      :texture-name "multi-a")
+     (lambda (model)
+       (add-ecs-component-list
+        rect
+        (make-model-2d :model model :depth 100))
+       (add-ecs-entity rect)))))
+
+(defun.ps+ test-various-size ()
+  ;; - relative - ;;
+  ;; If size is not specified, the image is not scaled.
+  (add-textured-model-for-size-testing
+   :x 0 :y 450 :size-type :relative)
+  ;; If either width or height is specified, the image is scaled keeping its aspect ratio.
+  (add-textured-model-for-size-testing
+   :x 120 :y 450 :width 0.5 :size-type :relative)
+  (add-textured-model-for-size-testing
+   :x 180 :y 450 :height 0.5 :size-type :relative)
+  ;; (Specify both width and height.)
+  (add-textured-model-for-size-testing
+   :x 240 :y 450 :width 0.5 :height 0.8 :size-type :relative)
+
+  ;; - absolute - ;;
+  (add-textured-model-for-size-testing
+   :x 360 :y 450 :size-type :absolute)
+  (add-textured-model-for-size-testing
+   :x 480 :y 450 :width 40 :size-type :absolute)
+  (add-textured-model-for-size-testing
+   :x 540 :y 450 :height 40 :size-type :absolute)
+  (add-textured-model-for-size-testing
+   :x 600 :y 450 :width 40 :height 80 :size-type :absolute))
+
 (defun.ps+ load-textures ()
   (load-texture :path "/images/sample.png" :name "sample")
   (load-texture :path "/images/sample.png" :name "sample-alpha"
@@ -66,6 +105,7 @@
   (add-textured-model :texture-name "multi-b"
                       :x 450 :y 150 :depth 20
                       :rot-speed-ratio -0.65)
+  (test-various-size)
   (init-default-systems :scene scene))
 
 (defun.ps update-func ())
