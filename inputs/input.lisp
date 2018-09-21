@@ -104,6 +104,12 @@ device-state = boolean-value"
             (:up    "up")
             (:down  "down"))))
 
+(defun.ps+ get-physical-key-name (virtual-key-name)
+  (maphash (lambda (k v)
+             (when (eq v virtual-key-name)
+               (return-from get-physical-key-name k)))
+           *button-to-keyboard*))
+
 ;; TODO: Rename function names according to Common Lisp tradition
 ;; (Ex. is-key-down -> key-down-p)
 
