@@ -45,8 +45,11 @@
    (+ "Wheel:" (get-mouse-wheel-delta-y))))
 
 (defun.ps+ display-touch-state ()
-  ;; [WIP]
-  )
+  (do-touch-state (id)
+    (add-to-monitoring-log (+ "id: " id
+                              ", x: " (floor (get-touch-x id))
+                              ", y: " (floor (get-touch-y id))
+                              ", state: " (get-touch-state id)))))
 
 (defun.ps+ update-func ()
   (add-to-monitoring-log "")
