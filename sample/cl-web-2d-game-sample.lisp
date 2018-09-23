@@ -52,6 +52,7 @@
                                           "animation"
                                           "basic-models"
                                           "collision"
+                                          "input"
                                           "storage"
                                           "texture"
                                           "text"))
