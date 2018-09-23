@@ -93,10 +93,10 @@ Example:
           (format *error-output* "Download: ~A" (car pair))
           (princ (dex:get url) file))))))
 
-;; TODO: Font files (*.typeface.json) are not required to load by script tag,
-;; but now they are loaded.
 (defun make-src-list-for-script-tag (relative-path)
   (append *cdns*
-          (mapcar (lambda (pair)
-                    (merge-pathnames (car pair) relative-path))
-                  *js-pairs*)))
+          (remove-if (lambda (path)
+                       (not (string= (pathname-type path) "js")))
+                     (mapcar (lambda (pair)
+                               (merge-pathnames (car pair) relative-path))
+                             *js-pairs*))))

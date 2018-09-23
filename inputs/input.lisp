@@ -21,6 +21,7 @@
            :is-key-up-now
            :key-down-count
            :key-up-count
+           :get-physical-key-name
 
            :get-mouse-x
            :get-mouse-y
@@ -31,21 +32,32 @@
            :mouse-event-x
            :mouse-event-y
 
-           :touch-event-touches
-           :touch-event-element-x
-           :touch-event-element-y
-
            :init-input
-           :process-input)
+           :process-input
+
+           :do-touch-state
+           :get-touch-state
+           :get-touch-x
+           :get-touch-y
+           :get-total-touch-state
+           :get-total-touch-x
+           :get-total-touch-y)
+  (:import-from :cl-web-2d-game/core/basic-components
+                :make-vector-2d
+                :vector-2d-x
+                :vector-2d-y)
   (:import-from :cl-web-2d-game/utils/dom-manager
-                :get-rendered-dom))
+                :get-rendered-dom)
+  (:import-from :alexandria
+                :with-gensyms))
 (in-package :cl-web-2d-game/inputs/input)
 
 (enable-ps-experiment-syntax)
 
 (defun.ps process-input ()
   (process-keyboard-input)
-  (process-mouse-input))
+  (process-mouse-input)
+  (process-touch-input))
 
 ;; --- common --- ;;
 
@@ -103,6 +115,9 @@ device-state = boolean-value"
             (:right "right")
             (:up    "up")
             (:down  "down"))))
+
+(defun.ps+ get-physical-key-name (virtual-key-name)
+  (gethash virtual-key-name *button-to-keyboard*))
 
 ;; TODO: Rename function names according to Common Lisp tradition
 ;; (Ex. is-key-down -> key-down-p)
@@ -178,17 +193,21 @@ device-state = boolean-value"
 (defun.ps+ get-right-mouse-state () _mouse-right)
 (defun.ps+ get-mouse-wheel-delta-y () *mouse-wheel-delta-y*)
 
-;; (private)
-(defun.ps set-mouse-point (x y)
+(defun.ps make-adjusted-input-point (x y)
   (let* ((renderer (get-rendered-dom))
          (canvas (renderer.query-selector "canvas"))
          (scale (/ (* 1.0 renderer.client-height) (get-screen-height))))
-    (setf *mouse-x-buffer* (- (/ (- x renderer.offset-left)
-                                 scale)
-                              (get-camera-offset-x)))
-    (setf *mouse-y-buffer* (- (/ (+ (- canvas.height y) renderer.offset-top)
-                                 scale)
-                              (get-camera-offset-y)))))
+    (make-vector-2d :x (- (/ (- x renderer.offset-left)
+                             scale)
+                          (get-camera-offset-x))
+                    :y (- (/ (+ (- canvas.height y) renderer.offset-top)
+                             scale)
+                          (get-camera-offset-y)))))
+
+(defun.ps set-mouse-point (x y)
+  (let ((adjusted (make-adjusted-input-point x y)))
+    (setf *mouse-x-buffer* (vector-2d-x adjusted)
+          *mouse-y-buffer* (vector-2d-y adjusted))))
 
 ;; --- self callbacks --- ;;
 
@@ -247,34 +266,141 @@ device-state = boolean-value"
 
 ;; touch
 
-(defstruct.ps+ touch-event-element x y)
+;; Note: About count in touch-event-element:
+;; A count less than 0 is interpretted as released.
+;; If the count is 0, it can not been seen from out of this package.
+;; For example, it is skipped in do-touch-state macro.
+;; This is because a touch-event-element is added independently of game frame,
+;; so we can't assure that the state where count is 0 continues in a full frame.
+
+(defstruct.ps+ touch-event-element x y id (count 0))
 (defstruct.ps+ touch-event touches)
+
+(defvar.ps+ *touch-state-hash* (make-hash-table))
+(defun.ps+ get-touch-state-hash () *touch-state-hash*)
+
+(defmacro.ps+ do-touch-state ((var-id) &body body)
+  (with-gensyms (hash-value)
+    `(maphash (lambda (,var-id ,hash-value)
+                (declare (ignorable ,var-id))
+                (when (> (touch-event-element-count ,hash-value) 0)
+                  ,@body))
+              (get-touch-state-hash))))
+
+(defun.ps+ get-touch-state (id)
+  (let ((elem (gethash id *touch-state-hash*)))
+    (unless elem
+      (return-from get-touch-state :up))
+    (let ((count (touch-event-element-count elem)))
+      (cond ((= count 0) :up) ; ignored (please see the above note for detail)
+            ((= count 1) :down-now)
+            ((> count 1) :down)
+            ((< count 0) :up-now)))))
+
+(defun.ps+ get-total-touch-state ()
+  (let ((count 0)
+        result)
+    (do-touch-state (id)
+      (incf count))
+    (case count
+      (0 (setf result :up))
+      (1 (do-touch-state (id)
+           (setf result (get-touch-state id))))
+      (t (labels ((calc-priority (state)
+                    (ecase state
+                      (:down 4) (:down-now 3)
+                      (:up-now 2) (:up 1)))
+                  (prior-p (new-state old-state)
+                    (> (calc-priority new-state)
+                       (calc-priority old-state))))
+           (do-touch-state (id)
+             (let ((state (get-touch-state id)))
+               (when (or (null result)
+                         (prior-p state result))
+                 (setf result state)))))))
+    (assert result)
+    result))
+
+(defun.ps+ get-touch-x (id)
+  (let ((elem (gethash id *touch-state-hash*)))
+    (assert (and elem
+                 (> (touch-event-element-count elem) 0)))
+    (touch-event-element-x elem)))
+
+(defun.ps+ get-total-touch-average (fn default-value)
+  (let ((sum 0)
+        (count 0))
+    (do-touch-state (id)
+      (incf sum (funcall fn id))
+      (incf count))
+    (if (> count 0)
+        (/ sum count)
+        default-value)))
+
+(defun.ps+ get-total-touch-x ()
+  (get-total-touch-average #'get-touch-x 0))
+
+(defun.ps+ get-touch-y (id)
+  (let ((elem (gethash id *touch-state-hash*)))
+    (assert (and elem
+                 (> (touch-event-element-count elem) 0)))
+    (touch-event-element-y elem)))
+
+(defun.ps+ get-total-touch-y ()
+  (get-total-touch-average #'get-touch-y 0))
+
+(defun.ps+ process-touch-input ()
+  (maphash (lambda (id state)
+             (with-slots (count) state
+               (if (>= count 0)
+                   (incf count)
+                   (register-next-frame-func
+                    (lambda () (remhash id *touch-state-hash*))))))
+           *touch-state-hash*))
+
+(defun.ps set-xy-of-touch-event-element (elem raw-touch-event)
+  (let ((adjusted (make-adjusted-input-point raw-touch-event.client-x
+                                             raw-touch-event.client-y)))
+    (setf (touch-event-element-x elem) (vector-2d-x adjusted)
+          (touch-event-element-y elem) (vector-2d-y adjusted))))
+
+(defun.ps+ update-touch-state-by-event (id touch-event)
+  (let ((target (gethash id *touch-state-hash*)))
+    (assert target)
+    (set-xy-of-touch-event-element target touch-event)))
 
 (defun.ps init-touch-event (e)
   (let* ((result (make-touch-event :touches (make-array e.touches.length)))
          (touches (touch-event-touches result)))
-    (dotimes (i e.touches.length)
-      (let ((point (aref e.touches i)))
-        (setf (aref touches i)
-              (make-touch-event-element :x *mouse-x-buffer* :y *mouse-y-buffer*))))
+    (dotimes (i e.changed-touches.length)
+      (let* ((touch (aref e.changed-touches i))
+             (elem (make-touch-event-element :id touch.identifier)))
+        (set-xy-of-touch-event-element elem touch)
+        (setf (aref touches i) elem)))
     result))
 
-(defun.ps set-point-by-touch (e)
-  (let ((point (aref e.touches 0)))
-    (set-mouse-point point.client-x point.client-y)))
-
-(defun.ps on-touch-start (e)
-  (set-point-by-touch e)
-  (setf *mouse-left-buffer* t)
-  (call-touch-start-callbacks (init-touch-event e)))
+(defun.ps+ on-touch-start (e)
+  (let ((event (init-touch-event e)))
+    (dolist (event-elem (touch-event-touches event))
+      (setf (gethash (touch-event-element-id event-elem) *touch-state-hash*)
+            event-elem))
+    (call-touch-start-callbacks event)))
 
 (defun.ps on-touch-end (e)
   (when (= e.touches.length 0)
-    (setf *mouse-left-buffer* nil))
+    ;; [WIP]
+    )
+  (dolist (touch e.changed-touches)
+    (let ((event-elem (gethash touch.identifier *touch-state-hash*)))
+      (assert event-elem)
+      (setf (touch-event-element-count event-elem) -1)))
   (call-touch-end-callbacks (init-touch-event e)))
 
 (defun.ps on-touch-move-event (e)
-  (set-point-by-touch e)
+  (dolist (touch e.changed-touches)
+    (let ((event-elem (gethash touch.identifier *touch-state-hash*)))
+      (assert event-elem)
+      (update-touch-state-by-event (touch-event-element-id event-elem) touch)))
   (call-touch-move-callbacks (init-touch-event e)))
 
 ;; register
