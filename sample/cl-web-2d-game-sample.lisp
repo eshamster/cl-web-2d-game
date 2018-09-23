@@ -48,12 +48,13 @@
                          (:ul
                           :id "sample-list"
                           (dolist (name '("simple"
-                                          "basic-models"
-                                          "texture"
+                                          ;; The followings are sorted by name.
                                           "animation"
-                                          "text"
+                                          "basic-models"
                                           "collision"
-                                          "storage"))
+                                          "storage"
+                                          "texture"
+                                          "text"))
                             (markup (:li :class "sample-list-element"
                                          (:a :href (format nil "/sample-~A" name)
                                              :target "viewer"
