@@ -38,7 +38,10 @@
            :do-touch-state
            :get-touch-state
            :get-touch-x
-           :get-touch-y)
+           :get-touch-y
+           :get-total-touch-state
+           :get-total-touch-x
+           :get-total-touch-y)
   (:import-from :cl-web-2d-game/core/basic-components
                 :make-vector-2d
                 :vector-2d-x
@@ -279,6 +282,7 @@ device-state = boolean-value"
 (defmacro.ps+ do-touch-state ((var-id) &body body)
   (with-gensyms (hash-value)
     `(maphash (lambda (,var-id ,hash-value)
+                (declare (ignorable ,var-id))
                 (when (> (touch-event-element-count ,hash-value) 0)
                   ,@body))
               (get-touch-state-hash))))
@@ -293,17 +297,57 @@ device-state = boolean-value"
             ((> count 1) :down)
             ((< count 0) :up-now)))))
 
+(defun.ps+ get-total-touch-state ()
+  (let ((count 0)
+        result)
+    (do-touch-state (id)
+      (incf count))
+    (case count
+      (0 (setf result :up))
+      (1 (do-touch-state (id)
+           (setf result (get-touch-state id))))
+      (t (labels ((calc-priority (state)
+                    (ecase state
+                      (:down 4) (:down-now 3)
+                      (:up-now 2) (:up 1)))
+                  (prior-p (new-state old-state)
+                    (> (calc-priority new-state)
+                       (calc-priority old-state))))
+           (do-touch-state (id)
+             (let ((state (get-touch-state id)))
+               (when (or (null result)
+                         (prior-p state result))
+                 (setf result state)))))))
+    (assert result)
+    result))
+
 (defun.ps+ get-touch-x (id)
   (let ((elem (gethash id *touch-state-hash*)))
     (assert (and elem
                  (> (touch-event-element-count elem) 0)))
     (touch-event-element-x elem)))
 
+(defun.ps+ get-total-touch-average (fn default-value)
+  (let ((sum 0)
+        (count 0))
+    (do-touch-state (id)
+      (incf sum (funcall fn id))
+      (incf count))
+    (if (> count 0)
+        (/ sum count)
+        default-value)))
+
+(defun.ps+ get-total-touch-x ()
+  (get-total-touch-average #'get-touch-x 0))
+
 (defun.ps+ get-touch-y (id)
   (let ((elem (gethash id *touch-state-hash*)))
     (assert (and elem
                  (> (touch-event-element-count elem) 0)))
     (touch-event-element-y elem)))
+
+(defun.ps+ get-total-touch-y ()
+  (get-total-touch-average #'get-touch-y 0))
 
 (defun.ps+ process-touch-input ()
   (maphash (lambda (id state)
