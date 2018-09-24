@@ -272,6 +272,7 @@ device-state = boolean-value"
 ;; For example, it is skipped in do-touch-state macro.
 ;; This is because a touch-event-element is added independently of game frame,
 ;; so we can't assure that the state where count is 0 continues in a full frame.
+;; By the same reason, if the count is -1, it is interpretted as :down.
 
 (defstruct.ps+ touch-event-element x y id (count 0))
 (defstruct.ps+ touch-event touches)
@@ -283,7 +284,7 @@ device-state = boolean-value"
   (with-gensyms (hash-value)
     `(maphash (lambda (,var-id ,hash-value)
                 (declare (ignorable ,var-id))
-                (when (> (touch-event-element-count ,hash-value) 0)
+                (unless (= (touch-event-element-count ,hash-value) 0)
                   ,@body))
               (get-touch-state-hash))))
 
@@ -295,7 +296,10 @@ device-state = boolean-value"
       (cond ((= count 0) :up) ; ignored (please see the above note for detail)
             ((= count 1) :down-now)
             ((> count 1) :down)
-            ((< count 0) :up-now)))))
+            ((= count -1) :down)
+            ((= count -2) :up-now)
+            (t :up) ; (< count -2)
+            ))))
 
 (defun.ps+ get-total-touch-state ()
   (let ((count 0)
@@ -352,10 +356,12 @@ device-state = boolean-value"
 (defun.ps+ process-touch-input ()
   (maphash (lambda (id state)
              (with-slots (count) state
-               (if (>= count 0)
-                   (incf count)
-                   (register-next-frame-func
-                    (lambda () (remhash id *touch-state-hash*))))))
+               (cond ((>= count 0)
+                      (incf count))
+                     (t (decf count)
+                        (when (< count -2)
+                          (register-next-frame-func
+                           (lambda () (remhash id *touch-state-hash*))))))))
            *touch-state-hash*))
 
 (defun.ps set-xy-of-touch-event-element (elem raw-touch-event)
