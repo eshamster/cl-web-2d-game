@@ -55,7 +55,7 @@
   (:import-from :cl-web-2d-game/utils/dom-manager
                 :get-rendered-dom)
   (:import-from :cl-web-2d-game/utils/utils
-                :def-obsoleted-fun.ps+)
+                :def-obsoleted-alias.ps+)
   (:import-from :alexandria
                 :with-gensyms))
 (in-package :cl-web-2d-game/inputs/input)
@@ -143,10 +143,10 @@ device-state = boolean-value"
   "Return if the button is up just in this frame"
   (input-off-now-p (gethash button *key-status*)))
 
-(def-obsoleted-fun.ps+ is-key-down-now key-down-now-p)
-(def-obsoleted-fun.ps+ is-key-down     key-down-p)
-(def-obsoleted-fun.ps+ is-key-up-now   key-up-now-p)
-(def-obsoleted-fun.ps+ is-key-up       key-up-p)
+(def-obsoleted-alias.ps+ is-key-down-now key-down-now-p)
+(def-obsoleted-alias.ps+ is-key-down     key-down-p)
+(def-obsoleted-alias.ps+ is-key-up-now   key-up-now-p)
+(def-obsoleted-alias.ps+ is-key-up       key-up-p)
 
 (defun.ps+ key-down-count (button)
   (input-on-count (gethash button *key-status*)))
