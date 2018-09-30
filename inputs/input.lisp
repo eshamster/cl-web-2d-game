@@ -15,10 +15,10 @@
            :add-touch-move-callback
 
            :start-key-monitoring
-           :is-key-down
-           :is-key-down-now
-           :is-key-up
-           :is-key-up-now
+           :key-down-now-p
+           :key-down-p
+           :key-up-now-p
+           :key-up-p
            :key-down-count
            :key-up-count
            :get-physical-key-name
@@ -41,13 +41,21 @@
            :get-touch-y
            :get-total-touch-state
            :get-total-touch-x
-           :get-total-touch-y)
+           :get-total-touch-y
+
+           ;; obsoleted
+           :is-key-down
+           :is-key-down-now
+           :is-key-up
+           :is-key-up-now)
   (:import-from :cl-web-2d-game/core/basic-components
                 :make-vector-2d
                 :vector-2d-x
                 :vector-2d-y)
   (:import-from :cl-web-2d-game/utils/dom-manager
                 :get-rendered-dom)
+  (:import-from :cl-web-2d-game/utils/utils
+                :def-obsoleted-fun.ps+)
   (:import-from :alexandria
                 :with-gensyms))
 (in-package :cl-web-2d-game/inputs/input)
@@ -119,24 +127,26 @@ device-state = boolean-value"
 (defun.ps+ get-physical-key-name (virtual-key-name)
   (gethash virtual-key-name *button-to-keyboard*))
 
-;; TODO: Rename function names according to Common Lisp tradition
-;; (Ex. is-key-down -> key-down-p)
-
-(defun.ps+ is-key-down (button)
+(defun.ps+ key-down-p (button)
   "Return if the button is down"
   (input-on-p (gethash button *key-status*)))
 
-(defun.ps+ is-key-down-now (button)
+(defun.ps+ key-down-now-p (button)
   "Return if the button is down just in this frame"
   (input-on-now-p (gethash button *key-status*)))
 
-(defun.ps+ is-key-up (button)
+(defun.ps+ key-up-p (button)
   "Return if the button is up"
   (input-off-p (gethash button *key-status*)))
 
-(defun.ps+ is-key-up-now (button)
+(defun.ps+ key-up-now-p (button)
   "Return if the button is up just in this frame"
   (input-off-now-p (gethash button *key-status*)))
+
+(def-obsoleted-fun.ps+ is-key-down-now key-down-now-p)
+(def-obsoleted-fun.ps+ is-key-down     key-down-p)
+(def-obsoleted-fun.ps+ is-key-up-now   key-up-now-p)
+(def-obsoleted-fun.ps+ is-key-up       key-up-p)
 
 (defun.ps+ key-down-count (button)
   (input-on-count (gethash button *key-status*)))

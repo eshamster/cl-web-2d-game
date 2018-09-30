@@ -7,7 +7,10 @@
   (:export :convert-to-layered-hash
            :get-layered-hash
            :ensure-js-files
-           :make-src-list-for-script-tag))
+           :make-src-list-for-script-tag
+           :def-obsoleted-fun.ps+)
+  (:import-from :alexandria
+                :with-gensyms))
 (in-package :cl-web-2d-game/utils/utils)
 
 (enable-ps-experiment-syntax)
@@ -100,3 +103,25 @@ Example:
                      (mapcar (lambda (pair)
                                (merge-pathnames (car pair) relative-path))
                              *js-pairs*))))
+
+;; --- def-obsoleted-fun.ps+ --- ;;
+
+;; TODO: Move the definition to more proper place.
+
+;; Note: If warnings are output in every frame, it affect to performance.
+;;       It can affect to even performance of debugger.
+;;       So a warning is output only once for each obsoleted function.
+(defvar.ps+ *table-output-obsoleted-warning* (make-hash-table))
+(defun.ps+ has-output-obsoleted-warning-p (obsoleted-name)
+  (gethash obsoleted-name *table-output-obsoleted-warning*))
+(defun.ps+ register-output-obsoleted-warning (obsoleted-name)
+  (setf (gethash obsoleted-name *table-output-obsoleted-warning*) t))
+
+(defmacro def-obsoleted-fun.ps+ (obsoleted-name alter-fn)
+  (with-gensyms (rest)
+    `(defun.ps+ ,obsoleted-name (&rest ,rest)
+       (unless (has-output-obsoleted-warning-p ',obsoleted-name)
+         (warn ,(format nil "\"~A\" is obsoleted. Please use \"~A\" instead."
+                        obsoleted-name alter-fn))
+         (register-output-obsoleted-warning ',obsoleted-name))
+       (apply #',alter-fn ,rest))))
