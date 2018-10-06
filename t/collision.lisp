@@ -66,7 +66,7 @@
                                  (make-point-2d :x -1 :y (* -1 (sqrt 3)))
                                  (make-point-2d :x  1 :y (* -1 (sqrt 3))))))
              (dolist (pnt pnt-list)
-               (setf-vector-abs pnt r))
+               (setf-vector-2d-abs pnt r))
              (make-physic-polygon :pnt-list pnt-list))))
     (testing "A polygon includes another"
       (ok (collide-physics-p

@@ -7,7 +7,10 @@
   (:export :convert-to-layered-hash
            :get-layered-hash
            :ensure-js-files
-           :make-src-list-for-script-tag))
+           :make-src-list-for-script-tag
+           :def-obsoleted-alias.ps+)
+  (:import-from :alexandria
+                :with-gensyms))
 (in-package :cl-web-2d-game/utils/utils)
 
 (enable-ps-experiment-syntax)
@@ -100,3 +103,14 @@ Example:
                      (mapcar (lambda (pair)
                                (merge-pathnames (car pair) relative-path))
                              *js-pairs*))))
+
+;; --- def-obsoleted-fun.ps+ --- ;;
+
+;; TODO: Move the definition to more proper place.
+
+(defmacro def-obsoleted-alias.ps+ (obsoleted-name alter-fn)
+  (with-gensyms (rest)
+    `(defmacro.ps+ ,obsoleted-name (&rest ,rest)
+       (warn ,(format nil "\"~A\" is obsoleted. Please use \"~A\" instead."
+                      obsoleted-name alter-fn))
+       `(,',alter-fn ,@,rest))))

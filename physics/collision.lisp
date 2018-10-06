@@ -227,7 +227,7 @@ Note: The second condition can't check only the case where
   (let ((global-point-list '()))
     (dolist (vec vec-list)
       (let ((point (clone-point-2d offset)))
-        (incf-vector point vec)
+        (incf-vector-2d point vec)
         (transformf-point point coordinate)
         (push point global-point-list)))
     global-point-list))
