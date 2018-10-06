@@ -15,17 +15,17 @@
 ;; --- test --- ;;
 
 (defun.ps+ easy-vector-angle (x y)
-  (vector-angle (make-vector-2d :x x :y y)))
+  (vector-2d-angle (make-vector-2d :x x :y y)))
 
 (deftest.ps+ for-vector-calculations
-  (testing "vector-abs"
-    (ok (= (round (vector-abs
+  (testing "vector-2d-abs"
+    (ok (= (round (vector-2d-abs
                    (make-vector-2d :x 3 :y 4)))
            5))
-    (ok (= (round (vector-abs
+    (ok (= (round (vector-2d-abs
                    (make-vector-2d :x 4 :y -3)))
            5))) 
-  (testing "vector-angle"
+  (testing "vector-2d-angle"
     (testing "when x = 0"
       (ok (within-angle (easy-vector-angle 0 100) (/ PI 2)))
       (ok (within-angle (easy-vector-angle 0 -100) (/ PI -2))))
@@ -50,41 +50,41 @@
            -15))))
 
 (deftest.ps+ for-vector-modification
-  (testing "Test incf-vector and dicf-vector"
+  (testing "Test incf-vector-2d and dicf-vector"
     (let ((target (make-vector-2d :x 10 :y 10))
           (diff (make-vector-2d :x 5 :y -5)))
-      (incf-vector target diff)
+      (incf-vector-2d target diff)
       (ok (= (vector-2d-x target) 15))
       (ok (= (vector-2d-y target) 5))
       (ok (= (vector-2d-x diff) 5))
       (ok (= (vector-2d-y diff) -5)))
     (let ((target (make-vector-2d :x 10 :y 10))
           (diff (make-vector-2d :x 5 :y -5)))
-      (decf-vector target diff)
+      (decf-vector-2d target diff)
       (ok (= (vector-2d-x target) 5))
       (ok (= (vector-2d-y target) 15))
       (ok (= (vector-2d-x diff) 5))
       (ok (= (vector-2d-y diff) -5))))
-  (testing "setf-vector-abs"
+  (testing "setf-vector-2d-abs"
     (let* ((target (make-vector-2d :x 10 :y 10))
-           (before-angle (vector-angle target)))
-      (setf-vector-abs target 200)
-      (ok (within-length (vector-abs target) 200))
-      (ok (within-angle (vector-angle target) before-angle))))
+           (before-angle (vector-2d-angle target)))
+      (setf-vector-2d-abs target 200)
+      (ok (within-length (vector-2d-abs target) 200))
+      (ok (within-angle (vector-2d-angle target) before-angle))))
   (testing "Test rotation functions"
-    (testing "setf-vector-angle"
+    (testing "setf-vector-2d-angle"
       (let* ((target (make-vector-2d :x 10 :y 10))
-             (before-len (vector-abs target)))
-        (setf-vector-angle target (* PI 1/3)) 
-        (ok (within-length (vector-abs target) before-len))
-        (ok (within-angle (vector-angle target) (* PI 1/3)))))
+             (before-len (vector-2d-abs target)))
+        (setf-vector-2d-angle target (* PI 1/3))
+        (ok (within-length (vector-2d-abs target) before-len))
+        (ok (within-angle (vector-2d-angle target) (* PI 1/3)))))
     (testing "incf-rotate-diff and decf-rotate-diff"
       ;; Now, test only case where the center of rotation is (0, 0)
       (let* ((radious 10)
              (target (make-vector-2d :x radious :y 0)))
         (flet ((prove-angle (expected-angle)
-                 (ok (within-length (vector-abs target) radious))
-                 (ok (within-angle (vector-angle target) expected-angle))))
+                 (ok (within-length (vector-2d-abs target) radious))
+                 (ok (within-angle (vector-2d-angle target) expected-angle))))
           (incf-rotate-diff target radious 0 (* PI 1/3))
           (prove-angle (* PI 1/3))
           (incf-rotate-diff target radious (* PI 1/3) (* PI 1/3))
@@ -97,8 +97,8 @@
              (speed (* PI 1/3))
              (rotator (make-rotate-2d :speed speed :radious radious)))
         (flet ((prove-angle (expected-angle)
-                 (ok (within-length (vector-abs target) radious))
-                 (ok (within-angle (vector-angle target) expected-angle))
+                 (ok (within-length (vector-2d-abs target) radious))
+                 (ok (within-angle (vector-2d-angle target) expected-angle))
                  (ok (within-angle (point-2d-angle target) expected-angle))
                  (ok (within-angle (rotate-2d-angle rotator) expected-angle))))
           (rotatef-point-by target rotator)
@@ -109,8 +109,8 @@
       ;; Now, test only case where the center of rotation is (0, 0)
       (let ((point (make-point-2d :x 0 :y 0 :angle 0)))
         (movef-vector-to-circle point 5 (* PI 2/3))
-        (ok (within-length (vector-abs point) 5))
-        (ok (within-angle (vector-angle point) (* PI 2/3)))
+        (ok (within-length (vector-2d-abs point) 5))
+        (ok (within-angle (vector-2d-angle point) (* PI 2/3)))
         (ok (= (point-2d-angle point) (* PI 2/3)))))))
 
 (deftest.ps+ for-coordinate-functions

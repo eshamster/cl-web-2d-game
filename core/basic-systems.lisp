@@ -9,7 +9,7 @@
         :cl-web-2d-game/physics/collision
         :cl-web-2d-game/utils/debug/performance)
   (:import-from :cl-web-2d-game/utils/calc
-                :incf-vector)
+                :incf-vector-2d)
   (:export :script-system
            :make-script-system
            :animation-system
@@ -42,4 +42,4 @@
                (target-component-types '(point-2d speed-2d))
                (process (lambda (entity)
                           (with-ecs-components (point-2d speed-2d) entity
-                            (incf-vector point-2d speed-2d)))))))
+                            (incf-vector-2d point-2d speed-2d)))))))

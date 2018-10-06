@@ -7,12 +7,14 @@
         :cl-web-2d-game/core/basic-components)
   (:import-from :ps-experiment/common-macros
                 :with-slots-pair)
-  (:export :vector-abs
-           :vector-angle
-           :setf-vector-abs
-           :setf-vector-angle
-           :incf-vector
-           :decf-vector
+  (:import-from :cl-web-2d-game/utils/utils
+                :def-obsoleted-alias.ps+)
+  (:export :vector-2d-abs
+           :vector-2d-angle
+           :setf-vector-2d-abs
+           :setf-vector-2d-angle
+           :incf-vector-2d
+           :decf-vector-2d
            :calc-inner-product
            :calc-outer-product-z
            :incf-rotate-diff
@@ -33,17 +35,27 @@
 
            :adjust-to-target
            :lerp-scalar
-           :lerp-vector-2d))
+           :lerp-vector-2d
+
+           ;; obsoleted
+           :vector-abs
+           :vector-angle
+           :setf-vector-abs
+           :setf-vector-angle
+           :incf-vector
+           :decf-vector))
 (in-package :cl-web-2d-game/utils/calc)
 
 (enable-ps-experiment-syntax)
 
-(defun.ps+ vector-abs (vector)
+(defun.ps+ vector-2d-abs (vector)
   (with-slots (x y) vector
     (sqrt (+ (expt x 2)
              (expt y 2)))))
 
-(defun.ps+ vector-angle (vector)
+(def-obsoleted-alias.ps+ vector-abs vector-2d-abs)
+
+(defun.ps+ vector-2d-angle (vector)
   "Return the angle of the vector. The range is (-PI, PI].
 The angle of the vector (1, 0) is 0 and the rotation is counterclockwize."
   (with-slots (x y) vector
@@ -55,28 +67,40 @@ The angle of the vector (1, 0) is 0 and the rotation is counterclockwize."
                (* PI (if (< y 0) -1 1))
                0)))))
 
-(defun.ps+ setf-vector-abs-angle (vector abs angle)
+(def-obsoleted-alias.ps+ vector-angle vector-2d-angle)
+
+(defun.ps+ setf-vector-2d-abs-angle (vector abs angle)
   (setf (vector-2d-x vector) (* abs (cos angle))
         (vector-2d-y vector) (* abs (sin angle)))
   vector)
 
-(defun.ps+ setf-vector-abs (vector abs)
+(def-obsoleted-alias.ps+ setf-vector-abs-angle setf-vector-2d-abs-angle)
+
+(defun.ps+ setf-vector-2d-abs (vector abs)
   "Set the absolute length of the vector keeping its angle."
-  (setf-vector-abs-angle vector abs (vector-angle vector)))
+  (setf-vector-2d-abs-angle vector abs (vector-2d-angle vector)))
 
-(defun.ps+ setf-vector-angle (vector angle)
+(def-obsoleted-alias.ps+ setf-vector-abs setf-vector-2d-abs)
+
+(defun.ps+ setf-vector-2d-angle (vector angle)
   "Set the angle of the vector keeping its length."
-  (setf-vector-abs-angle vector (vector-abs vector) angle))
+  (setf-vector-2d-abs-angle vector (vector-2d-abs vector) angle))
 
-(defun.ps+ incf-vector (target-vec diff-vec)
+(def-obsoleted-alias.ps+ setf-vector-angle setf-vector-2d-angle)
+
+(defun.ps+ incf-vector-2d (target-vec diff-vec)
   (incf (vector-2d-x target-vec) (vector-2d-x diff-vec))
   (incf (vector-2d-y target-vec) (vector-2d-y diff-vec))
   target-vec)
 
-(defun.ps+ decf-vector (target-vec diff-vec)
+(def-obsoleted-alias.ps+ incf-vector incf-vector-2d)
+
+(defun.ps+ decf-vector-2d (target-vec diff-vec)
   (decf (vector-2d-x target-vec) (vector-2d-x diff-vec))
   (decf (vector-2d-y target-vec) (vector-2d-y diff-vec))
   target-vec)
+
+(def-obsoleted-alias.ps+ decf-vector decf-vector-2d)
 
 (defun.ps+ calc-inner-product (vec1 vec2)
   (+ (* (vector-2d-x vec1) (vector-2d-x vec2))
@@ -235,13 +259,13 @@ line-pnt1 and line-pnt2."
   (let ((moved-line-pnt2 (clone-vector-2d line-pnt2))
         (moved-target-pnt (clone-vector-2d target-pnt)))
     ;; 1
-    (decf-vector moved-line-pnt2 line-pnt1)
-    (decf-vector moved-target-pnt line-pnt1)
+    (decf-vector-2d moved-line-pnt2 line-pnt1)
+    (decf-vector-2d moved-target-pnt line-pnt1)
     ;; 2
-    (let ((angle-pnt2 (vector-angle moved-line-pnt2)))
+    (let ((angle-pnt2 (vector-2d-angle moved-line-pnt2)))
       (labels ((rotate-pnt (now-pnt)
-                 (decf-rotate-diff now-pnt (vector-abs now-pnt)
-                                   (vector-angle now-pnt) angle-pnt2)))
+                 (decf-rotate-diff now-pnt (vector-2d-abs now-pnt)
+                                   (vector-2d-angle now-pnt) angle-pnt2)))
         (rotate-pnt moved-line-pnt2)
         (rotate-pnt moved-target-pnt)))
     ;; rest calculations
