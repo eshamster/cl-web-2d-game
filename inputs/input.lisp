@@ -262,10 +262,10 @@ device-state = boolean-value"
   (call-mouse-down-callbacks (init-mouse-event e)))
 
 (defun.ps on-mouse-up-event (e)
-  (when (= e.which *mouse-left-button-id*)
-    (setf +mouse-left-buffer+ nil))
-  (when (= e.which *mouse-right-button-id*)
-    (setf +mouse-right-buffer+ nil))
+  (when (= e.which +mouse-left-button-id+)
+    (setf *mouse-left-buffer* nil))
+  (when (= e.which +mouse-right-button-id+)
+    (setf *mouse-right-buffer* nil))
   (call-mouse-up-callbacks (init-mouse-event e)))
 
 ;; mouse wheel
