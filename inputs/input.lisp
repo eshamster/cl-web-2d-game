@@ -28,6 +28,9 @@
            :get-left-mouse-state
            :get-right-mouse-state
            :get-mouse-wheel-delta-y
+           :get-mouse-state
+           :get-mouse-down-count
+           :get-mouse-up-count
 
            :mouse-event-x
            :mouse-event-y
@@ -199,6 +202,22 @@
 (defun.ps+ get-right-mouse-state ()
   (calc-state-from-count *mouse-right-count*))
 (defun.ps+ get-mouse-wheel-delta-y () *mouse-wheel-delta-y*)
+
+(defun.ps+ get-mouse-state (which)
+  "Get mouse state. \"which\" means :left or :right."
+  (ecase which
+    (:left (get-left-mouse-state))
+    (:right (get-right-mouse-state))))
+(defun.ps+ get-mouse-down-count (which)
+  (input-on-count
+   (ecase which
+     (:left *mouse-left-count*)
+     (:right *mouse-right-buffer*))))
+(defun.ps+ get-mouse-up-count (which)
+  (input-off-count
+   (ecase which
+     (:left *mouse-left-count*)
+     (:right *mouse-right-buffer*))))
 
 (defun.ps make-adjusted-input-point (x y)
   (let* ((renderer (get-rendered-dom))
