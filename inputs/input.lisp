@@ -28,6 +28,9 @@
            :get-left-mouse-state
            :get-right-mouse-state
            :get-mouse-wheel-delta-y
+           :get-mouse-state
+           :get-mouse-down-count
+           :get-mouse-up-count
 
            :mouse-event-x
            :mouse-event-y
@@ -69,21 +72,18 @@
 
 ;; --- common --- ;;
 
-(defun.ps+ calc-next-input-state (now-state device-state)
-  "now-state = :down-now | :down | :up-now | :up
-device-state = boolean-value"
-  (if device-state
-      (case now-state
-        ((:down-now :down) :down)
-        (t :down-now))
-      (case now-state
-        ((:up-now :up) :up)
-        (t :up-now))))
-
 (defun.ps+ calc-next-input-count (current device-state)
   (if device-state
       (if (>= current 0) (1+ current) 1)
       (if (<= current 0) (1- current) -1)))
+
+(defun.ps+ calc-state-from-count (count)
+  (cond ((= count 1) :down-now)
+        ((> count 1) :down)
+        ((= count -1) :up-now)
+        ((< count -1) :up)
+        (;; Note: This case can occur only at the first frame.
+         (= count 0) :up)))
 
 (defun.ps+ input-on-now-p (current)
   (= current 1))
@@ -167,8 +167,8 @@ device-state = boolean-value"
 
 (defvar.ps+ _mouse-x -100)
 (defvar.ps+ _mouse-y -100)
-(defvar.ps+ _mouse-left :up)
-(defvar.ps+ _mouse-right :up)
+(defvar.ps+ *mouse-left-count* 0)
+(defvar.ps+ *mouse-right-count* 0)
 
 (defvar.ps+ *mouse-x-buffer* -100)
 (defvar.ps+ *mouse-y-buffer* -100)
@@ -186,12 +186,10 @@ device-state = boolean-value"
 (defun.ps+ process-mouse-input ()
   (setf _mouse-x *mouse-x-buffer*)
   (setf _mouse-y *mouse-y-buffer*)
-  (setf _mouse-left
-        (calc-next-input-state _mouse-left
-                               *mouse-left-buffer*))
-  (setf _mouse-right
-        (calc-next-input-state _mouse-right
-                               *mouse-right-buffer*))
+  (setf *mouse-left-count*
+        (calc-next-input-count *mouse-left-count* *mouse-left-buffer*))
+  (setf *mouse-right-count*
+        (calc-next-input-count *mouse-right-count* *mouse-right-buffer*))
   (setf *mouse-wheel-delta-y* *mouse-wheel-delta-y-buffer*
         *mouse-wheel-delta-y-buffer* 0))
 
@@ -199,9 +197,27 @@ device-state = boolean-value"
 
 (defun.ps+ get-mouse-x () _mouse-x)
 (defun.ps+ get-mouse-y () _mouse-y)
-(defun.ps+ get-left-mouse-state () _mouse-left)
-(defun.ps+ get-right-mouse-state () _mouse-right)
+(defun.ps+ get-left-mouse-state ()
+  (calc-state-from-count *mouse-left-count*))
+(defun.ps+ get-right-mouse-state ()
+  (calc-state-from-count *mouse-right-count*))
 (defun.ps+ get-mouse-wheel-delta-y () *mouse-wheel-delta-y*)
+
+(defun.ps+ get-mouse-state (which)
+  "Get mouse state. \"which\" means :left or :right."
+  (ecase which
+    (:left (get-left-mouse-state))
+    (:right (get-right-mouse-state))))
+(defun.ps+ get-mouse-down-count (which)
+  (input-on-count
+   (ecase which
+     (:left *mouse-left-count*)
+     (:right *mouse-right-buffer*))))
+(defun.ps+ get-mouse-up-count (which)
+  (input-off-count
+   (ecase which
+     (:left *mouse-left-count*)
+     (:right *mouse-right-buffer*))))
 
 (defun.ps make-adjusted-input-point (x y)
   (let* ((renderer (get-rendered-dom))
@@ -262,10 +278,10 @@ device-state = boolean-value"
   (call-mouse-down-callbacks (init-mouse-event e)))
 
 (defun.ps on-mouse-up-event (e)
-  (when (= e.which *mouse-left-button-id*)
-    (setf +mouse-left-buffer+ nil))
-  (when (= e.which *mouse-right-button-id*)
-    (setf +mouse-right-buffer+ nil))
+  (when (= e.which +mouse-left-button-id+)
+    (setf *mouse-left-buffer* nil))
+  (when (= e.which +mouse-right-button-id+)
+    (setf *mouse-right-buffer* nil))
   (call-mouse-up-callbacks (init-mouse-event e)))
 
 ;; mouse wheel
