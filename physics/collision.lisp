@@ -23,6 +23,7 @@
            :make-physic-2d
            :physic-2d-offset
            :physic-2d-bounding-box
+           :physic-2d-target-tags
 
            :physic-circle
            :make-physic-circle
