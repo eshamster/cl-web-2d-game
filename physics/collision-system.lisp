@@ -75,7 +75,7 @@
 ;; The with-ecs-components takes some time, so buffer
 ;; components before collision loop (double loop)
 (defstruct.ps+ collision-entity-info
-    entity global-point physic)
+    entity global-point physic target-entity-list)
 
 (defun.ps+ process-collision (entity1 ph1 pnt1 entity2 ph2 pnt2)
   (when (not (judge-collision-target-tags entity1 ph1 entity2 ph2))
@@ -86,6 +86,51 @@
       (funcall event1 entity1 entity2)
       (funcall event2 entity2 entity1))))
 
+;; - collision target cache - ;;
+
+;; TODO: Limit cache size
+;; ((<tag list> <target list>) ...)
+(defstruct.ps+ collision-target-cache (cache (list)))
+
+(defun.ps+ same-tag-list-p (tag-list-1 tag-list-2)
+  (let ((len1 (length tag-list-1)))
+    (unless (= len1 (length tag-list-2))
+      (return-from same-tag-list-p nil))
+    ;; Assume that same tag list has same order,
+    ;; and substance of the list is an array in JS.
+    ;; (Parenscript process both list and array in CL as array in JS)
+    ;; By the latter assumption, use index accessing.
+    (dotimes (i len1)
+      (unless (eq (nth i tag-list-1) (nth i tag-list-2))
+        (return-from same-tag-list-p nil))))
+  t)
+
+(defun.ps+ add-pair-to-cache (tag-list target-entity-list cache)
+  (push (list tag-list target-entity-list)
+        (collision-target-cache-cache cache)))
+
+(defun.ps+ find-target-pair (tag-list cache)
+  (find-if (lambda (pair)
+             (same-tag-list-p tag-list (car pair)))
+           (collision-target-cache-cache cache)))
+
+(defun.ps+ get-target-entity-info-list (entity-info all-entity-info cache)
+  (let ((tag-list (physic-2d-target-tags
+                   (collision-entity-info-physic entity-info))))
+    (let ((pair (find-target-pair tag-list cache)))
+      (when pair
+        (return-from get-target-entity-info-list (cadr pair))))
+    (let ((result (list)))
+      (dolist (info all-entity-info)
+        (with-slots-pair (((entity1 entity) (ph1 physic)) entity-info
+                          ((entity2 entity) (ph2 physic)) info)
+          (when (judge-collision-target-tags entity1 ph1 entity2 ph2)
+            (push info result))))
+      (add-pair-to-cache tag-list result cache)
+      result)))
+
+;; - system - ;;
+
 (defstruct.ps+
     (collision-system
      (:include ecs-system
@@ -94,7 +139,7 @@
                 (lambda (system)
                   (with-performance ("collision")
                     (with-slots ((entities target-entities)) system
-                      (let ((info-list '()))
+                      (let ((info-list (list)))
                         (dolist (entity entities)
                           (let ((physic (get-ecs-component 'physic-2d entity))
                                 (global-point (calc-global-point entity)))
@@ -104,19 +149,24 @@
                                    :global-point global-point
                                    :physic physic)
                                   info-list)))
+                        (let ((cache (make-collision-target-cache)))
+                          (dolist (info info-list)
+                            (setf (collision-entity-info-target-entity-list info)
+                                  (get-target-entity-info-list info info-list cache))))
                         (let ((length (length info-list)))
                           (loop for outer-idx from 0 below (1- length) do
                                (with-slots ((entity1 entity)
                                             (ph1 physic)
-                                            (pnt1 global-point))
+                                            (pnt1 global-point)
+                                            (target-info-list1 target-entity-list))
                                    (aref info-list outer-idx)
-                                 (loop for inner-idx from (1+ outer-idx) below length do
-                                      (with-slots ((entity2 entity)
-                                                   (ph2 physic)
-                                                   (pnt2 global-point))
-                                          (aref info-list inner-idx)
-                                        (process-collision entity1 ph1 pnt1
-                                                           entity2 ph2 pnt2)))))))))))
+                                 (dolist (info2 target-info-list1)
+                                   (with-slots ((entity2 entity)
+                                                (ph2 physic)
+                                                (pnt2 global-point))
+                                       info2
+                                     (process-collision entity1 ph1 pnt1
+                                                        entity2 ph2 pnt2)))))))))))
                (add-entity-hook (lambda (entity)
                                   (when *collider-model-enable*
                                     (add-collider-model entity)))))))
