@@ -8,13 +8,20 @@
            :add-panel-folder
            :add-panel-bool
            :add-panel-number
-           :add-panel-button))
+           :add-panel-button
+           :with-gui-default-folder))
 (in-package :cl-web-2d-game/inputs/gui)
 
 (enable-ps-experiment-syntax)
 
 (defvar.ps *gui-panel* nil)
 (defvar.ps *gui-panel-params* nil)
+
+(defvar.ps+ *gui-default-folder* nil)
+(defun.ps+ get-gui-default-folder ()
+  *gui-default-folder*)
+(defun.ps+ setf-gui-default-folder (folder)
+  (setf *gui-default-folder* folder))
 
 (defun.ps init-gui ()
   (setf *gui-panel* (new (#j.dat.GUI#)))
@@ -33,12 +40,21 @@
       (folder.open))
     folder))
 
-(defun.ps add-panel-bool (name init-value &key (on-change nil) (folder nil))
+(defun.ps add-panel-bool (name init-value &key (on-change nil)
+                               (folder (get-gui-default-folder)))
   (add-to-global name (if init-value t false) on-change folder))
 
-(defun.ps add-panel-number (name init-value &key (on-change nil) (folder nil) (min -100) (max -100) (step 0.1))
+(defun.ps add-panel-number (name init-value &key (on-change nil) (folder (get-gui-default-folder))
+                                 (min -100) (max -100) (step 0.1))
   (add-to-global name init-value on-change folder
                  min max step))
 
-(defun.ps add-panel-button (name &key (on-change nil) (folder nil))
+(defun.ps add-panel-button (name &key (on-change nil) (folder (get-gui-default-folder)))
   (add-to-global name on-change nil folder nil))
+
+(defmacro.ps+ with-gui-default-folder ((folder) &body body)
+  `(let ((current-folder (get-gui-default-folder)))
+     (unwind-protect
+          (progn (setf-gui-default-folder ,folder)
+                 ,@body)
+       (setf-gui-default-folder current-folder))))
