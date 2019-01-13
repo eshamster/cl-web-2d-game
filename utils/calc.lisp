@@ -22,6 +22,11 @@
            :rotatef-point-by
            :movef-vector-to-circle
 
+           :multf-vec-scalar
+           :*-vec-scalar
+           :divf-vec-scalar
+           :/-vec-scalar
+
            :transformf-point
            :calc-global-point
            :calc-local-point
@@ -210,6 +215,30 @@ coordinate of the 'entity'"
         (result (clone-point-2d global-pnt)))
     (transformf-point-inverse result base-pnt)
     result))
+
+;; --- calculation between vector and scalar --- ;;
+
+(defun.ps+ calcf-vec-scalar (vector scalar func)
+  (with-slots (x y) vector
+    (setf x (funcall func x scalar)
+          y (funcall func y scalar)))
+  vector)
+
+(defun.ps+ multf-vec-scalar (vector scalar)
+  "Destructively multiply each component of vector by scalar"
+  (calcf-vec-scalar vector scalar (lambda (a b) (* a b))))
+
+(defun.ps+ *-vec-scalar (vector scalar)
+  "Multiply each component of vector by scalar"
+  (multf-vec-scalar (clone-vector-2d vector) scalar))
+
+(defun.ps+ divf-vec-scalar (vector scalar)
+  "Destructively divide each component of vector by scalar"
+  (calcf-vec-scalar vector scalar (lambda (a b) (/ a b))))
+
+(defun.ps+ /-vec-scalar (vector scalar)
+  "Divide each component of vector by scalar"
+  (divf-vec-scalar (clone-vector-2d vector) scalar))
 
 ;; --- angle calculation functions --- ;;
 

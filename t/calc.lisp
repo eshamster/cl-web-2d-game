@@ -12,6 +12,12 @@
                 :defvar.ps+))
 (in-package :cl-web-2d-game/t/calc)
 
+;; --- utils --- ;;
+
+(defun.ps+ is-vector (got expected-x expected-y)
+  (and (within-length (vector-2d-x got) expected-x)
+       (within-length (vector-2d-y got) expected-y)))
+
 ;; --- test --- ;;
 
 (defun.ps+ easy-vector-angle (x y)
@@ -54,17 +60,13 @@
     (let ((target (make-vector-2d :x 10 :y 10))
           (diff (make-vector-2d :x 5 :y -5)))
       (incf-vector-2d target diff)
-      (ok (= (vector-2d-x target) 15))
-      (ok (= (vector-2d-y target) 5))
-      (ok (= (vector-2d-x diff) 5))
-      (ok (= (vector-2d-y diff) -5)))
+      (ok (is-vector target 15 5))
+      (ok (is-vector diff 5 -5)))
     (let ((target (make-vector-2d :x 10 :y 10))
           (diff (make-vector-2d :x 5 :y -5)))
       (decf-vector-2d target diff)
-      (ok (= (vector-2d-x target) 5))
-      (ok (= (vector-2d-y target) 15))
-      (ok (= (vector-2d-x diff) 5))
-      (ok (= (vector-2d-y diff) -5))))
+      (ok (is-vector target 5 15))
+      (ok (is-vector diff 5 -5))))
   (testing "setf-vector-2d-abs"
     (let* ((target (make-vector-2d :x 10 :y 10))
            (before-angle (vector-2d-angle target)))
@@ -112,6 +114,26 @@
         (ok (within-length (vector-2d-abs point) 5))
         (ok (within-angle (vector-2d-angle point) (* PI 2/3)))
         (ok (= (point-2d-angle point) (* PI 2/3)))))))
+
+(deftest.ps+ for-calc-vec-and-scalar-calculation
+  (testing "Multiply vector by scalar"
+    (let* ((vec (make-vector-2d :x 2 :y 3))
+           (result (multf-vec-scalar vec 4)))
+      (ok (is-vector vec 8 12))
+      (ok (is-vector result 8 12)))
+    (let* ((vec (make-vector-2d :x 2 :y 3))
+           (result (*-vec-scalar vec 4)))
+      (ok (is-vector vec 2 3))
+      (ok (is-vector result 8 12))))
+  (testing "Divide vector by scalar"
+    (let* ((vec (make-vector-2d :x 8 :y 12))
+           (result (divf-vec-scalar vec 4)))
+      (ok (is-vector vec 2 3))
+      (ok (is-vector result 2 3)))
+    (let* ((vec (make-vector-2d :x 8 :y 12))
+           (result (/-vec-scalar vec 4)))
+      (ok (is-vector vec 8 12))
+      (ok (is-vector result 2 3)))))
 
 (deftest.ps+ for-coordinate-functions
   (testing "transformf-point"
@@ -215,19 +237,16 @@
   (testing "lerp-vector-2d"
     (let ((min-vector (make-vector-2d :x 5 :y 50))
           (max-vector (make-vector-2d :x 10 :y 100)))
-      (flet ((is-vector (got expected-x expected-y)
-               (ok (within-length (vector-2d-x got) expected-x))
-               (ok (within-length (vector-2d-y got) expected-y))))
-        (is-vector (lerp-vector-2d min-vector max-vector 0)
-                   5 50)
-        (is-vector (lerp-vector-2d min-vector max-vector 1)
-                   10 100)
-        (is-vector (lerp-vector-2d min-vector max-vector 0.1)
-                   5.5 55)
-        (is-vector (lerp-vector-2d min-vector max-vector -0.1)
-                   4.5 45)
-        (is-vector (lerp-vector-2d min-vector max-vector 1.1)
-                   10.5 105)
-        (let ((temp-place (make-point-2d)))
-          (lerp-vector-2d min-vector max-vector 0.5 temp-place)
-          (is-vector temp-place 7.5 75))))))
+      (ok (is-vector (lerp-vector-2d min-vector max-vector 0)
+                     5 50))
+      (ok (is-vector (lerp-vector-2d min-vector max-vector 1)
+                     10 100))
+      (ok (is-vector (lerp-vector-2d min-vector max-vector 0.1)
+                     5.5 55))
+      (ok (is-vector (lerp-vector-2d min-vector max-vector -0.1)
+                     4.5 45))
+      (ok (is-vector (lerp-vector-2d min-vector max-vector 1.1)
+                     10.5 105))
+      (let ((temp-place (make-point-2d)))
+        (lerp-vector-2d min-vector max-vector 0.5 temp-place)
+        (ok (is-vector temp-place 7.5 75))))))
