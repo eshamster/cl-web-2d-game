@@ -113,7 +113,31 @@
         (movef-vector-to-circle point 5 (* PI 2/3))
         (ok (within-length (vector-2d-abs point) 5))
         (ok (within-angle (vector-2d-angle point) (* PI 2/3)))
-        (ok (= (point-2d-angle point) (* PI 2/3)))))))
+        (ok (= (point-2d-angle point) (* PI 2/3))))))
+  (testing "truncation"
+    (testing "Truncate if the length exceeds"
+      (let* ((vec (make-vector-2d :x 3 :y 4))
+             (result (truncatef-vector-2d vec 2)))
+        (ok (within-length (vector-2d-abs vec) 2))
+        (ok (within-length (vector-2d-abs result) 2)))
+      (let* ((vec (make-vector-2d :x 3 :y 4))
+             (result (truncate-vector-2d vec 2)))
+        (ok (within-length (vector-2d-abs vec) 5))
+        (ok (within-length (vector-2d-abs result) 2))))
+    (testing "Don't truncate if the length doesn't exceed"
+      (let* ((vec (make-vector-2d :x 3 :y 4))
+             (result (truncatef-vector-2d vec 10)))
+        (ok (within-length (vector-2d-abs vec) 5))
+        (ok (within-length (vector-2d-abs result) 5)))
+      (let* ((vec (make-vector-2d :x 3 :y 4))
+             (result (truncate-vector-2d vec 10)))
+        (ok (within-length (vector-2d-abs vec) 5))
+        (ok (within-length (vector-2d-abs result) 5))
+        ;; check cloning
+        (setf (vector-2d-x vec) 100
+              (vector-2d-x result) 1)
+        (ok (= (vector-2d-x vec) 100))
+        (ok (= (vector-2d-x result) 1))))))
 
 (deftest.ps+ for-calc-vec-and-scalar-calculation
   (testing "Multiply vector by scalar"
