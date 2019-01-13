@@ -27,6 +27,9 @@
            :divf-vec-scalar
            :/-vec-scalar
 
+           :truncatef-vector-2d
+           :truncate-vector-2d
+
            :transformf-point
            :calc-global-point
            :calc-local-point
@@ -239,6 +242,18 @@ coordinate of the 'entity'"
 (defun.ps+ /-vec-scalar (vector scalar)
   "Divide each component of vector by scalar"
   (divf-vec-scalar (clone-vector-2d vector) scalar))
+
+;; --- truncation --- ;;
+
+(defun.ps+ truncatef-vector-2d (vec max-length)
+  "Destructively truncate vector length to max-length or less"
+  (when (> (vector-2d-abs vec) max-length)
+    (setf-vector-2d-abs vec max-length))
+  vec)
+
+(defun.ps+ truncate-vector-2d (vec max-length)
+  "Truncate vector length to max-length or less"
+  (truncatef-vector-2d (clone-vector-2d vec) max-length))
 
 ;; --- angle calculation functions --- ;;
 
