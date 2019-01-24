@@ -13,6 +13,8 @@
            :vector-2d-angle
            :setf-vector-2d-abs
            :setf-vector-2d-angle
+           :add-vector-2d
+           :sub-vector-2d
            :incf-vector-2d
            :decf-vector-2d
            :calc-inner-product
@@ -51,7 +53,8 @@
            :setf-vector-abs
            :setf-vector-angle
            :incf-vector
-           :decf-vector))
+           :decf-vector
+           :add-vector-2d))
 (in-package :cl-web-2d-game/utils/calc)
 
 (enable-ps-experiment-syntax)
@@ -97,18 +100,38 @@ The angle of the vector (1, 0) is 0 and the rotation is counterclockwize."
 (def-obsoleted-alias.ps+ setf-vector-angle setf-vector-2d-angle)
 
 (defun.ps+ incf-vector-2d (target-vec diff-vec)
+  "Destructively increase vector"
   (incf (vector-2d-x target-vec) (vector-2d-x diff-vec))
   (incf (vector-2d-y target-vec) (vector-2d-y diff-vec))
   target-vec)
 
 (def-obsoleted-alias.ps+ incf-vector incf-vector-2d)
 
+;; Note: Prefer "+-vecotr-2d" but it is converted to "vector2d" by ps:ps...
+(defun.ps+ add-vector-2d (&rest vectors)
+  (if (= (length vectors) 0)
+      (make-vector-2d)
+      (let ((result (clone-vector-2d (car vectors))))
+        (dolist (vec (cdr vectors))
+          (incf-vector-2d result vec))
+        result)))
+
 (defun.ps+ decf-vector-2d (target-vec diff-vec)
+  "Destructively decrease vector"
   (decf (vector-2d-x target-vec) (vector-2d-x diff-vec))
   (decf (vector-2d-y target-vec) (vector-2d-y diff-vec))
   target-vec)
 
 (def-obsoleted-alias.ps+ decf-vector decf-vector-2d)
+
+;; Note: Prefer "--vecotr-2d" but it is converted to "vector2d" by ps:ps...
+(defun.ps+ sub-vector-2d (&rest vectors)
+  (if (= (length vectors) 0)
+      (make-vector-2d)
+      (let ((result (clone-vector-2d (car vectors))))
+        (dolist (vec (cdr vectors))
+          (decf-vector-2d result vec))
+        result)))
 
 (defun.ps+ calc-inner-product (vec1 vec2)
   (+ (* (vector-2d-x vec1) (vector-2d-x vec2))

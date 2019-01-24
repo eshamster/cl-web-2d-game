@@ -56,17 +56,44 @@
            -15))))
 
 (deftest.ps+ for-vector-modification
-  (testing "Test incf-vector-2d and dicf-vector"
-    (let ((target (make-vector-2d :x 10 :y 10))
-          (diff (make-vector-2d :x 5 :y -5)))
-      (incf-vector-2d target diff)
-      (ok (is-vector target 15 5))
-      (ok (is-vector diff 5 -5)))
-    (let ((target (make-vector-2d :x 10 :y 10))
-          (diff (make-vector-2d :x 5 :y -5)))
-      (decf-vector-2d target diff)
-      (ok (is-vector target 5 15))
-      (ok (is-vector diff 5 -5))))
+  (testing "Test adding vector-2d"
+    (testing "add-vector-2d"
+      (let* ((target (make-vector-2d :x 10 :y 10))
+             (diff (make-vector-2d :x 5 :y -5))
+             (result (add-vector-2d target diff)))
+        (ok (is-vector result 15 5))
+        (ok (is-vector target 10 10))
+        (ok (is-vector diff 5 -5)))
+      (ok (is-vector (add-vector-2d) 0 0))
+      (ok (is-vector (add-vector-2d (make-vector-2d :x 1 :y 10)
+                                    (make-vector-2d :x 2 :y 20)
+                                    (make-vector-2d :x 3 :y 30))
+                     6 60)))
+    (testing "incf-vector-2d"
+      (let ((target (make-vector-2d :x 10 :y 10))
+            (diff (make-vector-2d :x 5 :y -5)))
+        (incf-vector-2d target diff)
+        (ok (is-vector target 15 5))
+        (ok (is-vector diff 5 -5)))))
+  (testing "Test substructing vector-2d"
+    (testing "sub-vector-2d"
+      (let* ((target (make-vector-2d :x 10 :y 10))
+             (diff (make-vector-2d :x 5 :y -5))
+             (result (sub-vector-2d target diff)))
+        (ok (is-vector result 5 15))
+        (ok (is-vector target 10 10))
+        (ok (is-vector diff 5 -5)))
+      (ok (is-vector (sub-vector-2d) 0 0))
+      (ok (is-vector (sub-vector-2d (make-vector-2d :x 1 :y 10)
+                                          (make-vector-2d :x 2 :y 20)
+                                          (make-vector-2d :x 3 :y 30))
+                     -4 -40)))
+    (testing "decf-vector-2d"
+      (let ((target (make-vector-2d :x 10 :y 10))
+            (diff (make-vector-2d :x 5 :y -5)))
+        (decf-vector-2d target diff)
+        (ok (is-vector target 5 15))
+        (ok (is-vector diff 5 -5)))))
   (testing "setf-vector-2d-abs"
     (let* ((target (make-vector-2d :x 10 :y 10))
            (before-angle (vector-2d-angle target)))
