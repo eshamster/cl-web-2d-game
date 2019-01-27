@@ -196,6 +196,15 @@
       (ok (is-point target 2 0 (* PI -1/4)))
       ;; check the base is not changed
       (ok (is-point base 1 (sqrt 3) (* PI -1/2)))))
+  (testing "transformf-point-inverse"
+    ;; Note: (0, 0), (1, (sqrt 3)), (2, 0) are points of a regular triangle.
+    (let ((base (make-point-2d :x 1 :y (sqrt 3) :angle (* PI -1/2)))
+          (target (make-point-2d :x 2 :y 0 :angle (* PI -1/4))))
+      (transformf-point-inverse target base)
+      ;; check the target is transformed
+      (ok (is-point target (sqrt 3) 1 (* PI 1/4)))
+      ;; check the base is not changed
+      (ok (is-point base 1 (sqrt 3) (* PI -1/2)))))
   (testing "calc-global-point and calc-local-point"
     (let ((grand-parent (make-ecs-entity))
           (parent (make-ecs-entity))

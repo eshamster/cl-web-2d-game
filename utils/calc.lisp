@@ -33,6 +33,7 @@
            :truncate-vector-2d
 
            :transformf-point
+           :transformf-point-inverse
            :calc-global-point
            :calc-local-point
 
@@ -198,7 +199,7 @@ rotation."
   target)
 
 (defun.ps+ transformf-point-inverse (target base)
-  "Rever the transform of the \"transformf-point\"."
+  "Reverse the transform of the \"transformf-point\"."
   (decf (point-2d-angle target) (point-2d-angle base))
   (with-slots-pair (((place-x x) (place-y y)) target
                     (x y angle) base)
