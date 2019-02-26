@@ -24,8 +24,9 @@
      (:include ecs-system
                (target-component-types '(script-2d))
                (process (lambda (entity)
-                          (with-ecs-components (script-2d) entity
-                            (funcall (script-2d-func script-2d) entity)))))))
+                          (do-ecs-components-of-entity (script entity
+                                                               :component-type 'script-2d)
+                            (funcall (script-2d-func script) entity)))))))
 
 (defstruct.ps+
     (animation-system
