@@ -5,6 +5,7 @@
         :ps-experiment
         :cl-ps-ecs)
   (:export :init-gui
+           :clear-gui-panel
            :add-panel-folder
            :add-panel-bool
            :add-panel-number
@@ -27,7 +28,11 @@
   (setf *gui-panel* (new (#j.dat.GUI#)))
   (setf *gui-panel-params* (make-hash-table)))
 
-(defmacro.ps add-to-global (name init-value on-change folder &rest args)
+(defun.ps clear-gui-panel ()
+  (*gui-panel*.destroy)
+  (init-gui))
+
+(defmacro.ps+ add-to-global (name init-value on-change folder &rest args)
   `(progn (setf (gethash ,name *gui-panel-params*) ,init-value)
           ,(append `(-- ((@ (if ,folder ,folder *gui-panel*) add)
                          *gui-panel-params* ,name ,@args))
