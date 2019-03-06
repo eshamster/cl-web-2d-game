@@ -78,6 +78,8 @@
     entity global-point physic target-entity-list)
 
 (defun.ps+ process-collision (entity1 ph1 pnt1 entity2 ph2 pnt2)
+  (when (eq entity1 entity2)
+    (return-from process-collision))
   (when (not (judge-collision-target-tags entity1 ph1 entity2 ph2))
     (return-from process-collision))
   (when (collide-physics-p ph1 pnt1 ph2 pnt2)
