@@ -131,6 +131,16 @@
       (add-pair-to-cache tag-list result cache)
       result)))
 
+(defun.ps+ init-target-list-of-info-list (info-list)
+  (let ((cache (make-collision-target-cache)))
+    (labels ((rec (info rest)
+               ;; Note: An empty list is not "false" in JS.
+               (when (> (length rest)0)
+                 (setf (collision-entity-info-target-entity-list info)
+                       (get-target-entity-info-list info rest cache))
+                 (rec (car rest) (cdr rest)))))
+      (rec (car info-list) (cdr info-list)))))
+
 ;; - system - ;;
 
 (defstruct.ps+
@@ -151,17 +161,14 @@
                                    :global-point global-point
                                    :physic physic)
                                   info-list)))
-                        (let ((cache (make-collision-target-cache)))
-                          (dolist (info info-list)
-                            (setf (collision-entity-info-target-entity-list info)
-                                  (get-target-entity-info-list info info-list cache))))
+                        (init-target-list-of-info-list info-list)
                         (let ((length (length info-list)))
                           (loop for outer-idx from 0 below (1- length) do
                                (with-slots ((entity1 entity)
                                             (ph1 physic)
                                             (pnt1 global-point)
                                             (target-info-list1 target-entity-list))
-                                   (aref info-list outer-idx)
+                                   (nth outer-idx info-list)
                                  (dolist (info2 target-info-list1)
                                    (with-slots ((entity2 entity)
                                                 (ph2 physic)

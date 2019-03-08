@@ -49,5 +49,6 @@
                "cl-web-2d-game/t/game-state"
                "cl-web-2d-game/t/basic-components"
                "cl-web-2d-game/t/calc"
-               "cl-web-2d-game/t/collision")
+               "cl-web-2d-game/t/collision"
+               "cl-web-2d-game/t/collision-system")
   :perform (test-op (o c) (symbol-call :rove '#:run c)))
