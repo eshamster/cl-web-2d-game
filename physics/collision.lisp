@@ -24,6 +24,7 @@
            :physic-2d-offset
            :physic-2d-bounding-box
            :physic-2d-target-tags
+           :on-collision
 
            :physic-circle
            :make-physic-circle
