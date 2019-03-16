@@ -32,7 +32,8 @@
     model
   (depth 0)
   (offset (make-point-2d))
-  (enable nil))
+  (state :invalid) ; :invalid, :enable, :disable
+  )
 
 (defmacro.ps model-2d-geometry (model)
   `(progn (check-type ,model model-2d)
@@ -50,11 +51,10 @@
                (target-component-types '(point-2d model-2d))
                (process (lambda (entity)
                           (with-ecs-components (point-2d) entity
-                            (do-ecs-components-of-entity (modelc entity
-                                                                 :component-type model-2d)
-
-                              (let ((new-pos (calc-global-point entity
-                                                                (model-2d-offset modelc))))
+                            (do-ecs-components-of-entity
+                                (modelc entity :component-type model-2d)
+                              (let ((new-pos (calc-global-point
+                                              entity (model-2d-offset modelc))))
                                 (with-slots (model) modelc
                                   (model.position.set
                                    (point-2d-x new-pos)
@@ -64,27 +64,45 @@
 
 (defvar.ps+ *scene-for-draw-system* nil)
 
-;; TODO: Don't enabel if the entity is not registered in the draw-model-system.
-(defun.ps enable-model-2d (entity &key target-model-2d)
+(defun.ps enable-model-2d-if-state (entity target-state &key target-model-2d)
   ;; TODO: Check the entity has the target-model-2d if not nil
   (unless *scene-for-draw-system*
     (error "The scene for the draw system is not initialized"))
   (flet ((enable (target)
-           (with-slots (model enable) target
-             (unless enable
+           (with-slots (model state) target
+             (when (eq state target-state)
                (*scene-for-draw-system*.add model)
-               (setf enable t)))))
+               (setf state :enable)))))
     (if target-model-2d
         (enable target-model-2d)
-        (do-ecs-components-of-entity (modelc entity
-                                             :component-type model-2d)
+        (do-ecs-components-of-entity
+            (modelc entity :component-type model-2d)
           (enable modelc)))))
 
-(defun.ps disable-model-2d-if-required (target)
-  (with-slots (model enable) target
-    (when enable
+
+(defun.ps enable-model-2d (entity &key target-model-2d)
+  (enable-model-2d-if-state entity :disable
+                            :target-model-2d target-model-2d))
+
+(defun.ps enable-invalidated-model-2d (entity &key target-model-2d)
+  (enable-model-2d-if-state entity :invalid
+                            :target-model-2d target-model-2d))
+
+(defun.ps disable-model-2d-if-required (target-model-2d)
+  (with-slots (model state) target-model-2d
+    (when (eq state :enable)
       (*scene-for-draw-system*.remove model)
-      (setf enable nil))))
+      (setf state :disable))))
+
+(defun.ps invalidate-model-2d (target-model-2d)
+  (disable-model-2d-if-required target-model-2d)
+  (with-slots (state) target-model-2d
+    (setf state :invalid)))
+
+(defun.ps invalidate-all-model-2d (entity)
+  (do-ecs-components-of-entity
+      (model entity :component-type model-2d)
+    (invalidate-model-2d model)))
 
 (defun.ps+ disable-model-2d (entity &key target-model-2d)
   ;; TODO: Check the entity has the target-model-2d if not nil
@@ -92,14 +110,14 @@
     (error "The scene for the draw system is not initialized"))
   (if target-model-2d
       (disable-model-2d-if-required target-model-2d)
-      (do-ecs-components-of-entity (modelc entity
-                                           :component-type 'model-2d)
+      (do-ecs-components-of-entity
+          (modelc entity :component-type 'model-2d)
         (disable-model-2d-if-required modelc))))
 
 (defun.ps+ init-draw-model-system (scene)
   (setf *scene-for-draw-system* scene)
-  (add-delete-component-hook (lambda (target)
-                               (disable-model-2d-if-required target)))
+  (add-delete-component-hook
+   (lambda (target) (invalidate-model-2d target)))
   (make-draw-model-system
-   :add-entity-hook #'enable-model-2d
-   :delete-entity-hook #'disable-model-2d))
+   :add-entity-hook #'enable-invalidated-model-2d
+   :delete-entity-hook #'invalidate-all-model-2d))

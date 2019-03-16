@@ -63,9 +63,3 @@
   (testing "errors"
     (ok (signals (init-entity-params :x 0 :without-value)
                  'simple-error))))
-
-
-;; TODO: Test script system.
-;;    :script-2d
-;;    :script-2d-func
-;;    :make-script-system
