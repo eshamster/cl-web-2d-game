@@ -51,11 +51,10 @@
                (target-component-types '(point-2d model-2d))
                (process (lambda (entity)
                           (with-ecs-components (point-2d) entity
-                            (do-ecs-components-of-entity (modelc entity
-                                                                 :component-type model-2d)
-
-                              (let ((new-pos (calc-global-point entity
-                                                                (model-2d-offset modelc))))
+                            (do-ecs-components-of-entity
+                                (modelc entity :component-type model-2d)
+                              (let ((new-pos (calc-global-point
+                                              entity (model-2d-offset modelc))))
                                 (with-slots (model) modelc
                                   (model.position.set
                                    (point-2d-x new-pos)
@@ -76,8 +75,8 @@
                (setf state :enable)))))
     (if target-model-2d
         (enable target-model-2d)
-        (do-ecs-components-of-entity (modelc entity
-                                             :component-type model-2d)
+        (do-ecs-components-of-entity
+            (modelc entity :component-type model-2d)
           (enable modelc)))))
 
 
@@ -111,14 +110,14 @@
     (error "The scene for the draw system is not initialized"))
   (if target-model-2d
       (disable-model-2d-if-required target-model-2d)
-      (do-ecs-components-of-entity (modelc entity
-                                           :component-type 'model-2d)
+      (do-ecs-components-of-entity
+          (modelc entity :component-type 'model-2d)
         (disable-model-2d-if-required modelc))))
 
 (defun.ps+ init-draw-model-system (scene)
   (setf *scene-for-draw-system* scene)
-  (add-delete-component-hook (lambda (target)
-                               (invalidate-model-2d target)))
+  (add-delete-component-hook
+   (lambda (target) (invalidate-model-2d target)))
   (make-draw-model-system
    :add-entity-hook #'enable-invalidated-model-2d
    :delete-entity-hook #'invalidate-all-model-2d))
