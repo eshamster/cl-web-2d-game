@@ -23,6 +23,7 @@
            :enable-model-2d
            :disable-model-2d
            :init-draw-model-system
+           :update-model-2d
            :find-model-2d-by-label))
 (in-package :cl-web-2d-game/graphics/draw-model-system)
 
@@ -115,6 +116,11 @@
       (do-ecs-components-of-entity
           (modelc entity :component-type 'model-2d)
         (disable-model-2d-if-required modelc))))
+
+(defun.ps+ update-model-2d (entity old-model new-model)
+  "Update old-model by new-model."
+  (delete-ecs-component old-model entity)
+  (add-ecs-component new-model entity))
 
 (defun.ps+ find-model-2d-by-label (entity label)
   (do-ecs-components-of-entity
