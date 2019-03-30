@@ -89,6 +89,25 @@
              (make-test-polygon 2) (make-point-2d)
              (make-test-polygon 2) (make-point-2d :y dist :angle (/ PI 6))))))))
 
+;; Note: make-physic-rect is a syntax sugar of make-physic-polygon.
+;;       So do only few test.
+(deftest.ps+ rect
+  (testing "Should collide"
+    (ok (collide-physics-p
+         (make-physic-rect :x 0 :y 0 :width 10 :height 20) (make-point-2d)
+         (make-physic-rect :x 5 :y 5 :width 20 :height 10) (make-point-2d))))
+  (testing "Shouldn't collide"
+    (ng (collide-physics-p
+         (make-physic-rect :x 0 :y 0 :width 10 :height 20) (make-point-2d)
+         (make-physic-rect :x 50 :y 50 :width 20 :height 10) (make-point-2d))))
+  (testing "Check other-keys (Cf. &allow-other-keys)"
+    (let* ((rect (make-physic-rect :x 0 :y 0 :width 1 :height 1
+                                   :target-tags '(:a :b)))
+           (tags (physic-2d-target-tags rect)))
+      (ok (find :a tags))
+      (ok (find :b tags))
+      (ng (find :not-exist tags)))))
+
 (import 'cl-web-2d-game/physics/collision::col-two-bounding-box-p)
 
 (deftest.ps+ for-bounding-box-2d
