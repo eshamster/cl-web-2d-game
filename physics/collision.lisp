@@ -33,6 +33,7 @@
            :physic-polygon
            :make-physic-polygon
            :physic-polygon-pnt-list
+           :make-physic-rect
 
            :update-bounding-box
            :judge-collision-target-tags))
@@ -60,6 +61,17 @@ Note: col-xx-vec takes 'point' and 'offset' for each physic. The 'point' means a
 
 (defstruct.ps+ (physic-polygon (:include physic-2d (kind :polygon)))
   (pnt-list '()))
+
+(defun.ps+ make-physic-rect (&rest rest &key (x 0) (y 0) (width 0) (height 0) &allow-other-keys)
+  (dolist (key (list :x :y :width :height))
+    (remf rest key))
+  (let ((pnt-list (list (make-point-2d :x x           :y y)
+                        (make-point-2d :x (+ x width) :y y)
+                        (make-point-2d :x (+ x width) :y (+ y height))
+                        (make-point-2d :x x           :y (+ y height)))))
+    (apply #'make-physic-polygon
+           (list* :pnt-list pnt-list
+                  rest))))
 
 ;; --- basic funcions --- ;;
 
