@@ -225,7 +225,20 @@
       (let* ((offset (make-point-2d :x 0 :y 1 :angle (* PI -1/2)))
              (result (calc-global-point child offset)))
         (ok (is-point result 0 0 (* PI -2)))
-        (ok (is-point offset 0 1 (* PI -1/2)))))))
+        (ok (is-point offset 0 1 (* PI -1/2))))))
+  (testing "with-global-point"
+    (let ((parent (make-ecs-entity))
+          (child (make-ecs-entity)))
+      (add-ecs-component (make-point-2d :x 1 :y 2)
+                         parent)
+      (add-ecs-component (make-point-2d :x 2 :y 4)
+                         child)
+      (setf (ecs-entity-parent child) parent)
+      (with-global-point (point child)
+        (ok (is-point point 3 6 0))
+        (setf (point-2d-x point) 50))
+      (ok (is-point (get-ecs-component 'point-2d child)
+                    49 4 0)))))
 
 (deftest.ps+ for-point-to-point-distance
   (testing "calc-dist"

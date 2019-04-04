@@ -36,6 +36,7 @@
            :transformf-point-inverse
            :calc-global-point
            :calc-local-point
+           :with-global-point
 
            :diff-angle
 
@@ -243,6 +244,17 @@ coordinate of the 'entity'"
         (result (clone-point-2d global-pnt)))
     (transformf-point-inverse result base-pnt)
     result))
+
+(defmacro.ps+ with-global-point ((var entity) &body body)
+  "The entiti'es global point is bound to the var.
+After the body is evaluated, the entiti'es local point is updated by the var."
+  (let ((g-entity (gensym)))
+    `(let* ((,g-entity ,entity)
+            (,var (calc-global-point ,g-entity)))
+       (unwind-protect
+            (progn ,@body)
+         (copy-point-2d-to (get-ecs-component 'point-2d ,g-entity)
+                           (calc-local-point ,g-entity ,var))))))
 
 ;; --- calculation between vector and scalar --- ;;
 
