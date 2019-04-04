@@ -36,6 +36,7 @@
            :transformf-point-inverse
            :calc-global-point
            :calc-local-point
+           :with-global-point
 
            :diff-angle
 
@@ -45,6 +46,7 @@
            :calc-dist-to-line-seg
 
            :adjust-to-target
+           :rotate-to-target-angle
            :lerp-scalar
            :lerp-vector-2d
 
@@ -243,6 +245,17 @@ coordinate of the 'entity'"
     (transformf-point-inverse result base-pnt)
     result))
 
+(defmacro.ps+ with-global-point ((var entity) &body body)
+  "The entiti'es global point is bound to the var.
+After the body is evaluated, the entiti'es local point is updated by the var."
+  (let ((g-entity (gensym)))
+    `(let* ((,g-entity ,entity)
+            (,var (calc-global-point ,g-entity)))
+       (unwind-protect
+            (progn ,@body)
+         (copy-point-2d-to (get-ecs-component 'point-2d ,g-entity)
+                           (calc-local-point ,g-entity ,var))))))
+
 ;; --- calculation between vector and scalar --- ;;
 
 (defun.ps+ calcf-vec-scalar (vector scalar func)
@@ -360,6 +373,15 @@ line-pnt1 and line-pnt2."
         (if (> diff 0)
             (+ now-value max-diff)
             (- now-value max-diff)))))
+
+(defun.ps+ rotate-to-target-angle (now-angle target-angle max-diff)
+  "Rotate now-angle closer to taret-angle. But the max difference from now-angle is limited by max-diff."
+  (unless (> max-diff 0)
+    (error "The 'max-diff' parameter should be a positive number."))
+  (let ((diff (diff-angle now-angle target-angle)))
+    (cond ((<= (abs diff) max-diff) target-angle)
+          ((> diff 0) (decf now-angle max-diff))
+          (t (incf now-angle max-diff)))))
 
 (defun.ps+ lerp-scalar (min-value max-value alpha)
   "Linear interpolation function for scalars. alpha = 0 -> min-value, alpha = 1 -> max-value"
