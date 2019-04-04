@@ -282,6 +282,19 @@
     (ok (= (adjust-to-target 8 -1 2) 6))
     (ok (= (adjust-to-target 1 -1 2) -1))
     (ok (signals (adjust-to-target 1 -1 -1) 'simple-error)))
+  (testing "rotate-to-target-angle"
+    (flet ((test (now target diff expected)
+             ;; To omit (* PI )
+             (ok (within-angle (rotate-to-target-angle
+                                (* PI now) (* PI target) (* PI diff))
+                               (* PI expected)))))
+      (test 3/6 5/6 1/6 4/6)
+      (test 3/6 17/6 1/6 4/6)
+      (test 3/6 1/6 1/6 2/6)
+      (test 3/6 1/6 1 1/6)
+      (test 3/6 5/6 1 5/6)
+      (ok (signals (rotate-to-target-angle 1 -1 -1)
+                   'simple-error))))
   (testing "lerp-scalar"
     (let ((tolerance 0.0001))
       (ok (within (lerp-scalar 5 10 0)

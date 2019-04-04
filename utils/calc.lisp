@@ -45,6 +45,7 @@
            :calc-dist-to-line-seg
 
            :adjust-to-target
+           :rotate-to-target-angle
            :lerp-scalar
            :lerp-vector-2d
 
@@ -360,6 +361,15 @@ line-pnt1 and line-pnt2."
         (if (> diff 0)
             (+ now-value max-diff)
             (- now-value max-diff)))))
+
+(defun.ps+ rotate-to-target-angle (now-angle target-angle max-diff)
+  "Rotate now-angle closer to taret-angle. But the max difference from now-angle is limited by max-diff."
+  (unless (> max-diff 0)
+    (error "The 'max-diff' parameter should be a positive number."))
+  (let ((diff (diff-angle now-angle target-angle)))
+    (cond ((<= (abs diff) max-diff) target-angle)
+          ((> diff 0) (decf now-angle max-diff))
+          (t (incf now-angle max-diff)))))
 
 (defun.ps+ lerp-scalar (min-value max-value alpha)
   "Linear interpolation function for scalars. alpha = 0 -> min-value, alpha = 1 -> max-value"
