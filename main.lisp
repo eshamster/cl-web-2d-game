@@ -36,5 +36,6 @@
                  :cl-web-2d-game/utils/debug/performance
                  :cl-web-2d-game/utils/debug/logger
                  :cl-web-2d-game/utils/debug/debug-drawer
+                 :cl-web-2d-game/utils/stage-generator
                  :cl-web-2d-game/utils/storage))
 (in-package :cl-web-2d-game/main)
