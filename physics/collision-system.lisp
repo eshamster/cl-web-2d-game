@@ -49,21 +49,25 @@
                                             (physic-polygon-pnt-list physic-2d)))))))))
 
 (defun.ps+ add-collider-model (entity)
-  ;; TODO: Avoid duplicated addition
   (register-next-frame-func
    (lambda ()
      (with-ecs-components (physic-2d) entity
-       (add-ecs-component (generate-collider-model physic-2d) entity
-                          physic-2d)))))
+       (unless (find-collider-model physic-2d)
+         (add-ecs-component (generate-collider-model physic-2d) entity
+                            physic-2d))))))
+
+(defun.ps+ find-collider-model (physic)
+  "Find collider model that should be added as a child of physic"
+  (find-a-component (lambda (target) (typep target 'model-2d))
+                    physic))
 
 (defun.ps+ setf-collider-model-enable (value)
   (unless (eq value *collider-model-enable*)
     (setf *collider-model-enable* value)
     (do-ecs-entities entity
-      (do-ecs-components-of-entity (comp entity
-                                         :component-type 'physic-2d)
-        (let ((model (find-a-component (lambda (target) (typep target 'model-2d))
-                                       comp)))
+      (do-ecs-components-of-entity (physic entity
+                                           :component-type 'physic-2d)
+        (let ((model (find-collider-model physic)))
           (if model
               (if value
                   (enable-model-2d entity :target-model-2d model)
