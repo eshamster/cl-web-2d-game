@@ -15,7 +15,9 @@
                 :with-slots-pair)
   (:export :collision-system
            :make-collision-system
-           :setf-collider-model-enable))
+           :setf-collider-model-enable
+           :setf-collider-model-depth
+           :setf-collider-model-color))
 (in-package :cl-web-2d-game/physics/collision-system)
 
 (enable-ps-experiment-syntax)
@@ -47,21 +49,25 @@
                                             (physic-polygon-pnt-list physic-2d)))))))))
 
 (defun.ps+ add-collider-model (entity)
-  ;; TODO: Avoid duplicated addition
   (register-next-frame-func
    (lambda ()
      (with-ecs-components (physic-2d) entity
-       (add-ecs-component (generate-collider-model physic-2d) entity
-                          physic-2d)))))
+       (unless (find-collider-model physic-2d)
+         (add-ecs-component (generate-collider-model physic-2d) entity
+                            physic-2d))))))
+
+(defun.ps+ find-collider-model (physic)
+  "Find collider model that should be added as a child of physic"
+  (find-a-component (lambda (target) (typep target 'model-2d))
+                    physic))
 
 (defun.ps+ setf-collider-model-enable (value)
   (unless (eq value *collider-model-enable*)
     (setf *collider-model-enable* value)
     (do-ecs-entities entity
-      (do-ecs-components-of-entity (comp entity
-                                         :component-type 'physic-2d)
-        (let ((model (find-a-component (lambda (target) (typep target 'model-2d))
-                                       comp)))
+      (do-ecs-components-of-entity (physic entity
+                                           :component-type 'physic-2d)
+        (let ((model (find-collider-model physic)))
           (if model
               (if value
                   (enable-model-2d entity :target-model-2d model)
@@ -69,6 +75,12 @@
               (when value
                 (add-collider-model entity))))))
     t))
+
+(defun.ps+ setf-collider-model-depth (value)
+  (setf *collider-model-depth* value))
+
+(defun.ps+ setf-collider-model-color (value)
+  (setf *collider-model-color* value))
 
 ;; --- collision --- ;;
 
