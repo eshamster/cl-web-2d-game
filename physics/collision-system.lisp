@@ -15,7 +15,9 @@
                 :with-slots-pair)
   (:export :collision-system
            :make-collision-system
-           :setf-collider-model-enable))
+           :setf-collider-model-enable
+           :setf-collider-model-depth
+           :setf-collider-model-color))
 (in-package :cl-web-2d-game/physics/collision-system)
 
 (enable-ps-experiment-syntax)
@@ -69,6 +71,12 @@
               (when value
                 (add-collider-model entity))))))
     t))
+
+(defun.ps+ setf-collider-model-depth (value)
+  (setf *collider-model-depth* value))
+
+(defun.ps+ setf-collider-model-color (value)
+  (setf *collider-model-color* value))
 
 ;; --- collision --- ;;
 
