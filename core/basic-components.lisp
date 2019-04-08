@@ -111,6 +111,10 @@
     (setf (gethash key (params-table params))
           new-value)))
 
+(defsetf.ps+ get-entity-param
+    (entity key) (new-value)
+    `(set-entity-param ,entity ,key ,new-value))
+
 (defmacro.ps+ aset-entity-param (entity key new-value)
   "Anapholic set-entity-param"
   `(let ((,(intern "IT" *package*) (get-entity-param ,entity ,key)))
