@@ -59,7 +59,14 @@
       (set-entity-param entity :test-param1 200)
       (ok (= (get-entity-param entity :test-param1) 200))
       (aset-entity-param entity :test-param1 (+ it 100))
-      (ok (= (get-entity-param entity :test-param1) 300))))
+      (ok (= (get-entity-param entity :test-param1) 300)))
+    (testing "setf get-entity-param"
+      (let ((entity (make-ecs-entity)))
+        (add-ecs-component (init-entity-params :test 100)
+                           entity)
+        (ok (= (get-entity-param entity :test) 100))
+        (ok (setf (get-entity-param entity :test) 200) 200)
+        (ok (= (get-entity-param entity :test) 200)))))
   (testing "errors"
     (ok (signals (init-entity-params :x 0 :without-value)
                  'simple-error))))
