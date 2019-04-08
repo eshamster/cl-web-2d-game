@@ -53,11 +53,15 @@
            :set-entity-param
            :aset-entity-param
            :init-entity-params
+           :with-entity-param
 
            :copy-vector-2d-to
            :clone-vector-2d
            :copy-point-2d-to
-           :clone-point-2d))
+           :clone-point-2d)
+  (:import-from :alexandria
+                :with-gensyms
+                :make-keyword))
 (in-package :cl-web-2d-game/core/basic-components)
 
 (enable-ps-experiment-syntax)
@@ -114,6 +118,17 @@
 (defsetf.ps+ get-entity-param
     (entity key) (new-value)
     `(set-entity-param ,entity ,key ,new-value))
+
+(defmacro.ps+ with-entity-param ((&rest vars) entity &body body)
+  (with-gensyms (g-entity)
+    `(let ((,g-entity ,entity))
+       (symbol-macrolet
+           ,(mapcar (lambda (var)
+                      (if (atom var)
+                          `(,var (get-entity-param ,g-entity ,(make-keyword var)))
+                          `(,(car var) (get-entity-param ,g-entity ,(make-keyword (cadr var))))))
+                    vars)
+         ,@body))))
 
 (defmacro.ps+ aset-entity-param (entity key new-value)
   "Anapholic set-entity-param"
