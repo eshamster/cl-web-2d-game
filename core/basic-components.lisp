@@ -106,13 +106,21 @@
   (with-ecs-components (params) entity
     (gethash key (params-table params))))
 
-(defun.ps+ set-entity-param (entity key new-value)
-  (let ((params (get-ecs-component 'params entity)))
+(defun.ps+ set-entity-param (entity &rest key-value-pair)
+  (let ((params (get-ecs-component 'params entity))
+        (len (length key-value-pair)))
+    (assert (= (mod len 2) 0))
     (unless params
       (setf params (make-params))
       (add-ecs-component params entity))
-    (setf (gethash key (params-table params))
-          new-value)))
+    ;; Note: Recursive style is better performance than "nth" style in CL.
+    ;;       But it is opposite in JS...
+    (loop :for i :from 0 :below (/ len 2) :do
+       (let ((key (nth (* i 2) key-value-pair))
+             (value (nth (1+ (* i 2)) key-value-pair)))
+         (setf (gethash key (params-table params))
+               value)))
+    (nth (1- len) key-value-pair)))
 
 (defsetf.ps+ get-entity-param
     (entity key) (new-value)
