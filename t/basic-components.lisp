@@ -60,6 +60,17 @@
       (ok (= (get-entity-param entity :test-param1) 200))
       (aset-entity-param entity :test-param1 (+ it 100))
       (ok (= (get-entity-param entity :test-param1) 300)))
+    (testing "set to entity that has no params"
+      (let ((entity (make-ecs-entity)))
+        (ok (= (set-entity-param entity :test 100) 100))
+        (ok (= (get-entity-param entity :test) 100))))
+    (testing "set multiple params"
+      (let ((entity (make-ecs-entity)))
+        (set-entity-param entity
+                          :test1 100
+                          :test2 200)
+        (ok (= (get-entity-param entity :test1) 100))
+        (ok (= (get-entity-param entity :test2) 200))))
     (testing "setf get-entity-param"
       (let ((entity (make-ecs-entity)))
         (add-ecs-component (init-entity-params :test 100)
