@@ -107,7 +107,10 @@
     (gethash key (params-table params))))
 
 (defun.ps+ set-entity-param (entity key new-value)
-  (with-ecs-components (params) entity
+  (let ((params (get-ecs-component 'params entity)))
+    (unless params
+      (setf params (make-params))
+      (add-ecs-component params entity))
     (setf (gethash key (params-table params))
           new-value)))
 
