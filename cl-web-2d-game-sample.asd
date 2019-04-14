@@ -31,5 +31,6 @@
                  (:file "sample-simple")
                  (:file "sample-text")
                  (:file "sample-texture")
+                 (:file "sample-ui")
                  (:file "cl-web-2d-game-sample"))))
   :description "Sample for cl-web-2d-game")
