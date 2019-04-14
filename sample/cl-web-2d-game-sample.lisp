@@ -55,7 +55,8 @@
                                           "input"
                                           "storage"
                                           "texture"
-                                          "text"))
+                                          "text"
+                                          "ui"))
                             (markup (:li :class "sample-list-element"
                                          (:a :href (format nil "/sample-~A" name)
                                              :target "viewer"

@@ -27,6 +27,7 @@
 
                  :cl-web-2d-game/inputs/input
                  :cl-web-2d-game/inputs/gui
+                 :cl-web-2d-game/inputs/ui
 
                  :cl-web-2d-game/physics/collision
                  :cl-web-2d-game/physics/collision-system

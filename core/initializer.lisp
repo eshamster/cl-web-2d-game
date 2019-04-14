@@ -16,7 +16,9 @@
   (:export :start-2d-game
            :init-default-systems)
   (:import-from :cl-web-2d-game/utils/dom-manager
-                :get-rendered-dom))
+                :get-rendered-dom)
+  (:import-from :cl-web-2d-game/inputs/ui
+                :init-ui-system))
 (in-package :cl-web-2d-game/core/initializer)
 
 (enable-ps-experiment-syntax)
@@ -44,7 +46,8 @@
                                       (draw-system t)
                                       (animation-system t)
                                       (collision-system t)
-                                      (simple-move-system t))
+                                      (simple-move-system t)
+                                      (ui-system t))
   (when script-system
     (register-ecs-system "script2d" (make-script-system)))
   (when collision-system
@@ -54,7 +57,9 @@
   (when draw-system
     (register-ecs-system "draw2d" (init-draw-model-system scene)))
   (when simple-move-system
-    (register-ecs-system "simple-move" (make-simple-move-system))))
+    (register-ecs-system "simple-move" (make-simple-move-system)))
+  (when ui-system
+    (register-ecs-system "ui" (init-ui-system))))
 
 (defvar.ps+ *resize-to-screen-p* nil)
 
