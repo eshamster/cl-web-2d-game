@@ -10,6 +10,7 @@
 
 (uiop/package:define-package :cl-web-2d-game/main
   (:nicknames :cl-web-2d-game)
+  (:use :cl-web-2d-game/utils/basic-generator)
   (:use-reexport :cl-web-2d-game/core/basic-components
                  :cl-web-2d-game/core/basic-systems
                  :cl-web-2d-game/core/initializer
