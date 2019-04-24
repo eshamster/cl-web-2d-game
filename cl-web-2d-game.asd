@@ -52,5 +52,6 @@
                "cl-web-2d-game/t/collision"
                "cl-web-2d-game/t/collision-system"
                "cl-web-2d-game/t/script-system"
-               "cl-web-2d-game/t/stage-generator")
+               "cl-web-2d-game/t/stage-generator"
+               "cl-web-2d-game/t/basic-generator")
   :perform (test-op (o c) (symbol-call :rove '#:run c)))

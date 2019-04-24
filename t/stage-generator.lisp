@@ -59,3 +59,19 @@
       (let ((expected (cadr time-and-value)))
         (process-stage test-stage)
         (ok (= *test-value* expected))))))
+
+(def-stage-element-interpreter.ps+ :hoge-included (value1)
+  value1)
+
+(def-stage-element-interpreter.ps+
+    (:hoge-including (:include :hoge-included)) (value2)
+  (setf *test-value* (+ value2 hoge-included)))
+
+(deftest.ps+ for-including-other-interpreter
+  (setf *test-value* 0)
+  (ok (= *test-value* 0))
+  (let* ((test-stage (generate-stage
+                       (:hoge-including :time 0 :value2 100
+                                        (:hoge-included :value1 200)))))
+    (process-stage test-stage)
+    (ok (= *test-value* 300))))
