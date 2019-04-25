@@ -10,7 +10,6 @@
 
 (uiop/package:define-package :cl-web-2d-game/main
   (:nicknames :cl-web-2d-game)
-  (:use :cl-web-2d-game/utils/basic-generator)
   (:use-reexport :cl-web-2d-game/core/basic-components
                  :cl-web-2d-game/core/basic-systems
                  :cl-web-2d-game/core/initializer
@@ -38,6 +37,7 @@
                  :cl-web-2d-game/utils/debug/performance
                  :cl-web-2d-game/utils/debug/logger
                  :cl-web-2d-game/utils/debug/debug-drawer
+                 :cl-web-2d-game/utils/basic-generator
                  :cl-web-2d-game/utils/stage-generator
                  :cl-web-2d-game/utils/storage))
 (in-package :cl-web-2d-game/main)
