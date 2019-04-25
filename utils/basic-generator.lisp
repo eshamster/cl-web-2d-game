@@ -2,6 +2,9 @@
   (:use :cl
         :ps-experiment
         :parenscript)
+  ;; Note: The dummy exporting is to avoid ps-experiment issue
+  ;; where a package without exporting symbol can be failed to load.
+  (:export :dummy-cl-web-2d-game/utils/basic-generator)
   (:import-from :cl-web-2d-game/core/basic-components
                 :make-point-2d
                 :make-speed-2d)
