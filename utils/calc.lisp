@@ -35,6 +35,7 @@
            :transformf-point
            :transformf-point-inverse
            :calc-global-point
+           :calc-parent-global-point
            :calc-local-point
            :with-global-point
 
@@ -233,6 +234,16 @@ coordinate of the 'entity'"
        (clone-point-2d offset)
        (make-point-2d :x 0 :y 0 :angle 0))
    entity))
+
+(defun.ps+ calc-parent-global-point (entity &optional offset)
+  "Return global position and roration of the parent of the entity (type: point-2d).
+The 'offset' is useful if you want to calculate global position and rotation on
+coordinate of the 'entity'"
+  (transformf-point-rec
+   (if offset
+       (clone-point-2d offset)
+       (make-point-2d :x 0 :y 0 :angle 0))
+   (ecs-entity-parent entity)))
 
 (defun.ps+ calc-local-point (entity global-pnt)
   "Calculate local position and rotation of the entity from a global point."
