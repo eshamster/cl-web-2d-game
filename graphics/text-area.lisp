@@ -26,7 +26,7 @@
   (text-model-list '())
   depth)
 
-(defun.ps+ make-text-area (&key font-size (text-align :left) (margin 0) x y (angle 0))
+(defun.ps+ make-text-area (&key font-size (text-align :left) (margin 0) x y (angle 0) (depth 0))
   "Make an empty text area as an ECS entity.
 Note: \"y\" is top of the text. \"x\" depends on \"text-align\""
   (let ((text-align-list '(:left :right :center)))
@@ -39,7 +39,8 @@ Note: \"y\" is top of the text. \"x\" depends on \"text-align\""
      (make-text-area-component
       :font-size font-size
       :text-align text-align
-      :margin margin))
+      :margin margin
+      :depth depth))
     area))
 
 (defun.ps+ get-text-area-size (area-entity)
