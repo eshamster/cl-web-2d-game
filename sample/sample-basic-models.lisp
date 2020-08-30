@@ -30,6 +30,12 @@
   (add-a-model 100 50 20
                (make-lines :pnt-list '((10 10) (20 50) (12 65) (-5 25))
                            :color #xff0000))
+  (add-a-model 100 300 20
+               (make-line-segments :pnt-list '((10 10) (30 10)
+                                               (40 20) (40 40)
+                                               (30 50) (10 50)
+                                               ( 0 40) (0 20))
+                                   :color #xff0000))
   ;; rect
   (add-a-model 150 50 20
                (make-wired-rect :width 20 :height 50
