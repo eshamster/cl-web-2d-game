@@ -10,6 +10,7 @@
         :cl-web-2d-game/graphics/texture)
   (:export :make-line
            :make-lines
+           :make-line-segments
            :make-solid-rect
            :make-wired-rect
            :make-solid-regular-polygon
@@ -53,6 +54,10 @@
 (defun.ps make-line-model (geometry color)
   (let ((material (new (#j.THREE.LineBasicMaterial# (create :color color)))))
     (new (#j.THREE.Line# geometry material))))
+
+(defun.ps make-line-segments-model (geometry color)
+  (let ((material (new (#j.THREE.LineBasicMaterial# (create :color color)))))
+    (new (#j.THREE.LineSegments# geometry material))))
 
 (defmacro.ps+ def-wired-geometry (name args &body body)
   (with-ps-gensyms (geometry)
@@ -101,6 +106,12 @@
 (def-wired-geometry make-lines (pnt-list)
   (dolist (pnt pnt-list)
     (push-vertices (list (aref pnt 0) (aref pnt 1)))))
+
+(defun.ps make-line-segments (&key pnt-list color)
+  (let ((geometry (new (#j.THREE.Geometry#))))
+    (dolist (pnt pnt-list)
+      (push-vertices-to geometry (list (list (aref pnt 0) (aref pnt 1)))))
+    (make-line-segments-model geometry color)))
 
 ;; --- rectangle --- ;;
 
